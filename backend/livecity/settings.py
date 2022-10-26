@@ -52,7 +52,11 @@ WSGI_APPLICATION = 'livecity.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DJANGO_DB_ENGINE'),
-        'NAME': BASE_DIR / os.getenv('DJANGO_DB_NAME'),
+        'NAME': os.getenv('DJANGO_DB_NAME'),
+        'USER': os.getenv('DJANGO_DB_USER'),
+        'PASSWORD': os.getenv('DJANGO_DB_PASSWORD'),
+        'HOST': os.getenv('DJANGO_DB_HOST'),
+        'PORT': os.getenv('DJANGO_DB_PORT')
     }
 }
 
