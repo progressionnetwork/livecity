@@ -40,7 +40,6 @@ services:
       - "80:80"
       - "443:443"
     depends_on:
-      - frontend
       - backend
 
   certbot:

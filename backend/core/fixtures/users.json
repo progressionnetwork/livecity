@@ -2,7 +2,7 @@
     {
         "model": "core.user",
         "fields": {
-            "password": "pbkdf2_sha256$390000$IUNN3x6lCR2vEY79Y1pTFC$7bH9zQkhgF83CMUWT6rowklCMlnfQyqe5Tk8OeBjTa8=",
+            "password": "pbkdf2_sha256$390000$F2AutvYkOGWdqb9hKS9kqE$7CFcrzaLrnuVnpu6PKWQa49VZZM2uRwYDlTeTTpfeuI=",
             "is_superuser": false,
             "is_staff": false,
             "is_active": true,
@@ -14,7 +14,7 @@
     },{
         "model": "core.user",
         "fields": {
-            "password": "pbkdf2_sha256$390000$IUNN3x6lCR2vEY79Y1pTFC$7bH9zQkhgF83CMUWT6rowklCMlnfQyqe5Tk8OeBjTa8=",
+            "password": "pbkdf2_sha256$390000$F2AutvYkOGWdqb9hKS9kqE$7CFcrzaLrnuVnpu6PKWQa49VZZM2uRwYDlTeTTpfeuI=",
             "is_superuser": false,
             "is_staff": false,
             "is_active": true,
@@ -26,7 +26,7 @@
     },{
         "model": "core.user",
         "fields": {
-            "password": "pbkdf2_sha256$390000$IUNN3x6lCR2vEY79Y1pTFC$7bH9zQkhgF83CMUWT6rowklCMlnfQyqe5Tk8OeBjTa8=",
+            "password": "pbkdf2_sha256$390000$F2AutvYkOGWdqb9hKS9kqE$7CFcrzaLrnuVnpu6PKWQa49VZZM2uRwYDlTeTTpfeuI=",
             "is_superuser": false,
             "is_staff": false,
             "is_active": true,
