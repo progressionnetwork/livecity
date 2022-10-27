@@ -25,7 +25,7 @@ module.exports = {
     // Best Practices
     eqeqeq: 'error',
     'no-invalid-this': 'error',
-    'no-return-assign': 'error',
+    'no-return-assign': 'off',
     'no-unused-expressions': ['error', { allowTernary: true }],
     'no-useless-concat': 'error',
     'no-useless-return': 'error',
@@ -34,7 +34,7 @@ module.exports = {
     // 'init-declarations': 'error',
     'no-use-before-define': 'error',
 
-    'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z]' }],
+    'no-unused-vars': ['off', { varsIgnorePattern: '^[A-Z]' }],
 
     // Stylistic Issues
     'array-bracket-newline': ['error', { multiline: true, minItems: null }],
@@ -60,7 +60,7 @@ module.exports = {
     'object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
     'quote-props': ['error', 'as-needed'],
     // quotes: ['error', 'prefer-single'],
-    semi: ['error', 'never'],
+    semi: ['off', 'off'],
     'semi-spacing': 'error',
     'space-before-blocks': 'error',
     // 'space-before-function-paren': 'error',

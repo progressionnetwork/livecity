@@ -7,7 +7,21 @@ import {
   CardLink
 } from "reactstrap"
 
+import { useSelector } from "react-redux"
+import { useEffect } from "react"
+import {useNavigate} from "react-router-dom"
+
 const Home = () => {
+
+  const nav = useNavigate()
+  const user = useSelector(state => state.user)
+
+  useEffect(() => {
+    if (!user.data) {
+      nav('/login')
+    }
+  }, [])
+
   return (
     <div>
       <Card>
