@@ -1,5 +1,5 @@
 import {useSkin} from "@hooks/useSkin"
-import {Link} from "react-router-dom"
+import {Link, useNavigate} from "react-router-dom"
 import {Facebook, Twitter, Mail, GitHub} from "react-feather"
 import InputPasswordToggle from "@components/input-password-toggle"
 import {
@@ -20,7 +20,7 @@ import {setUserData} from "../redux/user";
 const Login = () => {
     const {skin} = useSkin()
     const dispatch = useDispatch()
-    // const nav = useNavigate()
+    const nav = useNavigate()
 
     const illustration = skin === "dark" ? "login-v2-dark.svg" : "login-v2.svg",
         source = require(`@src/assets/images/pages/${illustration}`).default
@@ -32,8 +32,7 @@ const Login = () => {
         form.forEach((value, name) => data[name] = value)
 
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/login`, data)
-
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/login/`, data)
             if (response.data) {
                 localStorage.setItem('token', response.data.token)
                 dispatch(setUserData(response.data?.user))
@@ -42,7 +41,7 @@ const Login = () => {
         } catch (e) {
             console.log('Bad auth')
         }
-        // nav('/')
+        nav('/')
     }
 
     return (
