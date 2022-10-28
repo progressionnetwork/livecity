@@ -54,3 +54,11 @@ class MeView(APIView):
         return Response({
             'user': UserSerializer(instance=request.user).data,
         })
+
+class HealthCheckView(APIView):
+    permission_classes = [
+        permissions.AllowAny
+    ]
+
+    def get(self, request, *args, **kwargs):
+        return Response({"result": True})

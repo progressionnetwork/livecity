@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.8"
 services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -15,9 +15,9 @@ services:
       - ./deploy/rabbitmq/log/:/var/log/rabbitmq/
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      interval: 1s
+      timeout: 3s
+      retries: 30
 
   backend:
     build: ./backend/
@@ -32,13 +32,13 @@ services:
     ports:
       - "8000:8000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health_check/" ]
+      interval: 3s
+      timeout: 1s
+      retries: 50
     depends_on: 
       rabbitmq:
-        condition: service_completed_successfully
+        condition: service_healthy
   
   frontend:
     build: ./frontend/
@@ -49,14 +49,14 @@ services:
       - "8080:80"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      interval: 1s
+      timeout: 3s
+      retries: 30
     depends_on: 
       rabbitmq:
-        condition: service_completed_successfully
+        condition: service_healthy
       backend:
-        condition: service_completed_successfully
+        condition: service_healthy
 
   nginx:
     container_name: nginx
@@ -72,16 +72,16 @@ services:
       - "443:443"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      interval: 1s
+      timeout: 3s
+      retries: 30
     depends_on: 
       rabbitmq:
-        condition: service_completed_successfully
+        condition: service_healthy
       backend:
-        condition: service_completed_successfully
+        condition: service_healthy
       frontend:
-        condition: service_completed_successfully
+        condition: service_healthy
 
   certbot:
     image: certbot/certbot
