@@ -61,4 +61,4 @@ class HealthCheckView(APIView):
     ]
 
     def get(self, request, *args, **kwargs):
-        return Response({"result": True})
+        return Response({}, status=200)
