@@ -2,27 +2,6 @@ import pandas as pd
 import numpy as np
 import openpyxl
 import sys,os
-
-#filename = r'D:\Projects\lct_8\Исходные данные\Исходные данные\Список СПГЗ 27_5_2022.xlsx'
-filename = r'D:\Projects\lct_8\Исходные данные\Исходные данные\ТСН-2001 С СПГЗ.xlsx'
-
-df = pd.read_excel(filename,
-                   #sheet_name='', 
-                   #skiprows=range(1, 26),  # header
-                   #usecols = "A,C,D,E,F,G,H,I,K,L,M,N,O,P,Q,R"
-                   )
-# df.columns = ['id','empty','code','work_name','spec','count','price_per_one',
-#                           'fix_coeff','winter_coeff','re_coeff','price','total_count']
-
-df.to_csv('ТСН-2001 С СПГЗ.csv')
-# df.dropna(how='all', inplace=True)
-# df.ffill(inplace=True)df
-
-print(df.head(20))
-# for index, row in df.iterrows():
-#     if index > 20: break
-
-sys.exit()
 filename = r'D:\Projects\lct_8\Исходные данные\Исходные данные\СН-ТСН\СН-2012\Глава 3. Мосты, путепроводы, эстакады.xlsx'
 
 wb = openpyxl.load_workbook(filename)
