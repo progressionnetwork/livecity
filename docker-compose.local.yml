@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.5"
 services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -13,6 +13,11 @@ services:
     volumes:
       - ./deploy/rabbitmq/data/:/var/lib/rabbitmq/
       - ./deploy/rabbitmq/log/:/var/log/rabbitmq/
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 1s
+      timeout: 3s
+      retries: 30
 
   backend:
     build: ./backend/
@@ -26,3 +31,29 @@ services:
       - ./backend:/app
     ports:
       - "8000:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health_check/" ]
+      interval: 3s
+      timeout: 1s
+      retries: 50
+    depends_on: 
+      rabbitmq:
+        condition: service_healthy
+  
+  frontend:
+    build: ./frontend/
+    image: livecity_frontend
+    restart: on-failure
+    container_name: livecity_frontend
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    depends_on: 
+      rabbitmq:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
