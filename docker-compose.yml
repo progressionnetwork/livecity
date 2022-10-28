@@ -1,0 +1,95 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: livecity_rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=ruha
+      - RABBITMQ_DEFAULT_PASS=gcSrYfKz
+      - RABBITMQ_DEFAULT_VHOST=livecity
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./deploy/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./deploy/rabbitmq/log/:/var/log/rabbitmq/
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 30s
+      retries: 10
+
+  backend:
+    build: ./backend/
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_backend
+    env_file:
+      - ./backend/.env
+    command: bash -c "python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py loaddata users && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health_check/" ]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+    depends_on: 
+      rabbitmq:
+        condition: service_healthy
+  
+  frontend:
+    build: ./frontend/
+    image: livecity_frontend
+    restart: on-failure
+    container_name: livecity_frontend
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+    depends_on: 
+      rabbitmq:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.15-alpine
+    restart: unless-stopped
+    volumes:
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d
+      - ./deploy/certbot/conf:/etc/letsencrypt
+      - ./deploy/certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    ports:
+      - "80:80"
+      - "443:443"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+    depends_on: 
+      rabbitmq:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    restart: unless-stopped
+    volumes:
+      - ./deploy/certbot/conf:/etc/letsencrypt
+      - ./deploy/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 5d & wait $${!}; done;'"
+    depends_on:
+      - nginx
