@@ -1,4 +1,4 @@
-version: "3.5"
+version: "3.9"
 services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -15,9 +15,9 @@ services:
       - ./deploy/rabbitmq/log/:/var/log/rabbitmq/
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 1s
-      timeout: 3s
-      retries: 30
+      interval: 10s
+      timeout: 30s
+      retries: 10
 
   backend:
     build: ./backend/
@@ -33,9 +33,9 @@ services:
       - "8000:8000"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health_check/" ]
-      interval: 3s
-      timeout: 1s
-      retries: 50
+      interval: 10s
+      timeout: 30s
+      retries: 10
     depends_on: 
       rabbitmq:
         condition: service_healthy
@@ -46,14 +46,39 @@ services:
     restart: on-failure
     container_name: livecity_frontend
     ports:
-      - "80:80"
+      - "8080:80"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 1s
-      timeout: 3s
-      retries: 30
+      interval: 10s
+      timeout: 30s
+      retries: 10
     depends_on: 
       rabbitmq:
         condition: service_healthy
       backend:
+        condition: service_healthy
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.15-alpine
+    restart: unless-stopped
+    volumes:
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d
+      - ./deploy/certbot/conf:/etc/letsencrypt
+      - ./deploy/certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    ports:
+      - "80:80"
+      - "443:443"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+    depends_on: 
+      rabbitmq:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+      frontend:
         condition: service_healthy
