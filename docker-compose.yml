@@ -45,8 +45,6 @@ services:
     image: livecity_frontend
     restart: on-failure
     container_name: livecity_frontend
-    ports:
-      - "8080:80"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 10s
