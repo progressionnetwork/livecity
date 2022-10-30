@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 
+from core.models import KPGZ, OKEI, OKPD, OKPD2
+
 UserModel = get_user_model()
 
 
@@ -45,3 +47,24 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class KPGZSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KPGZ
+        fields = '__all__'
+
+class OKEISerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OKEI
+        fields = '__all__'
+
+class OKPDSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OKPD
+        fields = '__all__'
+
+class OKPD2Serializer(serializers.ModelSerializer):
+    class Meta:
+        model = OKPD2
+        fields = '__all__'

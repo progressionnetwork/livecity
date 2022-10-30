@@ -40,11 +40,39 @@ services:
       rabbitmq:
         condition: service_healthy
   
+  worker_kpgz:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_kpgz
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py kpgz"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+    
+  worker_okei:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_okei
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py okei"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+  
   frontend:
     build: ./frontend/
     image: livecity_frontend
     restart: on-failure
     container_name: livecity_frontend
+    ports:
+      - "8080:80"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 10s

@@ -1,16 +1,23 @@
+from http.client import responses
+from unittest.util import unorderable_list_difference
 from rest_framework import permissions
 from rest_framework.generics import CreateAPIView
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
-from core.serializers import (  UserSerializer,
+from core.models import (KPGZ, OKEI, OKPD, OKPD2)
+from core.serializers import (  KPGZSerializer, OKEISerializer, OKPD2Serializer, OKPDSerializer, UserSerializer,
                                 AuthTokenSerializer)
 
 
 class RegistrationView(CreateAPIView):
+    ''' Регистрация пользоваателя '''
     model = get_user_model()
     permission_classes = [
         permissions.AllowAny
@@ -18,6 +25,7 @@ class RegistrationView(CreateAPIView):
     serializer_class = UserSerializer
 
 class LoginView(ObtainAuthToken):
+    ''' Вход пользоваателя '''
     serializer_class = AuthTokenSerializer
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
@@ -31,6 +39,7 @@ class LoginView(ObtainAuthToken):
         })
 
 class LogoutView(APIView):
+    ''' Выход пользоваателя '''
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, *args, **kwargs):
         try:
@@ -45,20 +54,74 @@ class LogoutView(APIView):
             })
 
 class MeView(APIView):
+    ''' Информация о пользоваателе'''
     permission_classes = [
         permissions.IsAuthenticated
     ]
     serializer_class = UserSerializer
-
+    @swagger_auto_schema(
+        responses={200: openapi.Response(200, UserSerializer)})
     def get(self, request, *args, **kwargs):
         return Response({
             'user': UserSerializer(instance=request.user).data,
         })
 
 class HealthCheckView(APIView):
+    ''' Проверка жизни API '''
     permission_classes = [
         permissions.AllowAny
     ]
 
     def get(self, request, *args, **kwargs):
         return Response({}, status=200)
+
+
+class UpdateDataFromInternet(APIView):
+    ''' Обновление информации в справочниках с портла data.mos.ru '''
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('data_type', 
+                openapi.IN_QUERY, 
+                description="Model name (kpgz | okei | okpd | okpd2)", 
+                type=openapi.TYPE_STRING)
+            ])
+    def get(self, request, *args, **kwargs):
+        data_type = request.GET.get('data_type', None)
+        match data_type:
+            case "kpgz": KPGZ.objects.update_from_internet()
+            case "okei": OKEI.objects.update_from_internet()
+            case "okpd": OKPD.objects.update_from_internet()
+            case "okpd2": OKPD2.objects.update_from_internet()
+        return Response({"result": True}, status=200)
+
+
+class KPGZView(ModelViewSet):
+    serializer_class = KPGZSerializer
+    queryset = KPGZ.objects.all()
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
+class OKEIView(ModelViewSet):
+    serializer_class = OKEISerializer
+    queryset = OKEI.objects.all()
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
+class OKPDView(ModelViewSet):
+    serializer_class = OKPDSerializer
+    queryset = OKPD.objects.all()
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
+class OKPD2View(ModelViewSet):
+    serializer_class = OKPD2Serializer
+    queryset = OKPD2.objects.all()
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]

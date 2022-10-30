@@ -3,8 +3,8 @@
         "model": "core.user",
         "fields": {
             "password": "pbkdf2_sha256$390000$F2AutvYkOGWdqb9hKS9kqE$7CFcrzaLrnuVnpu6PKWQa49VZZM2uRwYDlTeTTpfeuI=",
-            "is_superuser": false,
-            "is_staff": false,
+            "is_superuser": true,
+            "is_staff": true,
             "is_active": true,
             "username": "Главный администратор",
             "email": "superadmin@livecity.gg",
@@ -16,7 +16,7 @@
         "fields": {
             "password": "pbkdf2_sha256$390000$F2AutvYkOGWdqb9hKS9kqE$7CFcrzaLrnuVnpu6PKWQa49VZZM2uRwYDlTeTTpfeuI=",
             "is_superuser": false,
-            "is_staff": false,
+            "is_staff": true,
             "is_active": true,
             "username": "Администратор",
             "email": "admin@livecity.gg",
@@ -35,5 +35,18 @@
             "groups": [],
             "user_permissions": []
         }
+    },{
+        "model": "core.user",
+        "fields": {
+            "password": "pbkdf2_sha256$390000$F2AutvYkOGWdqb9hKS9kqE$7CFcrzaLrnuVnpu6PKWQa49VZZM2uRwYDlTeTTpfeuI=",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "username": "SWAGGER",
+            "email": "swagger@livecity.gg",
+            "groups": [],
+            "user_permissions": []
+        }
     }
+    
 ]

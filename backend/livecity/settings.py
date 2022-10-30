@@ -13,6 +13,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
@@ -117,3 +118,19 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 RABBITMQ_URL = os.getenv('RABBITMQ_URL')
+
+API_DATAMOSRU = os.getenv('API_DATAMOSRU')
+
+SWAGGER_SETTINGS = {
+    "exclude_namespaces": [], 
+    "enabled_methods": [  
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete'
+    ],
+    "api_key": 'd54305de7439ca5bab9087f6dee99e44f5f2e413', 
+    "is_authenticated": False, 
+    "is_superuser": False,  
+}

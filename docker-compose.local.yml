@@ -1,5 +1,18 @@
 version: "3.9"
 services:
+  postgres:
+    image: postgres:14
+    container_name: livecity_postgres
+    restart: on-failure
+    volumes:
+      - ./deploy/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=livecity
+      - POSTGRES_USER=ruha
+      - POSTGRES_PASSWORD=gcSrYfKz0gcSrYfKz
+    ports:
+      - "5432:5432"
+  
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: livecity_rabbitmq
@@ -38,6 +51,58 @@ services:
       retries: 10
     depends_on: 
       rabbitmq:
+        condition: service_healthy
+  
+  worker_kpgz:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_kpgz
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py kpgz"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+    
+  worker_okei:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_okei
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py okei"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+
+  worker_okpd:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_okpd
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py okpd"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+
+  worker_okpd2:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_okpd2
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py okpd2"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
         condition: service_healthy
   
   frontend:
