@@ -66,6 +66,31 @@ services:
       backend:
         condition: service_healthy
   
+  worker_okpd:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_okpd
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py okpd"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+
+  worker_okpd2:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_okpd2
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py okpd2"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
   frontend:
     build: ./frontend/
     image: livecity_frontend
