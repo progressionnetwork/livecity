@@ -1,7 +1,6 @@
 import axios from "axios";
 
 export const request = async (method, path, payload) => {
-
     const headers = {
         Authorization: `Token ${localStorage.getItem('token')}`
     }
