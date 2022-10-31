@@ -1,5 +1,5 @@
 from django.urls import path, include
-from core.views import (KPGZView, OKEIView, OKPD2View, OKPDView, RegistrationView, 
+from core.views import (FileUpdateView, KPGZView, OKEIView, OKPD2View, OKPDView, RegistrationView, 
                         LoginView, 
                         LogoutView, 
                         MeView, 
@@ -12,6 +12,7 @@ router.register('kpgz', KPGZView, basename='kpgz')
 router.register('okei', OKEIView, basename='okei')
 router.register('okpd', OKPDView, basename='kpgz')
 router.register('okpd2', OKPD2View, basename='okpd2')
+router.register('update/file', FileUpdateView, basename='update_file')
 
 urlpatterns = [
     path('reg/', RegistrationView.as_view(), name='reg'),

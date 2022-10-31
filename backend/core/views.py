@@ -1,9 +1,7 @@
-from http.client import responses
-from unittest.util import unorderable_list_difference
 from rest_framework import permissions
 from rest_framework.generics import CreateAPIView
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -11,8 +9,8 @@ from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from core.models import (KPGZ, OKEI, OKPD, OKPD2)
-from core.serializers import (  KPGZSerializer, OKEISerializer, OKPD2Serializer, OKPDSerializer, UserSerializer,
+from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate)
+from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer, OKPDSerializer, UserSerializer,
                                 AuthTokenSerializer)
 
 
@@ -99,6 +97,7 @@ class UpdateDataFromInternet(APIView):
 
 
 class KPGZView(ModelViewSet):
+    ''' Классификатор предметов гос заказа '''
     serializer_class = KPGZSerializer
     queryset = KPGZ.objects.all()
     permission_classes = [
@@ -106,6 +105,7 @@ class KPGZView(ModelViewSet):
     ]
 
 class OKEIView(ModelViewSet):
+    ''' Общероссийский классификатор единиц измерения '''
     serializer_class = OKEISerializer
     queryset = OKEI.objects.all()
     permission_classes = [
@@ -113,6 +113,7 @@ class OKEIView(ModelViewSet):
     ]
 
 class OKPDView(ModelViewSet):
+    '''Общероссийский классификатор продукции по видам экономической деятельности'''
     serializer_class = OKPDSerializer
     queryset = OKPD.objects.all()
     permission_classes = [
@@ -120,8 +121,17 @@ class OKPDView(ModelViewSet):
     ]
 
 class OKPD2View(ModelViewSet):
+    '''Общероссийский классификатор продукции по видам экономической деятельности'''
     serializer_class = OKPD2Serializer
     queryset = OKPD2.objects.all()
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
+class FileUpdateView(ModelViewSet):
+    ''' Файлы для обновления '''
+    serializer_class = FileUpdateSerializer
+    queryset = FileUpdate.objects.all()
     permission_classes = [
         permissions.IsAuthenticated
     ]
