@@ -43,7 +43,7 @@ def extract_data(all_files):
         try:
             wb = openpyxl.load_workbook(xls_file, data_only=True) # открываем xls файл в режиме даты
         except:
-            print(xls_file, ' более старой версии и не доддерживается openpyxl.')
+            print(xls_file, ' более старой версии и не поддерживается openpyxl.')
             newfile = conv_xls_xlsx(xls_file)
             wb = openpyxl.load_workbook(newfile, data_only=True) # открываем xls файл в режиме даты
             #continue

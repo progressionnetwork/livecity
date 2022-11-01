@@ -105,6 +105,19 @@ services:
       backend:
         condition: service_healthy
   
+  worker_sn:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_sn
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py sn"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+  
   frontend:
     build: ./frontend/
     image: livecity_frontend

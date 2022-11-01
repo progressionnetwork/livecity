@@ -30,7 +30,6 @@ class UserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
         return self.create_user(email, password, **extra_fields)
 
-
 class User(AbstractUser):
     first_name = models.CharField(max_length=190, null=True, blank=True)
     last_name = models.CharField(max_length=190, null=True, blank=True)
@@ -48,7 +47,6 @@ class User(AbstractUser):
     def get_short_name(self):
         return f"{self.username} - {self.email}"
 
-
 class FileUpdateManager(models.Manager):
     def get_last_update(self, type_file):
         return self.filter(type_file=type_file).order_by('-date_upload').first()
@@ -62,7 +60,22 @@ class FileUpdate(models.Model):
     file = models.FileField(upload_to="files")
     date_upload = models.DateTimeField(auto_now=True)
 
-    
+    def __str__(self) -> str:
+        return f"{self.file.url}"
+
+    def send_rabbitmq(self):
+        import pika
+        connection = pika.BlockingConnection(
+            parameters=pika.URLParameters(settings.RABBITMQ_URL))
+        channel = connection.channel()
+        channel.queue_declare(queue=self.type_file.lower())
+        channel.basic_publish(exchange='', routing_key=self.type_file.lower(), body=json.dumps(
+            {'type_data': self.type_file, 'source': 'file', 'path': self.file.path}))
+        connection.close()
+
+    class Meta:
+        verbose_name = "Файл обновления справочника"
+        verbose_name_plural = "Файлы обновления справочника"
 
 
 class SharedManager(models.Manager):

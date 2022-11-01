@@ -107,8 +107,20 @@ def load_from_internet(type_data: str, chunk_size: int = 1000) -> None:
     for thread in threads:
         thread.join()
 
+def load_sn(path: str)-> None:
+    from parser.sn import Parse
+    logger.info(f"Start parsing file: {path}")
+    l = Parse(path)
+    logger.info(l[:1][:5])
 
-def load_from_file(type_data: str) -> None:
+
+def load_from_file(type_data: str, path: str) -> None:
+    threads = []
+    match type_data:
+        case 'SN': 
+            t = threading.Thread(target=load_sn, args=[path])
+            t.start()
+            threads.append(t)
     return None
 
 def callback(ch, method, properties, body):
@@ -117,11 +129,12 @@ def callback(ch, method, properties, body):
 
     type_data = message['type_data']
     source = message['source']
+    path = message.get('path', None)
 
     if source == SOURCE_INTERNET:
         load_from_internet(type_data)
     else:
-        load_from_file(type_data)
+        load_from_file(type_data, path)
 
     ch.basic_ack(delivery_tag=method.delivery_tag)
     logger.info("ACK sended")
