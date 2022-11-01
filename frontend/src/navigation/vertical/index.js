@@ -1,4 +1,4 @@
-import { Mail, Home } from "react-feather"
+import { Mail, Home, Book } from "react-feather"
 
 export default [
   {
@@ -10,8 +10,14 @@ export default [
   {
     id: "secondPage",
     title: "Справочники",
-    icon: <Mail size={20} />,
+    icon: <Book size={20} />,
     navLink: "/second-page"
+  },
+  {
+    id: "okpd",
+    title: "okpd",
+    icon: <Book size={20} />,
+    navLink: "/okpd"
   },
   {
     id: "users",
