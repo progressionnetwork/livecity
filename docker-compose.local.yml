@@ -12,7 +12,7 @@ services:
       - POSTGRES_PASSWORD=gcSrYfKz0gcSrYfKz
     ports:
       - "5432:5432"
-
+  
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: livecity_rabbitmq
@@ -49,10 +49,10 @@ services:
       interval: 10s
       timeout: 30s
       retries: 10
-    depends_on:
+    depends_on: 
       rabbitmq:
         condition: service_healthy
-
+  
   worker_kpgz:
     image: livecity_backend
     restart: on-failure
@@ -62,10 +62,10 @@ services:
     command: bash -c "python /app/worker/loader.py kpgz"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
       backend:
         condition: service_healthy
-
+    
   worker_okei:
     image: livecity_backend
     restart: on-failure
@@ -75,7 +75,7 @@ services:
     command: bash -c "python /app/worker/loader.py okei"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
       backend:
         condition: service_healthy
 
@@ -88,7 +88,7 @@ services:
     command: bash -c "python /app/worker/loader.py okpd"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
       backend:
         condition: service_healthy
 
@@ -101,17 +101,28 @@ services:
     command: bash -c "python /app/worker/loader.py okpd2"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
       backend:
         condition: service_healthy
-
+  
+  worker_sn:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_sn
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py sn"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+  
   frontend:
     build: ./frontend/
     image: livecity_frontend
     restart: on-failure
     container_name: livecity_frontend
-    environment:
-      - REACT_APP_BACKEND_URL=https://api.livecity.goodgenius.ru
     ports:
       - "8080:80"
     healthcheck:
@@ -119,7 +130,7 @@ services:
       interval: 10s
       timeout: 30s
       retries: 10
-    depends_on:
+    depends_on: 
       rabbitmq:
         condition: service_healthy
       backend:

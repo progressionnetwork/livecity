@@ -135,3 +135,10 @@ class FileUpdateView(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated
     ]
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        if response.status_code == 201:
+            file_update = FileUpdate.objects.get(pk=response.data.get('id', None))
+            file_update.send_rabbitmq()
+        return response
