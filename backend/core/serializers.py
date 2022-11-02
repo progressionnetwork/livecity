@@ -9,7 +9,12 @@ UserModel = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-
+    role = serializers.SerializerMethodField('get_role')
+    
+    def get_role(self, instance):
+        groups = instance.groups.all()
+        return min([group.id for group in groups])
+        
     def create(self, validated_data):
         user = UserModel.objects.create_user(
             username=validated_data['username'],
@@ -20,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ("id", "email", "username", "password", )
+        fields = ("id", "email", "username", "password", "role")
 
 
 class AuthTokenSerializer(serializers.Serializer):
