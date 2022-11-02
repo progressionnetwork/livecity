@@ -113,12 +113,35 @@ def load_sn(path: str)-> None:
     l = Parse(path)
     logger.info(l[:1][:5])
 
+def load_spgz(path: str, type_update:str) -> None:
+    from parser.spgz import Parse
+    for row in Parse(path):
+        row['kpgz'] = KPGZ.objects.get(code=row['kpgz']) if row['kpgz'] is not None else None
+        row['okpd'] = OKPD.objects.get(code=row['okpd']) if row['okpd'] is not None else None
+        row['okpd2'] = OKPD2.objects.get(code=row['okpd2']) if row['okpd2'] is not None else None
+        eis = row.pop('ei')
+        logger.info(f"{row=}")
+        if type_update == 'full':
+            spgz, created = SPGZ.objects.update_or_create(defaults=row, id=row['id'])
+        else:
+            spgz, created = SPGZ.objects.get_or_create(defaults=row, id=row['id']) 
+        if created:
+            for ei in eis:
+                logger.info(f"{ei=}")
+                ei_o = OKEI.objects.get(name=ei) if ei is not None else None
+                logger.info(f"{ei_o=}")
+                spgz.ei.add(ei_o)
+        spgz.save()
 
-def load_from_file(type_data: str, path: str) -> None:
+def load_from_file(type_data: str, path: str, type_update: str) -> None:
     threads = []
     match type_data:
-        case 'SN': 
-            t = threading.Thread(target=load_sn, args=[path])
+        case 'sn': 
+            t = threading.Thread(target=load_sn, args=[path, type_update])
+            t.start()
+            threads.append(t)
+        case 'spgz':
+            t = threading.Thread(target=load_spgz, args=[path, type_update])
             t.start()
             threads.append(t)
     return None
@@ -130,11 +153,12 @@ def callback(ch, method, properties, body):
     type_data = message['type_data']
     source = message['source']
     path = message.get('path', None)
+    type_update = message.get('type_update', None)
 
     if source == SOURCE_INTERNET:
         load_from_internet(type_data)
     else:
-        load_from_file(type_data, path)
+        load_from_file(type_data, path, type_update)
 
     ch.basic_ack(delivery_tag=method.delivery_tag)
     logger.info("ACK sended")
