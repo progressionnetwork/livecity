@@ -32,7 +32,8 @@ const Login = lazy(() => import("../../views/Login"))
 const Register = lazy(() => import("../../views/Register"))
 const ForgotPassword = lazy(() => import("../../views/ForgotPassword"))
 const Error = lazy(() => import("../../views/Error"))
-const Okpd = lazy(() => import("../../views/okpd/Okpd"))
+const Okpd = lazy(() => import("../../views/Okpd"))
+const Okpd2 = lazy(() => import("../../views/Okpd2"))
 
 // ** Merge Routes
 const Routes = [
@@ -52,6 +53,10 @@ const Routes = [
   {
     path: '/okpd',
     element: <Okpd />
+  },
+  {
+    path: '/okpd2',
+    element: <Okpd2 />
   },
   {
     path: "/users",

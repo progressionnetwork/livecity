@@ -20,6 +20,12 @@ export default [
     navLink: "/okpd"
   },
   {
+    id: "okpd2",
+    title: "okpd2",
+    icon: <Book size={20} />,
+    navLink: "/okpd2"
+  },
+  {
     id: "users",
     title: "Пользователи",
     icon: <Mail size={20} />,

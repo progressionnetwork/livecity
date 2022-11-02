@@ -1,6 +1,6 @@
-import {Button, Card, CardBody, CardHeader, CardText, CardTitle, Spinner} from "reactstrap";
+import {Button, Card, CardBody, CardHeader, CardText, CardTitle, Input, Label, Spinner} from "reactstrap";
 import {useEffect, useState} from "react";
-import {request} from "../../utility/request";
+import {request} from "../utility/request";
 
 const Okpd = () => {
     const [maxResults, setMaxResults] = useState(0)
@@ -23,9 +23,17 @@ const Okpd = () => {
     }, [])
 
     return (
-        <Card>
-            <CardBody>
-                {okpdList ? <div className='react-List block'>
+        <div>
+            <Card>
+                <CardBody>
+                    <Label>Поиск</Label>
+                    <Input />
+                </CardBody>
+            </Card>
+
+            <Card>
+                <CardBody>
+                    {okpdList ? <div className='react-List block'>
                         {okpdList.map(e => <Card key={e.code}>
                             <CardTitle>{e.code} {e.name}</CardTitle>
                             <CardBody>
@@ -36,12 +44,14 @@ const Okpd = () => {
                     </div> : <div>
                         <Spinner/>
                     </div>
-                }
-            </CardBody>
-            {maxResults > okpdList?.length && <div style={{padding: 12, width: '100%'}}>
-                <Button onClick={loadMore} style={{width: '100%'}} color='flat-primary'>загрузить еще</Button>
-            </div>}
-        </Card>
+                    }
+                </CardBody>
+                {maxResults > okpdList?.length && <div style={{padding: 12, width: '100%'}}>
+                    <Button onClick={loadMore} style={{width: '100%'}} color='flat-primary'>загрузить еще</Button>
+                </div>}
+            </Card>
+        </div>
+
     )
 }
 
