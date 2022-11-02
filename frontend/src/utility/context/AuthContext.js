@@ -11,11 +11,12 @@ export const AuthProvider = ({children}) => {
         request('get', 'me/').then((e) => {
             dispatch(setUserData(e.user))
             setLoading(false)
-        })
+        }).catch(() => setLoading(false))
+
     }, [])
 
     if (loading) {
-        return <Spinner />
+        return <Spinner/>
     }
 
     return children;

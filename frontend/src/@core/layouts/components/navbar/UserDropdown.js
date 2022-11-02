@@ -29,7 +29,7 @@ import defaultAvatar from "@src/assets/images/portrait/small/avatar-s-11.jpg"
 import {useSelector} from "react-redux";
 
 const UserDropdown = () => {
-  const user = useSelector(state => state.user.data)
+  const user = useSelector(state => state.user?.data)
 
   return (
     <UncontrolledDropdown tag="li" className="dropdown-user nav-item">
@@ -40,7 +40,7 @@ const UserDropdown = () => {
         onClick={(e) => e.preventDefault()}
       >
         <div className="user-nav d-sm-flex d-none">
-          <span className="user-name fw-bold">{user.username}</span>
+          <span className="user-name fw-bold">{user?.username}</span>
           <span className="user-status">Admin</span>
         </div>
         <Avatar

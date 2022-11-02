@@ -36,10 +36,10 @@ services:
       interval: 10s
       timeout: 30s
       retries: 10
-    depends_on: 
+    depends_on:
       rabbitmq:
         condition: service_healthy
-  
+
   worker_kpgz:
     image: livecity_backend
     restart: on-failure
@@ -49,10 +49,10 @@ services:
     command: bash -c "python /app/worker/loader.py kpgz"
     volumes:
       - ./backend:/app
-    depends_on: 
+    depends_on:
       backend:
         condition: service_healthy
-    
+
   worker_okei:
     image: livecity_backend
     restart: on-failure
@@ -62,10 +62,10 @@ services:
     command: bash -c "python /app/worker/loader.py okei"
     volumes:
       - ./backend:/app
-    depends_on: 
+    depends_on:
       backend:
         condition: service_healthy
-  
+
   worker_okpd:
     image: livecity_backend
     restart: on-failure
@@ -75,7 +75,7 @@ services:
     command: bash -c "python /app/worker/loader.py okpd"
     volumes:
       - ./backend:/app
-    depends_on: 
+    depends_on:
       backend:
         condition: service_healthy
 
@@ -88,7 +88,7 @@ services:
     command: bash -c "python /app/worker/loader.py okpd2"
     volumes:
       - ./backend:/app
-    depends_on: 
+    depends_on:
       backend:
         condition: service_healthy
   frontend:
@@ -96,6 +96,8 @@ services:
     image: livecity_frontend
     restart: on-failure
     container_name: livecity_frontend
+    environment:
+      - REACT_APP_BACKEND_URL=https://api.livecity.goodgenius.ru
     ports:
       - "8080:80"
     healthcheck:
@@ -103,7 +105,7 @@ services:
       interval: 10s
       timeout: 30s
       retries: 10
-    depends_on: 
+    depends_on:
       rabbitmq:
         condition: service_healthy
       backend:
@@ -126,7 +128,7 @@ services:
       interval: 10s
       timeout: 30s
       retries: 10
-    depends_on: 
+    depends_on:
       rabbitmq:
         condition: service_healthy
       backend:
