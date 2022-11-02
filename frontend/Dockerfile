@@ -1,6 +1,9 @@
 FROM node:16 as builder
 WORKDIR /app
 COPY package.json ./
+
+ENV REACT_APP_BACKEND_URL "https://api.livecity.goodgenius.ru"
+ENV REACT_APP_BASENAME "Живой город"
 RUN yarn
 COPY . ./
 RUN yarn build
