@@ -116,22 +116,22 @@ def load_sn(path: str)-> None:
 def load_spgz(path: str, type_update:str) -> None:
     from parser.spgz import Parse
     for row in Parse(path):
-        row['kpgz'] = KPGZ.objects.get(code=row['kpgz']) if row['kpgz'] is not None else None
-        row['okpd'] = OKPD.objects.get(code=row['okpd']) if row['okpd'] is not None else None
-        row['okpd2'] = OKPD2.objects.get(code=row['okpd2']) if row['okpd2'] is not None else None
+        row['kpgz'], created = KPGZ.objects.get_or_create(code=row['kpgz'], defaults={"code":row['kpgz'], "name": row['kpgz_name'].capitalize()})
+        row.pop('kpgz_name')
+        row['okpd'] = OKPD.objects.filter(code=row['okpd']).first()
+        row['okpd2'] = OKPD2.objects.filter(code=row['okpd2']).first()
         eis = row.pop('ei')
-        logger.info(f"{row=}")
         if type_update == 'full':
             spgz, created = SPGZ.objects.update_or_create(defaults=row, id=row['id'])
         else:
             spgz, created = SPGZ.objects.get_or_create(defaults=row, id=row['id']) 
         if created:
             for ei in eis:
-                logger.info(f"{ei=}")
-                ei_o = OKEI.objects.get(name=ei) if ei is not None else None
-                logger.info(f"{ei_o=}")
-                spgz.ei.add(ei_o)
+                ei_o = OKEI.objects.filter(name=ei).first() if ei is not None else None
+                if ei_o:
+                    spgz.ei.add(ei_o) 
         spgz.save()
+        logger.info('SPGZ file updated.')
 
 def load_from_file(type_data: str, path: str, type_update: str) -> None:
     threads = []
