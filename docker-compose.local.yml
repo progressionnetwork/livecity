@@ -138,6 +138,10 @@ services:
     container_name: livecity_frontend
     ports:
       - "8080:80"
+    environment:
+      - REACT_APP_BACKEND_URL=http://livecity_backend:8000/
+      - SKIP_PREFLIGHT_CHECK=true
+      - REACT_APP_BASENAME="Живой город"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 10s
