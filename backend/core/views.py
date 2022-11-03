@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ)
+from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ)
 from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer, OKPDSerializer, UserSerializer,
                                 AuthTokenSerializer, TZSerializer, SPGZSerializer, TZRowSerializer)
 
@@ -147,6 +147,7 @@ class SPGZView(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated
     ]
+    queryset = SPGZ.objects.all()
 
 class TZView(ModelViewSet):
     ''' Шаблоны ТЗ  '''
@@ -154,3 +155,4 @@ class TZView(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated
     ]
+    queryset = TZ.objects.all()

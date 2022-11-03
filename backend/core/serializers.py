@@ -84,12 +84,15 @@ class FileUpdateSerializer(serializers.ModelSerializer):
 
 
 class SPGZSerializer(serializers.ModelSerializer):
+    ei = OKEISerializer(many=True)
     class Meta:
         model = SPGZ
         fields = '__all__'
 
 
 class TZRowSerializer(serializers.ModelSerializer):
+    kpgz = KPGZSerializer(many=False)
+    spgz = SPGZSerializer(many=False)
     class Meta:
         model = TZRow
         fields = '__all__'

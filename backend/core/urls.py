@@ -12,8 +12,8 @@ router.register('kpgz', KPGZView, basename='kpgz')
 router.register('okei', OKEIView, basename='okei')
 router.register('okpd', OKPDView, basename='kpgz')
 router.register('okpd2', OKPD2View, basename='okpd2')
-router.register('spgz', OKPD2View, basename='spgz')
-router.register('tz', OKPD2View, basename='tz')
+router.register('spgz', SPGZView, basename='spgz')
+router.register('tz', TZView, basename='tz')
 router.register('update/file', FileUpdateView, basename='update_file')
 
 urlpatterns = [
