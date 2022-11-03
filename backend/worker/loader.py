@@ -133,6 +133,19 @@ def load_spgz(path: str, type_update:str) -> None:
         spgz.save()
         logger.info('SPGZ file updated.')
 
+def load_tz(path: str, type_update:str) -> None:
+    from parser.tz import Parse
+    for row in Parse(path):
+        tz, created = TZ.objects.get_or_create(name=row['name'].capitalize(), defaults={"name": row['name'].capitalize()})
+        if created:
+            for kpgz_spgz in row['rows']:
+                kpgz = KPGZ.objects.filter(pk=kpgz_spgz['kpgz_id']).first()
+                spgz = SPGZ.objects.filter(pk=kpgz_spgz['spgz_id']).first()
+                tz_row = TZRow(kpgz=kpgz, spgz=spgz)
+                tz.rows.add(tz_row)
+                tz.save()
+    logger.info('TZ file updated.')
+
 def load_from_file(type_data: str, path: str, type_update: str) -> None:
     threads = []
     match type_data:
@@ -142,6 +155,10 @@ def load_from_file(type_data: str, path: str, type_update: str) -> None:
             threads.append(t)
         case 'spgz':
             t = threading.Thread(target=load_spgz, args=[path, type_update])
+            t.start()
+            threads.append(t)
+        case 'tz':
+            t = threading.Thread(target=load_tz, args=[path, type_update])
             t.start()
             threads.append(t)
     return None

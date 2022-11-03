@@ -9,9 +9,9 @@ from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, SPGZ)
+from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ)
 from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer, OKPDSerializer, UserSerializer,
-                                AuthTokenSerializer)
+                                AuthTokenSerializer, TZSerializer, SPGZSerializer, TZRowSerializer)
 
 
 class RegistrationView(CreateAPIView):
@@ -143,7 +143,14 @@ class FileUpdateView(ModelViewSet):
 
 class SPGZView(ModelViewSet):
     ''' Справочник предметов государственного заказа '''
-    serializer_class = SPGZ
+    serializer_class = SPGZSerializer
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
+class TZView(ModelViewSet):
+    ''' Шаблоны ТЗ  '''
+    serializer_class = TZSerializer
     permission_classes = [
         permissions.IsAuthenticated
     ]
