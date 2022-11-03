@@ -141,9 +141,9 @@ def load_tz(path: str, type_update:str) -> None:
             for kpgz_spgz in row['rows']:
                 kpgz = KPGZ.objects.filter(pk=kpgz_spgz['kpgz_id']).first()
                 spgz = SPGZ.objects.filter(pk=kpgz_spgz['spgz_id']).first()
-                tz_row = TZRow(kpgz=kpgz, spgz=spgz)
-                tz.rows.add(tz_row)
-                tz.save()
+                if kpgz and spgz:
+                    tz_row = TZRow(kpgz=kpgz, spgz=spgz, tz=tz)
+                    tz_row.save()
     logger.info('TZ file updated.')
 
 def load_from_file(type_data: str, path: str, type_update: str) -> None:

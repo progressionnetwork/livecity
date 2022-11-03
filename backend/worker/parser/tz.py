@@ -8,8 +8,8 @@ def Parse(path: str)-> dict:
     last_name = None
     for index, row in df.iterrows():
         name = row['Наименование шаблона ТЗ']
-        kpgz_id = row['КПГЗ'].split(' ')[0]
-        spgz_id = row['ID']
+        kpgz_id = str(row['КПГЗ'].split(' ')[0])
+        spgz_id = str(row['ID'])
         if last_name is None: 
             last_name = name
         result["name"] = name
