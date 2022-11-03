@@ -58,29 +58,29 @@ def check_change_type(col_type, value):
                         print(value)
                         raise ValueError()
 
-column_names = {1:"Number",
-                2:"Code",
-                3:"Name",
-                4:"Unit",
-                5:"Amount",
-                6:"Price_per_unit",
-                7:"Correction_coof",
-                8:"Winter_coof",
-                9:"Recalc_coof",
-                10:"Total",
-                11:"Additional"}
+column_names = {"SN-2012":{1:"num",
+                            2:"code",
+                            3:"name",
+                            4:"ei",
+                            5:"count",
+                            6:"amount",
+                            7:"coef_correct",
+                            8:"coef_winter",
+                            9:"coef_recalc",
+                            10:"sum",
+                            11:"additional"}}
 
-column_types = {1:float,
-                 2:str,
-                 3:str,
-                 4:str,
-                 5:float,
-                 6:float,
-                 7:float,
-                 8:float,
-                 9:float,
-                 10:float,
-                 11:float}
+column_types = {"SN-2012":{1:float,
+                         2:str,
+                         3:str,
+                         4:str,
+                         5:float,
+                         6:float,
+                         7:float,
+                         8:float,
+                         9:float,
+                         10:float,
+                         11:float}}
 
 def contains(pattern: str or tuple, s: str, lower = True, to_delete = ['-','\n']):
     #print(pattern, s)
@@ -142,10 +142,16 @@ def load_and_check(excel_file, choosen_name):
             break
     if(smeta_type):
         #print(f"Структура сметы подходит под {smeta_type}")
-        return True
+        return {"ok":True,
+                "choosen_name":choosen_name,
+                "smeta_type":smeta_type,
+                "column_map":column_map,
+                "column_mask":columns_mask,
+                "table_title":table_title}
     else:
         #raise WrongSmeta("Формат сметы не распознан") 
-        return False
+        return {"ok":False,
+                "choosen_name":choosen_name} 
 
 #Определение начала таблицы
 def series_startswith(ser, pattern):
@@ -162,17 +168,74 @@ def series_startswith(ser, pattern):
     return False
 
 def Parse(sheet):
+    out_dict = {
+        "type_ref": "",
+        "advance": "",
+        "coef_ref": None,
+        "coef_date": None,
+        "sum": None,
+        "tax": "",
+        "sum_with_tax": None,
+        "sum_with_ko": None,
+        "sections": [{
+                "name": "",
+                "sum": None,
+                "subsections": [{
+                    "name": "",
+                    "sum": None,
+                    "rows": [{
+                        "code":"",             #Шифр
+                        "num":"",              #Номер
+                        "name":"",             #Имя
+                        'ei':"",               #Единица измерения
+                        "count": None,         #Количество
+                        "sum_basic":None,      #Цена в базисе
+                        "sum_current":None,     #Цена
+                        "amount":None,         #Цена за единицу
+                        "additioanl":"",       #Дополнительно
+                        "subrows": [{
+                            "category":"",          #Категория material or expanse
+                            "name":"",              #Имя
+                            "unit":"",              #Единица измерения
+                            "count":None,           #Количество
+                            "amount":None,          #Цена за единицу
+                            "coef_correct":None,    #Коэф коррект
+                            "coef_winter":None,     #Коэф зимний
+                            "coef_recalc":None,     #Коэф пересчета
+                            "sum_basic":None,       #Цена в базисе
+                            "sum_current":None,     #Цена
+                            "additioanl":"",        #Дополнительно
+                        }]
+                    }]
+                }]
+            }]
+    }
+
+
+    out_dict = {
+        "type_ref": "",
+        "advance": "",
+        "coef_ref": None,
+        "coef_date": None,
+        "sum": None,
+        "tax": "",
+        "sum_with_tax": None,
+        "sum_with_ko": None,
+        "sections": []
+        }
     #Поиск листов со сметами
     success = [sheet, []]
     error = [sheet, []]
     excel_file = pd.ExcelFile(sheet)
     for choosen_name in excel_file.sheet_names:
+        result = {"ok":False,
+                  "choosen_name":choosen_name}
         try:
             result = load_and_check(excel_file, choosen_name)
-            if(result):
-                success[1].append(choosen_name)
+            if(result["ok"]):
+                success[1].append(result)
         except Exception as e:
-            error[1].append(choosen_name)
+            error[1].append(result)
             #print(sheet)
             #print(e)
     if(success[1]):
@@ -182,56 +245,27 @@ def Parse(sheet):
     
     lists = []
      
-    for choosen_name in success[1]:
+    for page_info  in success[1]:
+        column_map = page_info["column_map"]
+        column_mask = page_info["column_mask"]
+        choosen_name = page_info["choosen_name"]
+        table_title = page_info["table_title"]
+        smeta_type = page_info["smeta_type"]
+
+        out_dict["type_ref"] = smeta_type
+
         excel_file = pd.ExcelFile(sheet)
         df = excel_file.parse(sheet_name=choosen_name,header=None)
         df = df.dropna(how="all").dropna(axis=1,how="all")
         df = df.astype(str)
         df = df.reset_index(drop=True)
         df.columns = range(df.columns.size)
-        one2elvn = [str(_) for _ in range(1,12)]
-        for index, row in df.iterrows():
-            if(series_startswith(row, one2elvn)):
-                print(index)
-                table_title = index
-                break
-        # Маппинг номеров колонок таблицы в случае объединенных excel ячеек
-        column_map = {}
-        index = 1
-        for ind, val in enumerate(df.iloc[table_title]):
-            if(val == str(index)):
-                column_map[index] = ind
-                index+=1
-                
-        columns_mask = list(column_map.values())
-        # Проверка соответствия колонок по СН-2012
-        ser = df.iloc[table_title-1][columns_mask].apply(lambda x: "" if x == "nan" else x)[::]
-        for index, row in df[:table_title-1][::-1].iterrows():
-            ser += row[columns_mask].apply(lambda x: "" if x == "nan" else x)
-            if("№" in ser[0]):
-                break   
-
-        smeta_type = None
-        for key, col_phrs in possible_types.items():
-            for col, phr in enumerate(col_phrs):
-                or_flag = False
-                for sub_phr in phr:
-                    or_flag = or_flag or contains(sub_phr, ser[column_map[col+1]])
-                if(not or_flag):
-                    print(key, sub_phr)
-                    break
-            else:
-                smeta_type = key
-                break
-        if(smeta_type):
-            print(f"Структура сметы подходит под {smeta_type}")
-        else:
-            raise WrongSmeta("Формат сметы не распознан")       
 
         # Определение разделов и подразделов
         current_section = None
         current_subsection = None
         current_item = 0
+        
         item_indices = {0:[None,None,None,None]} # Началный индекс, Конечный индекс, раздел, подраздел
         #Границы записей явлеяются отрезком [], учитывать при использовании slice
 
@@ -281,18 +315,16 @@ def Parse(sheet):
 
         assert item_indices, "No items were found. Cannot continue"
 
-        columns_mask = list(column_map.values())
         value_mask = list(map(lambda x: x[1],filter(lambda x: x[0]>3, column_map.items())))
             
         all_items = []
-
         for item_to_parse in range(1, len(item_indices)+1):
             zap = df.iloc[item_indices[item_to_parse][0]:item_indices[item_to_parse][1]+1].reset_index(drop=True)
             #Парсинг отдельной записи
             main_work_dict = {}
             for col in range(1, 12):
                 if(zap.iloc[0][column_map[col]] != "nan"):
-                    main_work_dict[column_names[col]] = check_change_type(column_types[col],zap.iloc[0][column_map[col]])
+                    main_work_dict[column_names[smeta_type][col]] = check_change_type(column_types[smeta_type][col],zap.iloc[0][column_map[col]])
 
             main_work_dict["Sub_works"] = []
             main_work_dict["Related_works"] = []
@@ -309,13 +341,13 @@ def Parse(sheet):
                     related_work_dict = {}
                     for col in range(1, 12):
                         if(row[column_map[col]] != "nan"):
-                            related_work_dict[column_names[col]] = check_change_type(column_types[col],row[column_map[col]])
+                            related_work_dict[column_names[smeta_type][col]] = check_change_type(column_types[smeta_type][col],row[column_map[col]])
                     main_work_dict["Related_works"].append(related_work_dict)
                 else:
                     sub_work_dict = {}
                     for col in range(1, 12):
                         if(row[column_map[col]] != "nan"):
-                            sub_work_dict[column_names[col]] = check_change_type(column_types[col],row[column_map[col]])
+                            sub_work_dict[column_names[smeta_type][col]] = check_change_type(column_types[smeta_type][col],row[column_map[col]])
                     main_work_dict["Sub_works"].append(sub_work_dict)
                 
             for index, row in zap[::-1].iterrows():
@@ -329,42 +361,56 @@ def Parse(sheet):
                         else:
                             second = val
                 if(first and second and re.search('[a-zA-Zа-яА-Я]', first+second) is None):
-                    main_work_dict["Total"] = check_change_type(float,first)
-                    main_work_dict["Unit_cost_with_additions"] = check_change_type(float,second)
-                    break
+                    main_work_dict["sum"] = check_change_type(float,first)
+                    main_work_dict["amount"] = check_change_type(float,second)
+                    break 
                     
-            main_work_dict["Section"] = item_indices[item_to_parse][2] 
-            main_work_dict["Sub_section"] = item_indices[item_to_parse][3]
+            main_work_dict["subrows"] = []
+            for ind, pos in enumerate(main_work_dict["Sub_works"]):
+                pos["type"] = "expanse"
+                main_work_dict["subrows"].append(pos)
+
+            for ind, pos in enumerate(main_work_dict["Related_works"]):
+                pos["type"] = "material"
+                main_work_dict["subrows"].append(pos)
+
+            del main_work_dict["Sub_works"]
+            del main_work_dict["Related_works"]
             
-            if("Code" not in main_work_dict.keys()):
-                main_work_dict["Code"] = ""
+            sect = item_indices[item_to_parse][2] 
+            sub_sect= item_indices[item_to_parse][3]
+            
+            if("code" not in main_work_dict.keys()):
+                main_work_dict["code"] = ""
+            
+
+            if(sect not in [x["name"] for x in out_dict["sections"]]):
+                out_dict["sections"].append({"name":sect,
+                                             "sum":None,
+                                             "subsections":[]})
+                out_dict["sections"][-1]["subsections"].append({"name":sub_sect,
+                                                                 "sum":None,
+                                                                 "rows":[]})
+            elif(sub_sect not in [sub_x["name"] for sub_x in \
+                    list(filter(lambda x: x["name"] == sect,
+                           out_dict["sections"]))[0]["subsections"]]):
+                for ind,section in enumerate(out_dict["sections"]):
+                    if(section["name"] == sect):
+                        out_dict["sections"][ind]["subsections"].append({"name":sub_sect,
+                                                                         "sum":None,
+                                                                         "rows":[]})
+                        break
+
+
+            for ind, section in enumerate(out_dict["sections"]):
+                if(section["name"] == sect):
+                    for sub_ind, sub_section in enumerate(out_dict["sections"][ind]["subsections"]):
+                        if(sub_section["name"] == sub_sect):
+                            out_dict["sections"][ind]["subsections"][sub_ind]["rows"].append(main_work_dict)
+            
             
             all_items.append(main_work_dict)        
 
-        if("chaps" not in vars().keys()):
-            chaps = {}
-            for i in range(1,8):
-                with open(f"{path_to_SN2012_folder}/SN_2012_CHAPTER_{i}.json", "r") as f:
-                    chaps[i] = json.load(f)
-
-        mapping = []
-
-        for ind, item_in_q  in enumerate(tqdm(all_items)):
-            all_items[ind]["Source_from_reference"] = None
-
-            found = False
-            for key,chap in chaps.items():
-                for z in chap:
-                    if(item_in_q["Name"].lower() in z["Name"].lower() \
-                       or item_in_q["Code"].lower() in z["Code"].lower()):
-                        all_items[ind]["Source_from_reference"] = z
-                        all_items[ind]["Source_from_reference"]["From_chapter"] = key
-                        found = True
-                        break
-                if(found):
-                    break
-            if(not found):
-                print(f'---> Не найден образец для записи номер {item_in_q["Number"]} с кодом: {item_in_q["Code"]} \n Наименование: {item_in_q["Name"]}')
-         
         lists.append(all_items)
-    return lists
+    return out_dict
+
