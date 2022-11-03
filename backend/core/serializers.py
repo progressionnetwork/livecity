@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 
-from core.models import KPGZ, OKEI, OKPD, OKPD2, FileUpdate
+from core.models import KPGZ, OKEI, OKPD, OKPD2, FileUpdate, SPGZ, TZ, TZRow
 
 UserModel = get_user_model()
 
@@ -10,11 +10,11 @@ UserModel = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     role = serializers.SerializerMethodField('get_role')
-    
+
     def get_role(self, instance):
         groups = instance.groups.all()
         return min([group.id for group in groups])
-        
+
     def create(self, validated_data):
         user = UserModel.objects.create_user(
             username=validated_data['username'],
@@ -58,22 +58,48 @@ class KPGZSerializer(serializers.ModelSerializer):
         model = KPGZ
         fields = '__all__'
 
+
 class OKEISerializer(serializers.ModelSerializer):
     class Meta:
         model = OKEI
         fields = '__all__'
+
 
 class OKPDSerializer(serializers.ModelSerializer):
     class Meta:
         model = OKPD
         fields = '__all__'
 
+
 class OKPD2Serializer(serializers.ModelSerializer):
     class Meta:
         model = OKPD2
         fields = '__all__'
 
+
 class FileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileUpdate
+        fields = '__all__'
+
+
+class SPGZSerializer(serializers.ModelSerializer):
+    ei = OKEISerializer(many=True)
+    class Meta:
+        model = SPGZ
+        fields = '__all__'
+
+
+class TZRowSerializer(serializers.ModelSerializer):
+    kpgz = KPGZSerializer(many=False)
+    spgz = SPGZSerializer(many=False)
+    class Meta:
+        model = TZRow
+        fields = '__all__'
+
+
+class TZSerializer(serializers.ModelSerializer):
+    rows = TZRowSerializer(many=True)
+    class Meta:
+        model = TZ
         fields = '__all__'

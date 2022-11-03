@@ -9,9 +9,9 @@ from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate)
+from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ)
 from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer, OKPDSerializer, UserSerializer,
-                                AuthTokenSerializer)
+                                AuthTokenSerializer, TZSerializer, SPGZSerializer, TZRowSerializer)
 
 
 class RegistrationView(CreateAPIView):
@@ -73,7 +73,6 @@ class HealthCheckView(APIView):
     def get(self, request, *args, **kwargs):
         return Response({}, status=200)
 
-
 class UpdateDataFromInternet(APIView):
     ''' Обновление информации в справочниках с портла data.mos.ru '''
     permission_classes = [
@@ -94,7 +93,6 @@ class UpdateDataFromInternet(APIView):
             case "okpd": OKPD.objects.update_from_internet()
             case "okpd2": OKPD2.objects.update_from_internet()
         return Response({"result": True}, status=200)
-
 
 class KPGZView(ModelViewSet):
     ''' Классификатор предметов гос заказа '''
@@ -142,3 +140,19 @@ class FileUpdateView(ModelViewSet):
             file_update = FileUpdate.objects.get_last_update(type_file=response.data.get('type_file', None))
             file_update.send_rabbitmq()
         return response
+
+class SPGZView(ModelViewSet):
+    ''' Справочник предметов государственного заказа '''
+    serializer_class = SPGZSerializer
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+    queryset = SPGZ.objects.all()
+
+class TZView(ModelViewSet):
+    ''' Шаблоны ТЗ  '''
+    serializer_class = TZSerializer
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+    queryset = TZ.objects.all()

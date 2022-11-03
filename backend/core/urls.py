@@ -1,6 +1,6 @@
 from django.urls import path, include
 from core.views import (FileUpdateView, KPGZView, OKEIView, OKPD2View, OKPDView, RegistrationView, 
-                        LoginView, 
+                        LoginView,  SPGZView, TZView,
                         LogoutView, 
                         MeView, 
                         HealthCheckView,
@@ -12,6 +12,8 @@ router.register('kpgz', KPGZView, basename='kpgz')
 router.register('okei', OKEIView, basename='okei')
 router.register('okpd', OKPDView, basename='kpgz')
 router.register('okpd2', OKPD2View, basename='okpd2')
+router.register('spgz', SPGZView, basename='spgz')
+router.register('tz', TZView, basename='tz')
 router.register('update/file', FileUpdateView, basename='update_file')
 
 urlpatterns = [

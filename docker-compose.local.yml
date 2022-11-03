@@ -66,6 +66,19 @@ services:
       backend:
         condition: service_healthy
 
+  worker_tz:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_tz
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py tz"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+
   worker_spgz:
     image: livecity_backend
     restart: on-failure

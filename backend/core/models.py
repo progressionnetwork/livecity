@@ -4,8 +4,10 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
+
 class UserManager(BaseUserManager):
     ''' user manager  '''
+
     def create_user(self, email, password=None, **extra_fields):
         ''' create user '''
         if not email:
@@ -30,6 +32,7 @@ class UserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
         return self.create_user(email, password, **extra_fields)
 
+
 class User(AbstractUser):
     first_name = models.CharField(max_length=190, null=True, blank=True)
     last_name = models.CharField(max_length=190, null=True, blank=True)
@@ -47,15 +50,18 @@ class User(AbstractUser):
     def get_short_name(self):
         return f"{self.username} - {self.email}"
 
+
 class FileUpdateManager(models.Manager):
     def get_last_update(self, type_file):
         return self.filter(type_file=type_file).order_by('-date_upload').first()
+
 
 class FileUpdate(models.Model):
     TYPES_FILES = (
         ('sn', 'sn'),
         ('smeta', 'smeta'),
-        ('spgz', 'spgz')
+        ('spgz', 'spgz'),
+        ('tz', 'tz'),
     )
 
     TYPES_UPDATE = (
@@ -63,7 +69,8 @@ class FileUpdate(models.Model):
         ('add', 'add'),
     )
     type_file = models.CharField(choices=TYPES_FILES, max_length=10)
-    type_update = models.CharField(choices=TYPES_UPDATE, max_length=10, default='full')
+    type_update = models.CharField(
+        choices=TYPES_UPDATE, max_length=10, default='full')
     file = models.FileField(upload_to="files")
     date_upload = models.DateTimeField(auto_now=True)
     objects = FileUpdateManager()
@@ -72,7 +79,6 @@ class FileUpdate(models.Model):
         return f"{self.file.url}"
 
     def send_rabbitmq(self):
-        print(f"{self.type_file}")
         import pika
         connection = pika.BlockingConnection(
             parameters=pika.URLParameters(settings.RABBITMQ_URL))
@@ -105,7 +111,7 @@ class KPGZ(models.Model):
     code = models.CharField(max_length=250, primary_key=True)
     name = models.CharField(max_length=2000)
     objects = SharedManager()
-    
+
     def __str__(self) -> str:
         return f"{self.code} - {self.name}"
 
@@ -121,7 +127,7 @@ class OKEI(models.Model):
     name = models.CharField(max_length=2000)
     short_name = models.CharField(max_length=50)
     objects = SharedManager()
-    
+
     def __str__(self) -> str:
         return f"{self.code} - {self.name}"
 
@@ -136,7 +142,7 @@ class OKPD(models.Model):
     code = models.CharField(max_length=250, primary_key=True)
     name = models.CharField(max_length=2000)
     objects = SharedManager()
-    
+
     def __str__(self) -> str:
         return f"{self.code} - {self.name}"
 
@@ -145,12 +151,13 @@ class OKPD(models.Model):
         verbose_name_plural = "ОКПД"
         ordering = ['code']
 
+
 class OKPD2(models.Model):
     ''' Общероссийский классификатор продукции по видам экономической деятельности '''
     code = models.CharField(max_length=250, primary_key=True)
     name = models.CharField(max_length=2000)
     objects = SharedManager()
-    
+
     def __str__(self) -> str:
         return f"{self.code} - {self.name}"
 
@@ -162,14 +169,15 @@ class OKPD2(models.Model):
 
 class SN(models.Model):
     ''' Сметные нормативы и территориальные сметные нормативы'''
-    type_ref = models.CharField('Тип сбоника', max_length=250) #3
-    advance = models.IntegerField("Дополнение", default=0) #4
-    coef_ref = models.IntegerField("Номер сборника", default=0) #5
-    coef_date = models.DateField("Дата сборника") #6
-    sum = models.FloatField('Итого', default=0.0) #29
-    tax = models.FloatField('НДС', default=0.0) #30
-    sum_with_tax = models.FloatField('Итого с НДС', default=0.0) #31
-    sum_with_ko = models.FloatField('Итого с коэф. фин. обеспеч.', default=0.0) #32
+    type_ref = models.CharField('Тип сбоника', max_length=250)  # 3
+    advance = models.IntegerField("Дополнение", default=0)  # 4
+    coef_ref = models.IntegerField("Номер сборника", default=0)  # 5
+    coef_date = models.DateField("Дата сборника")  # 6
+    sum = models.FloatField('Итого', default=0.0)  # 29
+    tax = models.FloatField('НДС', default=0.0)  # 30
+    sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31
+    sum_with_ko = models.FloatField(
+        'Итого с коэф. фин. обеспеч.', default=0.0)  # 32
 
     def __str__(self) -> str:
         return f"{self.type_ref}"
@@ -178,12 +186,14 @@ class SN(models.Model):
         verbose_name = "СН и ТСН"
         verbose_name_plural = "СН и ТСН"
 
+
 class SNSection(models.Model):
     ''' Раздел СН и ТСН '''
 
-    sn = models.ForeignKey('SN', on_delete=models.CASCADE, related_name='sections') 
-    name = models.CharField('Наименование', max_length=250) #7
-    sum = models.FloatField('Итого', default=0.0) #28
+    sn = models.ForeignKey('SN', on_delete=models.CASCADE,
+                           related_name='sections')
+    name = models.CharField('Наименование', max_length=250)  # 7
+    sum = models.FloatField('Итого', default=0.0)  # 28
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -192,12 +202,14 @@ class SNSection(models.Model):
         verbose_name = "СН и ТСН: Раздел"
         verbose_name_plural = "СН и ТСН: Разделы"
 
+
 class SNSubsection(models.Model):
     ''' Подраздел СН и ТСН '''
 
-    sn_section = models.ForeignKey('SNSection', on_delete=models.CASCADE, related_name='subsections')
-    name = models.CharField('Наименование', max_length=250) #8
-    sum = models.FloatField('Итого', default=0.0) #27
+    sn_section = models.ForeignKey(
+        'SNSection', on_delete=models.CASCADE, related_name='subsections')
+    name = models.CharField('Наименование', max_length=250)  # 8
+    sum = models.FloatField('Итого', default=0.0)  # 27
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -206,16 +218,19 @@ class SNSubsection(models.Model):
         verbose_name = "СН и ТСН: Подраздел"
         verbose_name_plural = "СН и ТСН: Подразделы"
 
+
 class SNRow(models.Model):
     ''' Строка СН и ТСН '''
 
-    sn_subsection = models.ForeignKey('SNSubsection', on_delete=models.CASCADE, related_name='rows')
-    code = models.CharField('Шифр', max_length=100) #2
-    num = models.IntegerField('Номер п/п', default=0) #1
-    name = models.TextField('Наименование') #9
-    ei = models.ForeignKey('OKEI', on_delete=models.SET_NULL, null=True, blank=True) #10
-    count = models.FloatField('Количество', default=0.0) #11
-    sum = models.FloatField('Итого', default=0.0) #26
+    sn_subsection = models.ForeignKey(
+        'SNSubsection', on_delete=models.CASCADE, related_name='rows')
+    code = models.CharField('Шифр', max_length=100)  # 2
+    num = models.IntegerField('Номер п/п', default=0)  # 1
+    name = models.TextField('Наименование')  # 9
+    ei = models.ForeignKey(
+        'OKEI', on_delete=models.SET_NULL, null=True, blank=True)  # 10
+    count = models.FloatField('Количество', default=0.0)  # 11
+    sum = models.FloatField('Итого', default=0.0)  # 26
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -224,18 +239,25 @@ class SNRow(models.Model):
         verbose_name = "СН и ТСН: Строка"
         verbose_name_plural = "СН и ТСН: Строки"
 
+
 class SNSubRow(models.Model):
     ''' Статьи затрат по строке '''
-    sn_row = models.ForeignKey('SNRow', on_delete=models.CASCADE, related_name='subrows')
-    name = models.TextField('Наименование') #12, 19, 20, 21, 22, 23, 24, 25
-    ei = models.ForeignKey('OKEI', on_delete=models.SET_NULL, null=True, blank=True) #10
-    count = models.FloatField('Количество', default=0.0) #11
-    amount = models.FloatField('Цена за единицу', default=1.0) #13
-    coef_correct = models.FloatField('Корректировочный коэф', default=1.0) #14
-    coef_winter = models.FloatField('Зимний коэф', default=1.0) #15
-    coef_recalc = models.FloatField('Коэф. пересчета', default=1.0) #17
-    sum_basic =  models.FloatField('Затраты в базисном уровне', default=0.0) #16
-    sum_current =  models.FloatField('Затраты в текущем уровне', default=0.0) #18
+    sn_row = models.ForeignKey(
+        'SNRow', on_delete=models.CASCADE, related_name='subrows')
+    name = models.TextField('Наименование')  # 12, 19, 20, 21, 22, 23, 24, 25
+    ei = models.ForeignKey(
+        'OKEI', on_delete=models.SET_NULL, null=True, blank=True)  # 10
+    count = models.FloatField('Количество', default=0.0)  # 11
+    amount = models.FloatField('Цена за единицу', default=1.0)  # 13
+    coef_correct = models.FloatField(
+        'Корректировочный коэф', default=1.0)  # 14
+    coef_winter = models.FloatField('Зимний коэф', default=1.0)  # 15
+    coef_recalc = models.FloatField('Коэф. пересчета', default=1.0)  # 17
+    sum_basic = models.FloatField(
+        'Затраты в базисном уровне', default=0.0)  # 16
+    sum_current = models.FloatField(
+        'Затраты в текущем уровне', default=0.0)  # 18
+
     def __str__(self) -> str:
         return f"{self.name}"
 
@@ -243,14 +265,18 @@ class SNSubRow(models.Model):
         verbose_name = "СН и ТСН: Статья затрат"
         verbose_name_plural = "СН и ТСН: Статьи затрат"
 
+
 class SPGZ(models.Model):
     ''' Справочник предметов государственного заказа '''
     id = models.IntegerField(default=0, primary_key=True)
-    kpgz = models.ForeignKey('KPGZ', on_delete=models.SET_NULL, related_name='spgz', null=True, blank=True)
+    kpgz = models.ForeignKey(
+        'KPGZ', on_delete=models.SET_NULL, related_name='spgz', null=True, blank=True)
     name = models.TextField('Наименование')
     ei = models.ManyToManyField('OKEI', related_name='spgz')
-    okpd = models.ForeignKey('OKPD', on_delete=models.SET_NULL, related_name='spgz', null=True, blank=True)
-    okpd2 = models.ForeignKey('OKPD2', on_delete=models.SET_NULL, related_name='spgz', null=True, blank=True)
+    okpd = models.ForeignKey(
+        'OKPD', on_delete=models.SET_NULL, related_name='spgz', null=True, blank=True)
+    okpd2 = models.ForeignKey(
+        'OKPD2', on_delete=models.SET_NULL, related_name='spgz', null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -258,3 +284,18 @@ class SPGZ(models.Model):
     class Meta:
         verbose_name = "СПГЗ"
         verbose_name_plural = "СПГЗ"
+
+
+class TZ(models.Model):
+    ''' Шаблон ТЗ '''
+    name = models.CharField(max_length=2000)
+
+
+class TZRow(models.Model):
+    ''' Строка шаблона ТЗ '''
+    tz = models.ForeignKey(
+        'TZ', on_delete=models.CASCADE, related_name='rows')
+    kpgz = models.ForeignKey(
+        'KPGZ', on_delete=models.CASCADE, related_name='tz')
+    spgz = models.ForeignKey(
+        'SPGZ', on_delete=models.CASCADE, related_name='tz')
