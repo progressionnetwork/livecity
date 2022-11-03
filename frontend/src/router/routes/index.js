@@ -34,6 +34,7 @@ const ForgotPassword = lazy(() => import("../../views/ForgotPassword"))
 const Error = lazy(() => import("../../views/Error"))
 const Okpd = lazy(() => import("../../views/Okpd"))
 const Okpd2 = lazy(() => import("../../views/Okpd2"))
+const UploadEstimate = lazy(() => import("../../views/UploadEstimate"))
 
 // ** Merge Routes
 const Routes = [
@@ -89,6 +90,10 @@ const Routes = [
     meta: {
       layout: "blank"
     }
+  },
+  {
+    path: "/upload",
+    element: <UploadEstimate />
   }
 ]
 

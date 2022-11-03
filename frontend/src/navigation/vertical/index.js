@@ -8,12 +8,6 @@ export default [
     navLink: "/home"
   },
   {
-    id: "secondPage",
-    title: "Справочники",
-    icon: <Book size={20} />,
-    navLink: "/second-page"
-  },
-  {
     id: "okpd",
     title: "okpd",
     icon: <Book size={20} />,

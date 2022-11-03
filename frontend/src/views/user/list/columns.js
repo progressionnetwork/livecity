@@ -78,13 +78,7 @@ export const columns = [
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
         <div className='d-flex flex-column'>
-          <Link
-            to={`/apps/user/view/${row.id}`}
-            className='user_name text-truncate text-body'
-            onClick={() => store.dispatch(getUser(row.id))}
-          >
             <span className='fw-bolder'>{row.fullName}</span>
-          </Link>
           <small className='text-truncate text-muted mb-0'>{row.email}</small>
         </div>
       </div>
@@ -96,7 +90,7 @@ export const columns = [
     minWidth: '172px',
     sortField: 'role',
     selector: row => row.role,
-    cell: row => renderRole(row)
+    cell: row => row.role
   },
   {
     name: 'Actions',
@@ -108,15 +102,6 @@ export const columns = [
             <MoreVertical size={14} className='cursor-pointer' />
           </DropdownToggle>
           <DropdownMenu>
-            <DropdownItem
-              tag={Link}
-              className='w-100'
-              to={`/apps/user/view/${row.id}`}
-              onClick={() => store.dispatch(getUser(row.id))}
-            >
-              <FileText size={14} className='me-50' />
-              <span className='align-middle'>Details</span>
-            </DropdownItem>
             <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
               <Archive size={14} className='me-50' />
               <span className='align-middle'>Edit</span>
@@ -125,10 +110,6 @@ export const columns = [
               tag='a'
               href='/'
               className='w-100'
-              onClick={e => {
-                e.preventDefault()
-                store.dispatch(deleteUser(row.id))
-              }}
             >
               <Trash2 size={14} className='me-50' />
               <span className='align-middle'>Delete</span>
