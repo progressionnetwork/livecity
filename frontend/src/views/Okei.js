@@ -2,22 +2,21 @@ import {Button, Card, CardBody, CardHeader, CardText, CardTitle, Input, Label, S
 import {useEffect, useState} from "react";
 import {request} from "../utility/request";
 
-const Okpd = () => {
+const Okei = () => {
     const [maxResults, setMaxResults] = useState(0)
     const [nextPage, setNextPage] = useState('')
-    const [okpdList, setOkpdList] = useState(null)
+    const [okeiList, setOkeiList] = useState(null)
 
     const loadMore = async () => {
-        console.log(nextPage)
         const data = await request('get', nextPage.split('.ru/')[1])
         setNextPage(data.next)
-        setOkpdList(prev => [...prev, ...data.results])
+        setOkeiList(prev => [...prev, ...data.results])
     }
 
     useEffect(() => {
-        request('get', 'okpd/').then(data => {
+        request('get', 'okei/').then(data => {
             setNextPage(data.next)
-            setOkpdList(data.results)
+            setOkeiList(data.results)
             setMaxResults(data.count)
         })
     }, [])
@@ -33,8 +32,8 @@ const Okpd = () => {
 
             <Card>
                 <CardBody>
-                    {okpdList ? <div className='react-List block'>
-                        {okpdList.map(e => <Card key={e.code}>
+                    {okeiList ? <div className='react-List block'>
+                        {okeiList.map(e => <Card key={e.code}>
                             <CardHeader>
                                 <CardTitle>№{e.code} {e.name}</CardTitle>
                                 <div>
@@ -48,7 +47,7 @@ const Okpd = () => {
                     </div>
                     }
                 </CardBody>
-                {maxResults > okpdList?.length && <div style={{padding: 12, width: '100%'}}>
+                {maxResults > okeiList?.length && <div style={{padding: 12, width: '100%'}}>
                     <Button onClick={loadMore} style={{width: '100%'}} color='flat-primary'>загрузить еще</Button>
                 </div>}
             </Card>
@@ -57,4 +56,4 @@ const Okpd = () => {
     )
 }
 
-export default Okpd;
+export default Okei;

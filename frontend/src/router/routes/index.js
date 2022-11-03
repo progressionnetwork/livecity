@@ -36,7 +36,7 @@ const Okpd = lazy(() => import("../../views/Okpd"))
 const Okpd2 = lazy(() => import("../../views/Okpd2"))
 const Kpgz = lazy(() => import("../../views/Kpgz"))
 const UploadEstimate = lazy(() => import("../../views/UploadEstimate"))
-
+const Okei = lazy(() => import("../../views/Okei"))
 // ** Merge Routes
 const Routes = [
   {
@@ -63,6 +63,10 @@ const Routes = [
   {
     path: '/kpgz',
     element: <Kpgz />
+  },
+  {
+    path: '/okei',
+    element: <Okei />
   },
   {
     path: "/users",

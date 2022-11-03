@@ -34,11 +34,13 @@ const Kpgz = () => {
                 <CardBody>
                     {kpgzList ? <div className='react-List block'>
                         {kpgzList.map(e => <Card key={e.code}>
-                            <CardTitle>{e.code} {e.name}</CardTitle>
-                            <CardBody>
-                                <Button.Ripple color='flat-primary'>Редактирвать</Button.Ripple>
-                                <Button.Ripple color='flat-primary' style={{ marginRight: 12 }}>Удалить</Button.Ripple>
-                            </CardBody>
+                            <CardHeader>
+                                <CardTitle>№{e.code} {e.name}</CardTitle>
+                                <div>
+                                    <Button.Ripple color='flat-primary'>Редактирвать</Button.Ripple>
+                                    <Button.Ripple color='flat-primary' style={{ marginRight: 12 }}>Удалить</Button.Ripple>
+                                </div>
+                            </CardHeader>
                         </Card>)}
                     </div> : <div>
                         <Spinner/>
