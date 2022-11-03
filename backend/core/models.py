@@ -55,7 +55,8 @@ class FileUpdate(models.Model):
     TYPES_FILES = (
         ('sn', 'sn'),
         ('smeta', 'smeta'),
-        ('spgz', 'spgz')
+        ('spgz', 'spgz'),
+        ('tz', 'tz'),
     )
 
     TYPES_UPDATE = (
@@ -72,7 +73,6 @@ class FileUpdate(models.Model):
         return f"{self.file.url}"
 
     def send_rabbitmq(self):
-        print(f"{self.type_file}")
         import pika
         connection = pika.BlockingConnection(
             parameters=pika.URLParameters(settings.RABBITMQ_URL))
@@ -258,3 +258,5 @@ class SPGZ(models.Model):
     class Meta:
         verbose_name = "СПГЗ"
         verbose_name_plural = "СПГЗ"
+
+
