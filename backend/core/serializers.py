@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 
-from core.models import KPGZ, OKEI, OKPD, OKPD2, FileUpdate
+from core.models import KPGZ, OKEI, OKPD, OKPD2, FileUpdate, SPGZ
 
 UserModel = get_user_model()
 
@@ -76,4 +76,9 @@ class OKPD2Serializer(serializers.ModelSerializer):
 class FileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileUpdate
+        fields = '__all__'
+
+class SPGZSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SPGZ
         fields = '__all__'
