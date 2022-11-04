@@ -9,25 +9,25 @@ export default [
   },
   {
     id: "okpd",
-    title: "okpd",
+    title: "ОКПД",
     icon: <Book size={20} />,
     navLink: "/okpd"
   },
   {
     id: "okpd2",
-    title: "okpd2",
+    title: "ОКПД2",
     icon: <Book size={20} />,
     navLink: "/okpd2"
   },
   {
     id: "kpgz",
-    title: "kpgz",
+    title: "КПГЗ",
     icon: <Book size={20} />,
     navLink: "/kpgz"
   },
   {
     id: "okei",
-    title: "okei",
+    title: "ОКЕИ",
     icon: <Book size={20} />,
     navLink: "/okei"
   },

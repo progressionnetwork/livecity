@@ -12,14 +12,13 @@ import { useEffect } from "react"
 import {useNavigate} from "react-router-dom"
 
 const Home = () => {
-
   const nav = useNavigate()
   const user = useSelector(state => state.user)
 
   useEffect(() => {
-    // if (!user.data) {
-    //   nav('/login')
-    // }
+    if (!user.data) {
+      nav('/login')
+    }
   }, [])
 
   return (
