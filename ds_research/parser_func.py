@@ -18,6 +18,9 @@ from pullenti.ner.address.AddressAnalyzer import AddressAnalyzer
 from pullenti.ner.named.NamedEntityAnalyzer import NamedEntityAnalyzer
 from pullenti.ner.date.DateAnalyzer import DateAnalyzer
 
+from pullenti.address.SearchParams import SearchParams
+from pullenti.address.AddressService import AddressService
+
 path_to_SN2012_folder = "./"
 
 class WrongSmeta(Exception):
@@ -321,6 +324,14 @@ def Parse(sheet):
     AddressAnalyzer.initialize()
     NamedEntityAnalyzer.initialize()
     DateAnalyzer.initialize()
+    
+    #Pullenti address
+    AddressService.initialize()
+    gar_path = "Gar77"
+    if (not AddressService.set_gar_index_path(gar_path)): 
+        print("Gar path {0} - bad index".format(gar_path), flush=True)
+        raise Exception("Something wrong with Gar")
+    AddressService.set_default_geo_object("Москва")
 
     raw = RawProcessor()
     for analyzer in ProcessorService.get_analyzers():
@@ -387,10 +398,12 @@ def Parse(sheet):
             if(cont_razd_any):
                 cont_podr = row.str.lower().str.contains("подраздел")
                 cont_podr_any = cont_podr.any()
+                start_razd_any = row.str.lower().str.startswith("раздел").any()
+                start_podr_any = row.str.lower().str.startswith("подраздел").any()
             cont_itog = row.str.lower().str.contains("итог")
+ 
 
-
-            if(cont_podr_any):
+            if((cont_podr_any and cont_itog.any()) or start_podr_any):
                 if((cont_podr * cont_itog).any()):
                     #print(f"    Конец {current_subsection}")
                     price_per_section[current_section][current_subsection] = last_float(row)
@@ -405,8 +418,8 @@ def Parse(sheet):
                             break
 
                     #print(f"    Начало {current_subsection}")
-            elif(cont_razd_any):
-                if((cont_razd*cont_itog).any()):
+            elif((cont_razd_any and cont_itog.any()) or start_razd_any):
+                if((cont_razd_any * cont_itog).any()):
                     #print(f"Конец {current_section}")
                     price_per_section[current_section][None] = last_float(row)
                     current_section = None
@@ -433,6 +446,9 @@ def Parse(sheet):
                 current_item += 1
                 #print(f"****Запись**** At index {index} found new item num. {current_item}")
                 item_indices[current_item] = [index,None,current_section,current_subsection]
+
+        if(item_indices[sorted(item_indices.keys())[-1]][1] is None):
+            item_indices[sorted(item_indices.keys())[-1]][1] = item_indices[sorted(item_indices.keys())[-1]][0]+15
 
         for index, row in df[last_matched:][::-1].iterrows():
             if(any([row.str.contains(phr, case=False).any() for phr in ["корр","кооф","пониж","повыш"]])):
@@ -546,14 +562,19 @@ def Parse(sheet):
                 if(section["name"] == sect):
                     for sub_ind, sub_section in enumerate(out_dict["sections"][ind]["subsections"]):
                         if(sub_section["name"] == sub_sect):
-                            out_dict["sections"][ind]["subsections"][sub_ind]["rows"].append(main_work_dict)
-                            out_dict["sections"][ind]["sum"] = price_per_section[sect][None]
-                            out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = price_per_section[sect][sub_sect]
+                            try:
+                                out_dict["sections"][ind]["subsections"][sub_ind]["rows"].append(main_work_dict)
+                                out_dict["sections"][ind]["sum"] = price_per_section[sect][None]
+                                out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = price_per_section[sect][sub_sect]
+                            except Exception as e:
+                                print(f"{sect=},{sub_sect=}, {price_per_section=}")
+                                exit(0)
+
 
             all_items.append(main_work_dict)            
 
         if(out_dict["sum_with_tax"] and out_dict["sum_with_ko"]):
-            out_dict["coef_ref"] = out_dict["sum_with_tax"]/out_dict["sum_with_ko"]
+            out_dict["coef_ref"] = out_dict["sum_with_ko"]/out_dict["sum_with_tax"]
         
         
         #Pullenti extracting ners
@@ -569,8 +590,20 @@ def Parse(sheet):
         for ent in res.entities:
             if(ent.type_name == "DATE" and ent.month):
                 out_dict["coef_date"] = ent.calculate_date(now = datetime.datetime.now())
-                
-
+        
+        out_dict["address"] = None
+        text = ""
+        for ent in res.entities:
+            if(ent.type_name == "ADDRESS"):
+                if(len(text) < len(ent.__str__())):
+                    text = ent.__str__()
+                saddr = AddressService.process_single_address_text(text)
+                out_dict["address"] = ", ".join([x.__str__() for x in saddr.items])
+        for ind, sect in enumerate(out_dict["sections"]):
+            out_dict["sections"][ind]["address"] = ""
+            saddr = AddressService.process_single_address_text(sect["name"])
+            if(saddr.items):
+                out_dict["sections"][ind]["address"] = ", ".join([x.__str__() for x in saddr.items])    
 
         lists.append(out_dict)
     return lists
