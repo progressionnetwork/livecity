@@ -91,10 +91,14 @@ column_types = {"SN-2012":{1:float,
 
 
 def check_change_type(col_type, value):
+    if(not value):
+        return value
     if(type(value) is col_type):
         return value
     if(col_type is float):
         value = re.sub("[^0-9|\.|,]","",value)
+        if(not value):
+            return None
         try:
             return float(value)
         except Exception as e:
@@ -539,26 +543,27 @@ def Parse(sheet):
                             out_dict["sections"][ind]["sum"] = price_per_section[sect][None]
                             out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = price_per_section[sect][sub_sect]
 
-
-            if(out_dict["sum_with_tax"] and out_dict["sum_with_ko"]):
-                out_dict["coef_ref"] = out_dict["sum_with_tax"]/out_dict["sum_with_ko"]
-            
-            
-            #Pullenti extracting ners
-            s= ""
-            for ind,row in df[:table_title].iterrows():
-                for sub_ind, item in row.items():
-                    if(item != "nan"):
-                        s+=str(item)+" "
-
-            sofa = SourceOfAnalysis(s)
-            res = raw.process(sofa)
-
-            for ent in res.entities:
-                if(ent.type_name == "DATE" and ent.month):
-                    out_dict["coef_date"] = ent.calculate_date(now = datetime.datetime.now())
-                    
             all_items.append(main_work_dict)            
+
+        if(out_dict["sum_with_tax"] and out_dict["sum_with_ko"]):
+            out_dict["coef_ref"] = out_dict["sum_with_tax"]/out_dict["sum_with_ko"]
+        
+        
+        #Pullenti extracting ners
+        s= ""
+        for ind,row in df[:table_title].iterrows():
+            for sub_ind, item in row.items():
+                if(item != "nan"):
+                    s+=str(item)+" "
+
+        sofa = SourceOfAnalysis(s)
+        res = raw.process(sofa)
+
+        for ent in res.entities:
+            if(ent.type_name == "DATE" and ent.month):
+                out_dict["coef_date"] = ent.calculate_date(now = datetime.datetime.now())
+                
+
 
         lists.append(out_dict)
     return lists
@@ -568,6 +573,7 @@ if __name__ == "__main__":
     #sheet = "./soure_data/smeth_conc/smety_ishod/2772490542322000001/Копия ( с СП)Выполнение работ по устройству ограждения и габионов.xlsx"
     #sheet = "./soure_data/СН-ТСН/ТСН-2001/3.Строительные.Сборник 40-45.xlsx"
     result = Parse(sheet)
-    print(result)
-    # with open("a.json","w") as f:
-    #     json.dump(Parse(sheet), f)
+    with open("a.json","w") as f:
+        d = Parse(sheet)
+        d[0]['coef_date'] = 0
+        json.dump(Parse(sheet), f)
