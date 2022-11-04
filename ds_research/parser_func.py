@@ -346,6 +346,7 @@ def Parse(sheet):
         current_section = None
         current_subsection = None
         current_item = 0
+        last_matched = None
         
         price_per_section = {None:{}}
         item_indices = {0:[None,None,None,None]} # Началный индекс, Конечный индекс, раздел, подраздел
@@ -354,16 +355,23 @@ def Parse(sheet):
         for index, row in tqdm(df[table_title+1:].iterrows(),
                                total=df[table_title+1:].shape[0]):
             # Определения разделов и подразделов
-            cont_podr = row.str.lower().str.contains("подраздел")
-            cont_itog = row.str.lower().str.contains("итог")
+            cont_razd_any = False
+            cont_podr_any = False
             cont_razd = row.str.lower().str.contains("раздел")
+            cont_razd_any = cont_razd.any()
+            if(cont_razd_any):
+                cont_podr = row.str.lower().str.contains("подраздел")
+                cont_podr_any = cont_podr.any()
+            cont_itog = row.str.lower().str.contains("итог")
 
-            if(cont_podr.any()):
+
+            if(cont_podr_any):
                 if((cont_podr * cont_itog).any()):
                     #print(f"    Конец {current_subsection}")
                     price_per_section[current_section][current_subsection] = last_float(row)
                     current_subsection = None
                     item_indices[current_item][1] = index-1
+                    last_matched = index
                 else:
                     # Иногда в одной линии два раза встречается подраздел
                     for cell in row:
@@ -372,18 +380,19 @@ def Parse(sheet):
                             break
                             
                     #print(f"    Начало {current_subsection}")
-            elif(cont_razd.any()):
+            elif(cont_razd_any):
                 if((cont_razd*cont_itog).any()):
                     #print(f"Конец {current_section}")
                     price_per_section[current_section][None] = last_float(row)
                     current_section = None
                     item_indices[current_item][1] = index-1
+                    last_matched = index
                 else:
                     # Иногда в одной линии два раза встречается раздел
                     for cell in row:
                         if(cell!="nan" and "раздел" in cell.lower()):
-                            price_per_section[current_section] = {None:{}}
                             current_section = cell
+                            price_per_section[current_section] = {None:{}}
                             break
                     
                     #print(f"Начало {current_section}")
@@ -406,6 +415,10 @@ def Parse(sheet):
         assert item_indices, "No items were found. Cannot continue"
 
 
+        #print("DEBUG")
+        #for ind, row in df[last_matched:][::-1].iterrows():
+        #    print(ind,last_float(row))
+        #print("DEBUG END")
         #print(price_per_section)
 
         value_mask = list(map(lambda x: x[1],filter(lambda x: x[0]>3, column_map.items())))
@@ -512,6 +525,8 @@ def Parse(sheet):
 
 if __name__ == "__main__":
     #sheet = "./soure_data/smeth_conc/smety_ishod/2772332410521000024/Смета готовая.xls"
+    #sheet = "./soure_data/СН-ТСН/ТСН-2001/3.Строительные.Сборник 40-45.xlsx"
     #Parse(sheet)
-    #print(json.dumps(Parse(sheet)))
+    #with open("a.json","w") as f:
+    #    json.dump(Parse(sheet), f)
     pass
