@@ -170,9 +170,9 @@ class OKPD2(models.Model):
 class SN(models.Model):
     ''' Сметные нормативы и территориальные сметные нормативы'''
     type_ref = models.CharField('Тип сбоника', max_length=250)  # 3
-    advance = models.IntegerField("Дополнение", default=0)  # 4
-    coef_ref = models.IntegerField("Номер сборника", default=0)  # 5
-    coef_date = models.DateField("Дата сборника")  # 6
+    advance = models.CharField("Дополнение", max_length=250, null=True, blank=True)  # 4
+    coef_ref = models.CharField("Номер сборника", max_length=250, null=True, blank=True)  # 5
+    coef_date = models.DateField("Дата сборника", null=True, blank=True)  # 6
     sum = models.FloatField('Итого', default=0.0)  # 29
     tax = models.FloatField('НДС', default=0.0)  # 30
     sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31

@@ -9,9 +9,9 @@ from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ)
+from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ, SN, SNRow)
 from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer, OKPDSerializer, UserSerializer,
-                                AuthTokenSerializer, TZSerializer, SPGZSerializer, TZRowSerializer)
+                                AuthTokenSerializer, TZSerializer, SPGZSerializer, TZRowSerializer, SNSerializer, SNRowSerializer)
 
 
 class RegistrationView(CreateAPIView):
@@ -165,3 +165,19 @@ class TZView(ModelViewSet):
         permissions.IsAuthenticated
     ]
     queryset = TZ.objects.all()
+
+class SNView(ModelViewSet):
+    ''' СН / ТСН  '''
+    serializer_class = SNSerializer
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+    queryset = SN.objects.all()
+
+class SNRowView(ModelViewSet):
+    ''' Строки СН / ТСН  '''
+    serializer_class = SNRowSerializer
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+    queryset = SNRow.objects.all()

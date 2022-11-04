@@ -1,5 +1,18 @@
 version: "3.9"
 services:
+  postgres:
+    image: postgres:14
+    container_name: livecity_postgres
+    restart: on-failure
+    volumes:
+      - ./deploy/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=livecity
+      - POSTGRES_USER=ruha
+      - POSTGRES_PASSWORD=gcSrYfKz0gcSrYfKz
+    ports:
+      - "5432:5432"
+  
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: livecity_rabbitmq
@@ -36,10 +49,10 @@ services:
       interval: 10s
       timeout: 30s
       retries: 10
-    depends_on:
+    depends_on: 
       rabbitmq:
         condition: service_healthy
-
+  
   worker_kpgz:
     image: livecity_backend
     restart: on-failure
@@ -49,7 +62,20 @@ services:
     command: bash -c "python /app/worker/loader.py kpgz"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
+      backend:
+        condition: service_healthy
+
+  worker_tz:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_tz
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py tz"
+    volumes:
+      - ./backend:/app
+    depends_on: 
       backend:
         condition: service_healthy
 
@@ -62,10 +88,10 @@ services:
     command: bash -c "python /app/worker/loader.py spgz"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
       backend:
         condition: service_healthy
-
+    
   worker_okei:
     image: livecity_backend
     restart: on-failure
@@ -75,7 +101,7 @@ services:
     command: bash -c "python /app/worker/loader.py okei"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
       backend:
         condition: service_healthy
 
@@ -88,7 +114,7 @@ services:
     command: bash -c "python /app/worker/loader.py okpd"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
       backend:
         condition: service_healthy
 
@@ -101,10 +127,10 @@ services:
     command: bash -c "python /app/worker/loader.py okpd2"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
       backend:
         condition: service_healthy
-
+  
   worker_sn:
     image: livecity_backend
     restart: on-failure
@@ -114,64 +140,6 @@ services:
     command: bash -c "python /app/worker/loader.py sn"
     volumes:
       - ./backend:/app
-    depends_on:
+    depends_on: 
       backend:
         condition: service_healthy
-
-  frontend:
-    build: ./frontend/
-    image: livecity_frontend
-    restart: on-failure
-    container_name: livecity_frontend
-    environment:
-      - REACT_APP_BACKEND_URL=https://api.livecity.goodgenius.ru
-      - SKIP_PREFLIGHT_CHECK=true
-      - REACT_APP_BASENAME="Живой город"
-    ports:
-      - "8080:80"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 10s
-      timeout: 30s
-      retries: 10
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
-
-  nginx:
-    container_name: nginx
-    image: nginx:1.15-alpine
-    restart: unless-stopped
-    volumes:
-      - ./deploy/nginx:/etc/nginx
-      - ./deploy/certbot/conf:/etc/letsencrypt
-      - ./deploy/certbot/www:/var/www/certbot
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
-    ports:
-      - "80:80"
-      - "443:443"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 10s
-      timeout: 30s
-      retries: 10
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
-      frontend:
-        condition: service_healthy
-
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    restart: unless-stopped
-    volumes:
-      - ./deploy/certbot/conf:/etc/letsencrypt
-      - ./deploy/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 5d & wait $${!}; done;'"
-    depends_on:
-      - nginx
