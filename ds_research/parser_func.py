@@ -104,6 +104,8 @@ def check_change_type(col_type, value):
         return value
     if(col_type is float):
         value = re.sub("[^0-9|\.|,]","",value)
+        if(not value):
+            return None
         try:
             return float(value)
         except Exception as e:
