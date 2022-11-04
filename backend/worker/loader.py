@@ -169,10 +169,13 @@ def load_tz(path: str, type_update:str) -> None:
         if created:
             for kpgz_spgz in row['rows']:
                 kpgz = KPGZ.objects.filter(pk=kpgz_spgz['kpgz_id']).first()
-                spgz = SPGZ.objects.filter(pk=kpgz_spgz['spgz_id']).first()
+                spgz = SPGZ.objects.filter(pk=int(kpgz_spgz['spgz_id'])).first()
+                logger.info(f"{kpgz=}")
+                logger.info(f"{spgz=}")
                 if kpgz and spgz:
                     tz_row = TZRow(kpgz=kpgz, spgz=spgz, tz=tz)
                     tz_row.save()
+        tz=None
     logger.info('TZ file updated.')
 
 def load_from_file(type_data: str, path: str, type_update: str) -> None:
