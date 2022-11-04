@@ -107,11 +107,40 @@ def load_from_internet(type_data: str, chunk_size: int = 1000) -> None:
     for thread in threads:
         thread.join()
 
-def load_sn(path: str)-> None:
-    from parser.sn import Parse
+def _get_instanse_with_type_update(model: object, type_update:str, data: dict, id: str)->object:
+    if type_update == 'full':
+        instance, created = model.objects.update_or_create(defaults=data, id=data[id])
+    else:
+        instance, created = model.objects.get_or_create(defaults=data, id=data[id])
+    return (instance, created)
+
+def load_sn(path: str, type_update:str)-> None:
+    from parser.smeta import Parse
     logger.info(f"Start parsing file: {path}")
-    l = Parse(path)
-    logger.info(l[:1][:5])
+    sn = Parse(path)
+    sections = sn.pop('sections')
+    o_sn = SN(**(sn))
+    o_sn.save()
+    for section in sections:
+        subsections = section.pop('subsections')
+        o_section = SNSection(**(section))
+        o_section.sn = o_sn
+        o_section.save()
+        for subsection in subsections:
+            rows = subsection.pop('rows')
+            o_subsection = SNSubsection(**(subsection))
+            o_subsection.sn_section = o_section
+            o_subsection.save()
+            for row in rows:
+                subrows = row.pop('subrows')
+                o_row = SNRow(**(row))
+                o_row.sn_subsection = o_subsection
+                o_row.save()
+                for subrow in subrows:
+                    o_subrow = SNSubRow(**(subrow))
+                    o_subrow.sn_row = o_row
+                    o_subrow.save()
+
 
 def load_spgz(path: str, type_update:str) -> None:
     from parser.spgz import Parse
