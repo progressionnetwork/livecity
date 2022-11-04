@@ -149,7 +149,7 @@ services:
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d
       - ./deploy/certbot/conf:/etc/letsencrypt
       - ./deploy/certbot/www:/var/www/certbot
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"' && sed -e '/^http {/,/^}/{/^}/i\\client_max_body_size 0;' -e '}' /etc/nginx/nginx.conf"
     ports:
       - "80:80"
       - "443:443"
