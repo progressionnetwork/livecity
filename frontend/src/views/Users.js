@@ -79,7 +79,6 @@ const Users = () => {
                     component="div"
                     count={rows.length}
                     rowsPerPage={25}
-
                     page={0}
                     onPageChange={(e) => console.log(e)}
                 />
