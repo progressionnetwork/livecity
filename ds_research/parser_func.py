@@ -8,6 +8,15 @@ import regex as re
 from IPython.display import JSON,display,display_json
 from tqdm import tqdm
 import sys
+import datetime 
+
+from pullenti.ner.Processor import Processor as RawProcessor
+from pullenti.ner.ProcessorService import ProcessorService
+from pullenti.ner.SourceOfAnalysis import SourceOfAnalysis
+from pullenti.ner.geo.GeoAnalyzer import GeoAnalyzer
+from pullenti.ner.address.AddressAnalyzer import AddressAnalyzer
+from pullenti.ner.named.NamedEntityAnalyzer import NamedEntityAnalyzer
+from pullenti.ner.date.DateAnalyzer import DateAnalyzer
 
 path_to_SN2012_folder = "./"
 
@@ -301,6 +310,18 @@ def Parse(sheet):
         "sum_with_ko": None,
         "sections": []
         }
+    
+    #Pullenti
+    ProcessorService.initialize()
+    GeoAnalyzer.initialize()
+    AddressAnalyzer.initialize()
+    NamedEntityAnalyzer.initialize()
+    DateAnalyzer.initialize()
+
+    raw = RawProcessor()
+    for analyzer in ProcessorService.get_analyzers():
+        raw.add_analyzer(analyzer)
+
     #Поиск листов со сметами
     success = [sheet, []]
     error = [sheet, []]
@@ -526,14 +547,32 @@ def Parse(sheet):
                             out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = price_per_section[sect][sub_sect]
 
 
-            all_items.append(main_work_dict)        
+            if(out_dict["sum_with_tax"] and out_dict["sum_with_ko"]):
+                out_dict["coef_ref"] = out_dict["sum_with_tax"]/out_dict["sum_with_ko"]
+            
+            
+            #Pullenti extracting ners
+            s= ""
+            for ind,row in df[:table_title].iterrows():
+                for sub_ind, item in row.iteritems():
+                    if(item != "nan"):
+                        s+=str(item)+" "
+
+            sofa = SourceOfAnalysis(s)
+            res = raw.process(sofa)
+
+            for ent in res.entities:
+                if(ent.type_name == "DATE" and ent.month):
+                    out_dict["coef_date"] = ent.calculate_date(now = datetime.datetime.now())
+                    
+            all_items.append(main_work_dict)            
 
         lists.append(out_dict)
     return lists
 
 if __name__ == "__main__":
-    #sheet = "./soure_data/smeth_conc/smety_ishod/2772332410521000024/Смета готовая.xls"
-    sheet = "./soure_data/smeth_conc/smety_ishod/2772490542322000001/Копия ( с СП)Выполнение работ по устройству ограждения и габионов.xlsx"
+    sheet = "./soure_data/smeth_conc/smety_ishod/2772332410521000024/Смета готовая.xls"
+    #sheet = "./soure_data/smeth_conc/smety_ishod/2772490542322000001/Копия ( с СП)Выполнение работ по устройству ограждения и габионов.xlsx"
     #sheet = "./soure_data/СН-ТСН/ТСН-2001/3.Строительные.Сборник 40-45.xlsx"
     #Parse(sheet)
     with open("a.json","w") as f:
