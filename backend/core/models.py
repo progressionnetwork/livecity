@@ -308,7 +308,7 @@ class TZRow(models.Model):
         'SPGZ', on_delete=models.CASCADE, related_name='tz')
 
     def __str__(self) -> str:
-        return f"{self.kpgz.code} {self.kpgz.name} - {self.spgz.code} {self.spgz.name}"
+        return f"{self.kpgz.code} {self.kpgz.name} - {self.spgz.id} {self.spgz.name}"
 
     class Meta:
         verbose_name = "ТЗ: Строка"
