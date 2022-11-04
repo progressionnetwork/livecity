@@ -230,12 +230,12 @@ def series_startswith(ser, pattern):
 
 #Преобразование чисел
 def float_commas(value):
-    if("," in value and "." not in value):
-        value = float(re.sub(",",".",value))
-    else:
-        value = float(re.sub("\,(?=.*)", '', value))
-        return value
-            
+    value = re.sub("\,(?=.*\.)", '', value)
+    value = re.sub("\.(?=.*\.)", '', value)
+    value = re.sub("\,(?=.*\,)", '', value)
+    value = re.sub("\,", '.', value)
+    return float(value)
+
 def last_float(ser):
     for item in ser[::-1]:
         try:
@@ -324,9 +324,9 @@ def Parse(sheet):
         del error
     if(not success[1]):
         raise WrongSmeta("Структура сметы не распознана")
-    
+
     lists = []
-     
+
     for page_info  in success[1]:
         column_map = page_info["column_map"]
         column_mask = page_info["column_mask"]
@@ -347,8 +347,8 @@ def Parse(sheet):
         current_subsection = None
         current_item = 0
         last_matched = None
-        
-        price_per_section = {None:{}}
+
+        price_per_section = {None:{None:{}}}
         item_indices = {0:[None,None,None,None]} # Началный индекс, Конечный индекс, раздел, подраздел
         #Границы записей явлеяются отрезком [], учитывать при использовании slice
 
@@ -378,7 +378,7 @@ def Parse(sheet):
                         if(cell!="nan" and "подраздел" in cell.lower()):
                             current_subsection = cell
                             break
-                            
+
                     #print(f"    Начало {current_subsection}")
             elif(cont_razd_any):
                 if((cont_razd*cont_itog).any()):
@@ -394,13 +394,13 @@ def Parse(sheet):
                             current_section = cell
                             price_per_section[current_section] = {None:{}}
                             break
-                    
+
                     #print(f"Начало {current_section}")
             elif(row.str.lower().str.contains("смет").any() * \
                  cont_itog.any()):
                 if(item_indices[current_item][1] is None):
                     item_indices[current_item][1] = index-1
-                 
+
             # Определение номера и границ записи
             if( row[column_map[1]].isnumeric() and row[column_map[1]] == str(current_item+1)):
                 if(item_indices[current_item][1] is None):
@@ -409,20 +409,29 @@ def Parse(sheet):
                 #print(f"****Запись**** At index {index} found new item num. {current_item}")
                 item_indices[current_item] = [index,None,current_section,current_subsection]
 
+        for index, row in df[last_matched:][::-1].iterrows():
+            if(any([row.str.contains(phr, case=False).any() for phr in ["корр","кооф","пониж","повыш"]])):
+                if(not out_dict["sum_with_ko"]):
+                    out_dict["sum_with_ko"] = last_float(row)
+            elif(any([row.str.contains(phr, case=False).any() for phr in ["всего",]]) or \
+                 all([row.str.contains(phr, case=False).any() for phr in ["итого","ндс"]])):
+                if(not out_dict["sum_with_tax"]):
+                    out_dict["sum_with_tax"] = last_float(row)
+            elif(any([row.str.contains(phr, case=False).any() for phr in ["ндс",]])):
+                if(not out_dict["tax"]):
+                    out_dict["tax"] = last_float(row)
+            elif(any([row.str.contains(phr, case=False).any() for phr in ["итого",]])):
+                if(not out_dict["sum"]):
+                    out_dict["sum"] = last_float(row)
+            
+
         #0 запись исскуственная
         del item_indices[0]
 
         assert item_indices, "No items were found. Cannot continue"
 
-
-        #print("DEBUG")
-        #for ind, row in df[last_matched:][::-1].iterrows():
-        #    print(ind,last_float(row))
-        #print("DEBUG END")
-        #print(price_per_section)
-
         value_mask = list(map(lambda x: x[1],filter(lambda x: x[0]>3, column_map.items())))
-            
+
         all_items = []
         for item_to_parse in tqdm(range(1, len(item_indices)+1)):
             zap = df.iloc[item_indices[item_to_parse][0]:item_indices[item_to_parse][1]+1].reset_index(drop=True)
@@ -442,7 +451,7 @@ def Parse(sheet):
                     continue
                 if(row.str.lower().str.contains("итого").any()):
                     continue
-                
+
                 if(row[column_map[1]] != 'nan' or row[column_map[2]] != 'nan'):
                     related_work_dict = {}
                     for col in range(1, 12):
@@ -455,22 +464,22 @@ def Parse(sheet):
                         if(row[column_map[col]] != "nan"):
                             sub_work_dict[ column_names[smeta_type][col]] = check_change_type(column_types[smeta_type][col],row[column_map[col]])
                     main_work_dict["Sub_works"].append(sub_work_dict)
-                
+
             for index, row in zap[::-1].iterrows():
                 first = None
                 second = None
                 for val in row[::-1]:
                     if(val != 'nan'):
-                        if(second):
-                            first = val
+                        if(first):
+                            second = val
                             break
                         else:
-                            second = val 
+                            first = val 
                 if(first and second and re.search('[a-zA-Zа-яА-Я]', first+second) is None):
                     main_work_dict["sum"] = check_change_type(float,first)
                     main_work_dict["amount"] = check_change_type(float,second)
                     break 
-                    
+
             main_work_dict["subrows"] = [] 
             for ind, pos in enumerate(main_work_dict["Sub_works"]):
                 pos["type"] = "expanse"
@@ -482,13 +491,13 @@ def Parse(sheet):
 
             del main_work_dict["Sub_works"] 
             del main_work_dict["Related_works"]
-            
+
             sect = item_indices[item_to_parse][2] 
             sub_sect= item_indices[item_to_parse][3]
-            
+
             if("code" not in main_work_dict.keys()):
                 main_work_dict["code"] = ""
-            
+
 
             if(sect not in [x["name"] for x in out_dict["sections"]]):
                 out_dict["sections"].append({"name":sect,
@@ -515,18 +524,18 @@ def Parse(sheet):
                             out_dict["sections"][ind]["subsections"][sub_ind]["rows"].append(main_work_dict)
                             out_dict["sections"][ind]["sum"] = price_per_section[sect][None]
                             out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = price_per_section[sect][sub_sect]
-                            
-            
-            
+
+
             all_items.append(main_work_dict)        
 
-        lists.append(all_items)
-    return out_dict
+        lists.append(out_dict)
+    return lists
 
 if __name__ == "__main__":
     #sheet = "./soure_data/smeth_conc/smety_ishod/2772332410521000024/Смета готовая.xls"
+    sheet = "./soure_data/smeth_conc/smety_ishod/2772490542322000001/Копия ( с СП)Выполнение работ по устройству ограждения и габионов.xlsx"
     #sheet = "./soure_data/СН-ТСН/ТСН-2001/3.Строительные.Сборник 40-45.xlsx"
     #Parse(sheet)
-    #with open("a.json","w") as f:
-    #    json.dump(Parse(sheet), f)
+    with open("a.json","w") as f:
+        json.dump(Parse(sheet), f)
     pass
