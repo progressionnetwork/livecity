@@ -4,7 +4,7 @@ def Parse(path: str)-> dict:
     df = pd.read_excel(path)
     df =df.dropna()
     df.sort_values(by='Наименование шаблона ТЗ')
-    print(df.shape[0])
+    print(f"Количество записей: {df.shape[0]}")
     result = {"name": "", "rows":[]}
     last_name = None
     for index, row in df.iterrows():
@@ -24,7 +24,6 @@ def Parse(path: str)-> dict:
 
 if __name__ == '__main__':
     path = r'C:\Users\ruha\Downloads\Telegram Desktop\Исходные данные\Шаблон ТЗ.xlsx'
-    
+    a = []
     for i in Parse(path):
-        print(i)
-        break
+        a.append(i)
