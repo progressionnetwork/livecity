@@ -29,6 +29,7 @@ class ListUserView(ListAPIView):
         permissions.AllowAny
     ]
     serializer_class = UserSerializer
+    queryset = model.objects.all()
 
 class LoginView(ObtainAuthToken):
     ''' Вход пользоваателя '''

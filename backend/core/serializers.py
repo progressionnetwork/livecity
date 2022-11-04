@@ -12,8 +12,11 @@ class UserSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField('get_role')
 
     def get_role(self, instance):
-        groups = instance.groups.all()
-        return min([group.id for group in groups])
+        groups = [group.id for group in instance.groups.all()]
+        if groups:
+            return min(groups)
+        else: 
+            return 0
 
     def create(self, validated_data):
         user = UserModel.objects.create_user(
