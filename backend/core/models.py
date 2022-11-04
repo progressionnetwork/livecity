@@ -290,6 +290,13 @@ class TZ(models.Model):
     ''' Шаблон ТЗ '''
     name = models.CharField(max_length=2000)
 
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+    class Meta:
+        verbose_name = "ТЗ"
+        verbose_name_plural = "ТЗ"
+
 
 class TZRow(models.Model):
     ''' Строка шаблона ТЗ '''
@@ -299,3 +306,10 @@ class TZRow(models.Model):
         'KPGZ', on_delete=models.CASCADE, related_name='tz')
     spgz = models.ForeignKey(
         'SPGZ', on_delete=models.CASCADE, related_name='tz')
+
+    def __str__(self) -> str:
+        return f"{self.kpgz.code} {self.kpgz.name} - {self.spgz.code} {self.spgz.name}"
+
+    class Meta:
+        verbose_name = "ТЗ: Строка"
+        verbose_name_plural = "ТЗ: Строки"
