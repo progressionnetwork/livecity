@@ -1,7 +1,7 @@
 from django.urls import path, include
 from core.views import (FileUpdateView, KPGZView, OKEIView, OKPD2View, OKPDView, RegistrationView, 
                         LoginView,  SPGZView, TZView, ListUserView, SNView, SNRowView,
-                        LogoutView, 
+                        LogoutView, SearchView,
                         MeView, 
                         HealthCheckView,
                         UpdateDataFromInternet) 
@@ -24,6 +24,7 @@ urlpatterns = [
     path('users/', ListUserView.as_view(), name='users'),
     path('me/', MeView.as_view(), name='me'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('search/', SearchView.as_view(), name='search'),
     path('health_check/', HealthCheckView.as_view(), name='health_check'),
     path('update/internet/', UpdateDataFromInternet.as_view(), name='update_internet'),
     path('', include(router.urls))

@@ -260,7 +260,7 @@ class SNSubRow(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}"
-
+            
     class Meta:
         verbose_name = "СН и ТСН: Статья затрат"
         verbose_name_plural = "СН и ТСН: Статьи затрат"

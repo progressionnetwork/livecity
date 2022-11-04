@@ -5,6 +5,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from django.contrib.postgres.search import SearchVector
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -81,6 +82,40 @@ class HealthCheckView(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response({}, status=200)
+
+class SearchView(APIView):
+    permission_classes = [
+        permissions.AllowAny
+    ]
+
+    def search(self, model, query: str):
+        for q in query.split(' '):
+            model = model.filter(search__icontains=q)
+        return model
+
+    def get(self, request, *args, **kwargs):
+        o = request.GET.get('object', None)
+        q = request.GET.get('query', None)
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 100))
+        if o is None or q is None:
+            return Response({
+                'error': "Parametrs error"
+            })
+        else:
+            result = None
+            match o:
+                case 'kpgz': result = KPGZSerializer(self.search(KPGZ.objects.annotate(search=SearchVector('code', 'name')), q), many=True).data
+                case 'okei': result = OKEISerializer(self.search(OKEI.objects.annotate(search=SearchVector('code', 'name', 'short_name')), q), many=True).data
+                case 'okpd': result = OKPDSerializer(self.search(OKPD.objects.annotate(search=SearchVector('code', 'name')), q), many=True).data
+                case 'okpd2': result = OKPD2Serializer(self.search(OKPD2.objects.annotate(search=SearchVector('code', 'name')), q), many=True).data
+                case 'sn': result = SNSerializer(self.search(SN.objects.annotate(search=SearchVector('type_ref')), q), many=True).data
+                case 'spgz': result = SPGZSerializer(self.search(SPGZ.objects.annotate(search=SearchVector('id', 'name')), q), many=True).data
+                case 'tz': result = TZSerializer(self.search(TZ.objects.annotate(search=SearchVector('name')), q), many=True).data
+            return Response({
+                "result": result[offset:limit]
+            })
+
 
 class UpdateDataFromInternet(APIView):
     ''' Обновление информации в справочниках с портла data.mos.ru '''

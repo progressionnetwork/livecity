@@ -160,7 +160,7 @@ def load_spgz(path: str, type_update:str) -> None:
                 if ei_o:
                     spgz.ei.add(ei_o) 
         spgz.save()
-        logger.info('SPGZ file updated.')
+    logger.info('SPGZ file updated.')
 
 def load_tz(path: str, type_update:str) -> None:
     from parser.tz import Parse
