@@ -8,34 +8,41 @@ export default [
     navLink: "/home"
   },
   {
-    id: "okpd",
-    title: "ОКПД",
+    id: "reference_books",
+    title: "Справочники",
     icon: <Book size={20} />,
-    navLink: "/okpd"
-  },
-  {
-    id: "okpd2",
-    title: "ОКПД2",
-    icon: <Book size={20} />,
-    navLink: "/okpd2"
-  },
-  {
-    id: "kpgz",
-    title: "КПГЗ",
-    icon: <Book size={20} />,
-    navLink: "/kpgz"
-  },
-  {
-    id: "okei",
-    title: "ОКЕИ",
-    icon: <Book size={20} />,
-    navLink: "/okei"
-  },
-  {
-    id: "spgz",
-    title: "СПГЗ",
-    icon: <Book size={20} />,
-    navLink: "/spgz"
+    children: [
+      {
+        id: "okpd",
+        title: "ОКПД",
+        icon: <Book size={20} />,
+        navLink: "/okpd"
+      },
+      {
+        id: "okpd2",
+        title: "ОКПД2",
+        icon: <Book size={20} />,
+        navLink: "/okpd2"
+      },
+      {
+        id: "kpgz",
+        title: "КПГЗ",
+        icon: <Book size={20} />,
+        navLink: "/kpgz"
+      },
+      {
+        id: "okei",
+        title: "ОКЕИ",
+        icon: <Book size={20} />,
+        navLink: "/okei"
+      },
+      {
+        id: "spgz",
+        title: "СПГЗ",
+        icon: <Book size={20} />,
+        navLink: "/spgz"
+      }
+    ]
   },
   {
     id: "users",
