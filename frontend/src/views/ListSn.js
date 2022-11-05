@@ -17,21 +17,21 @@ import {request} from "../utility/request";
 const Okei = () => {
     const [maxResults, setMaxResults] = useState(0)
     const [nextPage, setNextPage] = useState('')
-    const [okeiList, setOkeiList] = useState(null)
+    const [snList, setSnList] = useState(null)
 
     const [editItem, setEditItem] = useState();
     const [isModalEdit, setIsModalEdit] = useState(false)
 
     const updateOkei = async () => {
         try {
-            await request('put', `okei/${editItem?.code}/`,
+            await request('put', `sn/${editItem?.code}/`,
                 editItem
             );
         } catch (e) {
             console.log('update okei', 'что то пошло не так')
         }
 
-        setOkeiList(prev => {
+        setSnList(prev => {
             const list = prev.splice(0);
             const i = list.findIndex(e => e.code === editItem.code);
             list.splice(i, 1, editItem)
@@ -43,11 +43,11 @@ const Okei = () => {
     const loadMore = async () => {
         const data = await request('get', nextPage.split('.ru/')[1])
         setNextPage(data.next)
-        setOkeiList(prev => [...prev, ...data.results])
+        setSnList(prev => [...prev, ...data.results])
     }
 
     useEffect(() => {
-        request('get', 'okei/').then(data => {
+        request('get', 'sn/').then(data => {
             setNextPage(data.next)
             setOkeiList(data.results)
             setMaxResults(data.count)
@@ -73,8 +73,8 @@ const Okei = () => {
                     </div>
                 </CardHeader>
                 <CardBody>
-                    {okeiList ? <div className='react-List block'>
-                        {okeiList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>
+                    {snList ? <div className='react-List block'>
+                        {snList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>
                             <CardHeader>
                                 <CardTitle>{e.name}</CardTitle>
                                 <div>
@@ -92,7 +92,7 @@ const Okei = () => {
                     </div>
                     }
                 </CardBody>
-                {maxResults > okeiList?.length && <div style={{padding: 12, width: '100%'}}>
+                {maxResults > snList?.length && <div style={{padding: 12, width: '100%'}}>
                     <Button onClick={loadMore} style={{width: '100%'}} color='flat-primary'>загрузить еще</Button>
                 </div>}
             </Card>

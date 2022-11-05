@@ -13,6 +13,30 @@ export default [
     icon: <Book size={20} />,
     children: [
       {
+        id: "spgz",
+        title: "СПГЗ",
+        icon: <Book size={20} />,
+        navLink: "/spgz"
+      },
+      {
+        id: "kpgz",
+        title: "КПГЗ",
+        icon: <Book size={20} />,
+        navLink: "/kpgz"
+      },
+      {
+        id: "kpgz",
+        title: "СН и ТСН",
+        icon: <Book size={20} />,
+        navLink: "/kpgz"
+      },
+      {
+        id: "kpgz",
+        title: "ТЗ",
+        icon: <Book size={20} />,
+        navLink: "/kpgz"
+      },
+      {
         id: "okpd",
         title: "ОКПД",
         icon: <Book size={20} />,
@@ -25,22 +49,10 @@ export default [
         navLink: "/okpd2"
       },
       {
-        id: "kpgz",
-        title: "КПГЗ",
-        icon: <Book size={20} />,
-        navLink: "/kpgz"
-      },
-      {
         id: "okei",
         title: "ОКЕИ",
         icon: <Book size={20} />,
         navLink: "/okei"
-      },
-      {
-        id: "spgz",
-        title: "СПГЗ",
-        icon: <Book size={20} />,
-        navLink: "/spgz"
       }
     ]
   },
