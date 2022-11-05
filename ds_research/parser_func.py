@@ -262,6 +262,14 @@ def last_float(ser):
             pass
     return None
 
+#Единицы измерения
+def get_coof_and_unit(unit: str):
+    coof = unit.split()[0]
+    if(coof.isdecimal()):
+        return (int(coof)," ".join(unit.split()[1:]))
+    else:
+        return (1,unit)
+
 def Parse(sheet):
     out_dict = {
         "type_ref": "",
@@ -362,8 +370,20 @@ def Parse(sheet):
         raise WrongSmeta("Структура сметы не распознана")
 
     lists = []
+    #print(success)
 
     for page_info  in success[1]:
+        out_dict = {
+            "type_ref": "",
+            "advance": "",
+            "coef_ref": None,
+            "coef_date": None,
+            "sum": None,
+            "tax": "",
+            "sum_with_tax": None,
+            "sum_with_ko": None,
+            "sections": []
+            }
         column_map = page_info["column_map"]
         column_mask = page_info["column_mask"]
         choosen_name = page_info["choosen_name"]
@@ -443,7 +463,7 @@ def Parse(sheet):
                     item_indices[current_item][1] = index-1
 
             # Определение номера и границ записи
-            if( row[column_map[1]].isnumeric() and row[column_map[1]] == str(current_item+1)):
+            if( row[column_map[1]].isnumeric()):# and row[column_map[1]] == str(current_item+1)):
                 if(item_indices[current_item][1] is None):
                     item_indices[current_item][1] = index-1
                 current_item += 1
@@ -472,7 +492,9 @@ def Parse(sheet):
         #0 запись исскуственная
         del item_indices[0]
 
-        assert item_indices, "No items were found. Cannot continue"
+        if(not item_indices):
+            sys.stderr.write("No items were found. skipping..,")
+                    
 
         value_mask = list(map(lambda x: x[1],filter(lambda x: x[0]>3, column_map.items())))
 
@@ -525,10 +547,13 @@ def Parse(sheet):
                         main_work_dict["amount"] = check_change_type(float,second)
                     elif(smeta_type == "TSN-2001"):
                         main_work_dict["sum_basic"] = check_change_type(float,second)
-                        
-
-                    break 
-
+                        try:
+                            if(abs(main_work_dict["sum"]*main_work_dict["count"] - main_work_dict["sum_basic"]) < 0.01):
+                                main_work_dict["amount"] = main_work_dict["sum_basic"]
+                                del main_work_dict["sum_basic"]
+                        except Exception as e:
+                            pass
+                    break
             main_work_dict["subrows"] = [] 
             for ind, pos in enumerate(main_work_dict["Sub_works"]):
                 pos["type"] = "expanse"
@@ -547,7 +572,8 @@ def Parse(sheet):
             if("code" not in main_work_dict.keys()):
                 main_work_dict["code"] = ""
 
-
+            if("name" not in main_work_dict.keys()):
+               continue
             if(sect not in [x["name"] for x in out_dict["sections"]]):
                 out_dict["sections"].append({"name":sect,
                                              "sum":None, 
@@ -615,7 +641,28 @@ def Parse(sheet):
             saddr = AddressService.process_single_address_text(sect["name"])
             if(saddr.items):
                 out_dict["sections"][ind]["address"] = ", ".join([x.__str__() for x in saddr.items])    
-
+        
+        #Units conversion
+        for sect_ind, sect in enumerate(out_dict["sections"]):
+            for subs_ind, subs in enumerate(sect["subsections"]):
+                for pos_ind, pos in enumerate(subs["rows"]):
+                    if("ei" in pos.keys()):
+                        coof, unit = get_coof_and_unit(pos["ei"])
+                        out_dict["sections"][sect_ind]["subsections"][subs_ind]["rows"][pos_ind]["ei"] = unit
+                        if("count" in pos.keys()):
+                            out_dict["sections"][sect_ind]["subsections"][subs_ind]["rows"][pos_ind]["count"] *= coof
+                        if("amount" in pos.keys()):
+                            out_dict["sections"][sect_ind]["subsections"][subs_ind]["rows"][pos_ind]["amount"] *= coof
+                    for subpos_ind, subpos in enumerate(pos["subrows"]):
+                        if("ei" in subpos.keys()):
+                            coof, unit = get_coof_and_unit(subpos["ei"])
+                            out_dict["sections"][sect_ind]["subsections"][subs_ind]["rows"][pos_ind]["subrows"][subpos_ind]["ei"] = unit
+                            if("count" in subpos.keys()):
+                                out_dict["sections"][sect_ind]["subsections"][subs_ind]["rows"][pos_ind]["subrows"][subpos_ind]["count"] *= coof
+                            if("amount" in subpos.keys()):
+                                out_dict["sections"][sect_ind]["subsections"][subs_ind]["rows"][pos_ind]["subrows"][subpos_ind]["amount"] *= coof
+    
+                        
         lists.append(out_dict)
     return lists
 
