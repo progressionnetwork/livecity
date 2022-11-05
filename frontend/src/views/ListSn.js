@@ -22,35 +22,9 @@ const Okei = () => {
     const [editItem, setEditItem] = useState();
     const [isModalEdit, setIsModalEdit] = useState(false)
 
-    const updateOkei = async () => {
-        try {
-            await request('put', `sn/${editItem?.code}/`,
-                editItem
-            );
-        } catch (e) {
-            console.log('update okei', 'что то пошло не так')
-        }
-
-        setSnList(prev => {
-            const list = prev.splice(0);
-            const i = list.findIndex(e => e.code === editItem.code);
-            list.splice(i, 1, editItem)
-            return list;
-        })
-        setIsModalEdit(false)
-    }
-
-    const loadMore = async () => {
-        const data = await request('get', nextPage.split('.ru/')[1])
-        setNextPage(data.next)
-        setSnList(prev => [...prev, ...data.results])
-    }
-
     useEffect(() => {
         request('get', 'sn/').then(data => {
-            setNextPage(data.next)
-            setOkeiList(data.results)
-            setMaxResults(data.count)
+            setSnList(data)
         })
     }, [])
 
@@ -76,12 +50,12 @@ const Okei = () => {
                     {snList ? <div className='react-List block'>
                         {snList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>
                             <CardHeader>
-                                <CardTitle>{e.name}</CardTitle>
+                                <CardTitle>{e.type_ref}</CardTitle>
                                 <div>
                                     <Button.Ripple color='flat-primary' onClick={(j) => {
-                                        setIsModalEdit(true)
-                                        setEditItem(e)
-                                        j.preventDefault()
+                                        // setIsModalEdit(true)
+                                        // setEditItem(e)
+                                        // j.preventDefault()
                                     }}>Редактирвать</Button.Ripple>
                                     <Button.Ripple color='flat-primary' style={{ marginRight: 12 }}>Удалить</Button.Ripple>
                                 </div>
@@ -92,9 +66,6 @@ const Okei = () => {
                     </div>
                     }
                 </CardBody>
-                {maxResults > snList?.length && <div style={{padding: 12, width: '100%'}}>
-                    <Button onClick={loadMore} style={{width: '100%'}} color='flat-primary'>загрузить еще</Button>
-                </div>}
             </Card>
 
 
@@ -111,7 +82,7 @@ const Okei = () => {
                     </div>
                 </ModalBody>
                 <ModalFooter>
-                    <Button color='primary' onClick={updateOkei}>
+                    <Button color='primary'>
                         Сохрнать
                     </Button>{' '}
                 </ModalFooter>

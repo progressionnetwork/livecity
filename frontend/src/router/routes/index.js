@@ -38,6 +38,11 @@ const Kpgz = lazy(() => import("../../views/Kpgz"))
 const UploadEstimate = lazy(() => import("../../views/UploadEstimate"))
 const Okei = lazy(() => import("../../views/Okei"))
 const Spgz = lazy(() => import("../../views/Spgz"))
+const ListSn = lazy(() => import("../../views/ListSn"))
+const Sn = lazy(() => import("../../views/Sn"))
+const ListSmeta = lazy(() => import("../../views/ListSn"))
+const Smeta = lazy(() => import("../../views/Smeta"))
+
 // ** Merge Routes
 const Routes = [
   {
@@ -48,10 +53,6 @@ const Routes = [
   {
     path: "/home",
     element: <Home />
-  },
-  {
-    path: "/second-page",
-    element: <SecondPage />
   },
   {
     path: '/okpd',
@@ -72,6 +73,22 @@ const Routes = [
   {
     path: '/spgz',
     element: <Spgz />
+  },
+  {
+    path: '/sn',
+    element: <ListSn />
+  },
+  {
+    path: '/sn/:id',
+    element: <Sn />
+  },
+  {
+    path: '/smeta',
+    element: <ListSmeta />
+  },
+  {
+    path: '/smeta/:id',
+    element: <Smeta />
   },
   {
     path: "/users",
