@@ -25,16 +25,16 @@ export default [
         navLink: "/kpgz"
       },
       {
-        id: "kpgz",
+        id: "sn",
         title: "СН и ТСН",
         icon: <Book size={20} />,
-        navLink: "/kpgz"
+        navLink: "/sn"
       },
       {
-        id: "kpgz",
+        id: "tz",
         title: "ТЗ",
         icon: <Book size={20} />,
-        navLink: "/kpgz"
+        navLink: "/tz"
       },
       {
         id: "okpd",

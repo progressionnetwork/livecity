@@ -65,6 +65,16 @@ const Okpd2 = () => {
             </Card>
 
             <Card>
+                <CardHeader>
+                    <CardTitle>
+                        Справочник предметов государственного заказа
+                    </CardTitle>
+                    <div>
+                        <Button>
+                            Обновить
+                        </Button>
+                    </div>
+                </CardHeader>
                 <CardBody>
                     {spgzList ? <div className='react-List block'>
                         {spgzList.map(e => <Card key={e.id} style={{ marginBottom: 0 }}>

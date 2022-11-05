@@ -65,6 +65,15 @@ const Okpd = () => {
             </Card>
 
             <Card>
+                <CardHeader>
+                    <CardTitle>
+                    </CardTitle>
+                    <div>
+                        <Button>
+                            Обновить
+                        </Button>
+                    </div>
+                </CardHeader>
                 <CardBody>
                     {okpdList ? <div className='react-List block'>
                         {okpdList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>

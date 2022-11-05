@@ -64,6 +64,14 @@ const Kpgz = () => {
             </Card>
 
             <Card>
+                <CardHeader>
+                    <CardTitle>
+                        Классификатор предметов государственного заказа
+                    </CardTitle>
+                    <div>
+                        <Button>Обновить</Button>
+                    </div>
+                </CardHeader>
                 <CardBody>
                     {kpgzList ? <div className='react-List block'>
                         {kpgzList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>
