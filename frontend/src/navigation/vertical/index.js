@@ -25,22 +25,10 @@ export default [
         navLink: "/okpd2"
       },
       {
-        id: "kpgz",
-        title: "КПГЗ",
-        icon: <Book size={20} />,
-        navLink: "/kpgz"
-      },
-      {
         id: "okei",
         title: "ОКЕИ",
         icon: <Book size={20} />,
         navLink: "/okei"
-      },
-      {
-        id: "spgz",
-        title: "СПГЗ",
-        icon: <Book size={20} />,
-        navLink: "/spgz"
       }
     ]
   },
