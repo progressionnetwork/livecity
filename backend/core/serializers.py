@@ -155,6 +155,7 @@ class SmetaRowSerializer(serializers.ModelSerializer):
         fields = '__all__'
     
 class SmetaSubsectionSerializer(serializers.ModelSerializer):
+    rows = SmetaRowSerializer(many=True, read_only=True)
     class Meta:
         model = SNSubsection
         fields = '__all__'
