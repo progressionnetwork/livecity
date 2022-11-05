@@ -124,7 +124,6 @@ class SNSubrowSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SNRowSerializer(serializers.ModelSerializer):
-    subrows = SNSubrowSerializer(many=True, read_only=True)
     ei = OKEISerializer(many=False, read_only=True)
     class Meta:
         model = SNRow
@@ -135,7 +134,7 @@ class SNSectionSerializer(serializers.ModelSerializer):
     rows = serializers.SerializerMethodField('get_short_rows')
 
     def get_short_rows(self, obj):
-        return obj.rows.all()[:20]
+        return SNRowSerializer(obj.rows.all()[:20], many=True).data
 
     class Meta:
         model = SNSection
