@@ -318,7 +318,7 @@ def Parse(sheet):
     
     #Pullenti address
     AddressService.initialize()
-    gar_path = str(Path(Path(__file__).parent , "Gar77"))
+    gar_path = str(Path(Path(__file__).parent, "Gar77"))
     if (not AddressService.set_gar_index_path(gar_path)): 
         print("Gar path {0} - bad index".format(gar_path), flush=True)
         raise Exception("Something wrong with Gar")
@@ -384,19 +384,22 @@ def Parse(sheet):
             # Определения разделов и подразделов
             cont_razd_any = False
             cont_podr_any = False
-            cont_razd = row.str.lower().str.contains("раздел[^а-яА-Я]")
+            start_podr_any = False
+            start_razd_any = False
+            cont_razd = row.str.lower().str.contains("раздел")
+
+            cont_podr = row.str.lower().str.contains("подраздел")
+            cont_podr_any = cont_podr.any()
             cont_razd_any = cont_razd.any()
-            if(cont_razd_any):
-                cont_podr = row.str.lower().str.contains("подраздел[^а-яА-Я]")
-                cont_podr_any = cont_podr.any()
-                start_razd_any = row.str.lower().str.contains("^раздел[^а-яА-Я]").any()
-                start_podr_any = row.str.lower().str.contains("^подраздел[^а-яА-Я]").any()
+            start_razd_any = row.str.lower().str.contains("^раздел[^а-яА-Я]").any()
+            start_podr_any = row.str.lower().str.contains("^подраздел[^а-яА-Я]").any()
             cont_itog = row.str.lower().str.contains("итог")
  
 
             if((cont_podr_any and cont_itog.any()) or start_podr_any):
                 if((cont_podr * cont_itog).any()):
                     #print(f"    Конец {current_subsection}")
+                    
                     price_per_section[current_section][current_subsection] = last_float(row)
                     current_subsection = None
                     item_indices[current_item][1] = index-1
@@ -561,10 +564,10 @@ def Parse(sheet):
                             out_dict["sections"][ind]["subsections"][sub_ind]["rows"].append(main_work_dict)
                             out_dict["sections"][ind]["sum"] = price_per_section[sect][None]
                             out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = price_per_section[sect][sub_sect]
-                            if(out_dict["sections"][ind]["sum"] is not None or type(out_dict["sections"][ind]["sum"]) is not float):
-                                #print(out_dict["sections"][ind]["sum"])
+                            if(type(out_dict["sections"][ind]["sum"]) is not float):
+                                #print(out_dict["sections"][ind]["sum"], type(out_dict["sections"][ind]["sum"]),"AAAAAAAAAAA")
                                 out_dict["sections"][ind]["sum"] = None
-                            if(out_dict["sections"][ind]["subsections"][sub_ind]["sum"] is not None or type(out_dict["sections"][ind]["subsections"][sub_ind]["sum"]) is not float):
+                            if(type(out_dict["sections"][ind]["subsections"][sub_ind]["sum"]) is not float):
                                 out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = None
 
             all_items.append(main_work_dict)            

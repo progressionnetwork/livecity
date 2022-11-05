@@ -125,6 +125,7 @@ class SNRowSerializer(serializers.ModelSerializer):
         fields = '__all__'
     
 class SNSubsectionSerializer(serializers.ModelSerializer):
+    rows = SNRowSerializer(many=True, read_only=True)
     class Meta:
         model = SNSubsection
         fields = '__all__'

@@ -211,7 +211,7 @@ def load_smeta(path: str, type_update:str)-> None:
                 "name" :  str(section['name'] if section['name']!='null' else ''),
                 "sum": float(section['sum']  if section['sum'] is not None else 0),
                 "address" : str(section['address'] if section['address']!='null' else ''), 
-                "sn": o_smeta
+                "smeta": o_smeta
             },
             name=str(section['name'] if section['name']!='null' else ''), smeta=o_smeta)
         for subsection in subsections:
@@ -240,10 +240,10 @@ def load_smeta(path: str, type_update:str)-> None:
                     }, 
                     code = str(row['code'] if row['code']!='null' else ''), smeta_subsection=o_subsection)
                 for subrow in subrows:
-                    o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
+                    o_subrow, created = _get_instanse_with_type_update(model=SmetaSubRow,
                     type_update=type_update,
                     data = {
-                        "sn_row" : o_row,
+                        "smeta_row" : o_row,
                         "name" : str(subrow['name'] if subrow['name']!='null' else ''),
                         "ei" : OKEI.objects.filter(short_name=ei).first(),
                         "count" : float(subrow.get('count') if subrow.get('count') is not None else 0),
