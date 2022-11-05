@@ -2,7 +2,12 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 
-from core.models import SN, SNSection, SNSubsection, SNRow, SNSubRow, KPGZ, OKEI, OKPD, OKPD2, FileUpdate, SPGZ, TZ, TZRow
+from core.models import (SN, SNSection, SNSubsection, SNRow, SNSubRow, 
+                            KPGZ, OKEI, OKPD, OKPD2, 
+                            FileUpdate, SPGZ,
+                            TZ, TZRow,
+                            Smeta, SmetaSection, SmetaSubsection, SmetaSubRow, SmetaRow)
+
 
 UserModel = get_user_model()
 
@@ -131,6 +136,35 @@ class SNSectionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SNSerializer(serializers.ModelSerializer):
+    sections = SNSectionSerializer(many=True, read_only=True)
+    class Meta:
+        model = SN
+        fields = '__all__'
+
+
+class SmetaSubrowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SNSubRow
+        fields = '__all__'
+
+class SmetaRowSerializer(serializers.ModelSerializer):
+    subrows = SNSubrowSerializer(many=True, read_only=True)
+    class Meta:
+        model = SNRow
+        fields = '__all__'
+    
+class SmetaSubsectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SNSubsection
+        fields = '__all__'
+
+class SmetaSectionSerializer(serializers.ModelSerializer):
+    subsections = SNSubsectionSerializer(many=True, read_only=True)
+    class Meta:
+        model = SNSection
+        fields = '__all__'
+
+class SmetaSerializer(serializers.ModelSerializer):
     sections = SNSectionSerializer(many=True, read_only=True)
     class Meta:
         model = SN

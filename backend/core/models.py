@@ -192,7 +192,7 @@ class SNSection(models.Model):
 
     sn = models.ForeignKey('SN', on_delete=models.CASCADE,
                            related_name='sections')
-    name = models.CharField('Наименование', max_length=250)  # 7
+    name = models.CharField('Наименование', max_length=250, default='Без имени')  # 7
     sum = models.FloatField('Итого', default=0.0)  # 28
 
     def __str__(self) -> str:
@@ -208,7 +208,7 @@ class SNSubsection(models.Model):
 
     sn_section = models.ForeignKey(
         'SNSection', on_delete=models.CASCADE, related_name='subsections')
-    name = models.CharField('Наименование', max_length=250)  # 8
+    name = models.CharField('Наименование', max_length=250, default='Без имени')  # 8
     sum = models.FloatField('Итого', default=0.0)  # 27
 
     def __str__(self) -> str:
@@ -313,3 +313,105 @@ class TZRow(models.Model):
     class Meta:
         verbose_name = "ТЗ: Строка"
         verbose_name_plural = "ТЗ: Строки"
+
+
+class Smeta(models.Model):
+    ''' Сметные расчеты '''
+    name = models.CharField(max_length=1000, default='Без имени')
+    address = models.CharField(max_length=1000, default='Без адреса')
+    type_ref = models.CharField('Тип сбоника', max_length=250)  # 3
+    advance = models.CharField("Дополнение", max_length=250, null=True, blank=True)  # 4
+    coef_ref = models.CharField("Номер сборника", max_length=250, null=True, blank=True)  # 5
+    coef_date = models.DateField("Дата сборника", null=True, blank=True)  # 6
+    sum = models.FloatField('Итого', default=0.0)  # 29
+    tax = models.FloatField('НДС', default=0.0)  # 30
+    sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31
+    sum_with_ko = models.FloatField(
+        'Итого с коэф. фин. обеспеч.', default=0.0)  # 32
+    
+    def __str__(self) -> str:
+        return f"{self.name} ({self.address})"
+
+    class Meta:
+        verbose_name = "Смета"
+        verbose_name_plural = "Сметы"
+
+
+class SmetaSection(models.Model):
+    ''' Раздел сметы '''
+    smeta = models.ForeignKey('Smeta', on_delete=models.CASCADE,
+                           related_name='sections')
+    name = models.CharField('Наименование', max_length=250, default='Без имени')  # 7
+    sum = models.FloatField('Итого', default=0.0)  # 28
+    address = models.CharField(max_length=1000, default='Без адреса')
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+    class Meta:
+        verbose_name = "Смета: Раздел"
+        verbose_name_plural = "Смета: Разделы"
+
+
+class SmetaSubsection(models.Model):
+    ''' Подраздел сметы '''
+
+    smeta_section = models.ForeignKey('SmetaSection', on_delete=models.CASCADE,
+                           related_name='subsections')
+    
+    name = models.CharField('Наименование', max_length=250, default='Без имени')  # 8
+    sum = models.FloatField('Итого', default=0.0)  # 27
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+    class Meta:
+        verbose_name = "Смета: Подраздел"
+        verbose_name_plural = "Смета: Подразделы"
+
+
+class SmetaRow(models.Model):
+    ''' Строка сметы '''
+
+    smeta_subsection = models.ForeignKey(
+        'SmetaSubsection', on_delete=models.CASCADE, related_name='rows')
+    code = models.CharField('Шифр', max_length=100, default='')  # 2
+    num = models.IntegerField('Номер п/п', default=0)  # 1
+    name = models.TextField('Наименование')  # 9
+    ei = models.ForeignKey(
+        'OKEI', on_delete=models.SET_NULL, null=True, blank=True)  # 10
+    count = models.FloatField('Количество', default=0.0)  # 11
+    sum = models.FloatField('Итого', default=0.0)  # 26
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+    class Meta:
+        verbose_name = "Смета: Строка"
+        verbose_name_plural = "Смета: Строки"
+
+
+class SmetaSubRow(models.Model):
+    ''' Статьи затрат по строке '''
+    smeta_row = models.ForeignKey(
+        'SmetaRow', on_delete=models.CASCADE, related_name='subrows')
+    category = models.CharField(max_length=20, choices=(('material','material'),('expanse','expanse')), default='expanse')
+    name = models.TextField('Наименование')  # 12, 19, 20, 21, 22, 23, 24, 25
+    ei = models.ForeignKey(
+        'OKEI', on_delete=models.SET_NULL, null=True, blank=True)  # 10
+    count = models.FloatField('Количество', default=0.0)  # 11
+    amount = models.FloatField('Цена за единицу', default=1.0)  # 13
+    coef_correct = models.FloatField(
+        'Корректировочный коэф', default=1.0)  # 14
+    coef_winter = models.FloatField('Зимний коэф', default=1.0)  # 15
+    coef_recalc = models.FloatField('Коэф. пересчета', default=1.0)  # 17
+    sum_basic = models.FloatField(
+        'Затраты в базисном уровне', default=0.0)  # 16
+    sum_current = models.FloatField(
+        'Затраты в текущем уровне', default=0.0)  # 18
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+    class Meta:
+        verbose_name = "Смета: Статья затрат"
+        verbose_name_plural = "Смета: Статьи затрат"
