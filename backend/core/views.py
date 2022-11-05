@@ -2,6 +2,7 @@ from rest_framework import permissions
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -10,11 +11,11 @@ from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ, SN, SNRow, Smeta, SmetaRow)
+from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ, SN, SNSection, Smeta, SmetaRow)
 from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer,
                                 OKPDSerializer, UserSerializer,
                                 AuthTokenSerializer, TZSerializer, SPGZSerializer, TZSerializerShort, 
-                                SNSerializer, SNRowSerializer, SNSerializerShort,
+                                SNSerializer, SNSectionSerializer, SNSerializerShort,
                                 SmetaSerializer, SmetaRowSerializer, SmetaSerializerShort)
 
 
@@ -222,13 +223,13 @@ class SNView(ModelViewSet):
         serializer = SNSerializerShort(queryset, many=True)
         return Response(serializer.data)
 
-class SNRowView(ModelViewSet):
-    ''' Строки СН / ТСН  '''
-    serializer_class = SNRowSerializer
+class SNSectionView(ModelViewSet):
+    ''' Разделы СН / ТСН  '''
+    serializer_class = SNSectionSerializer
     permission_classes = [
         permissions.IsAuthenticated
     ]
-    queryset = SNRow.objects.all()
+    queryset = SNSection.objects.all()
 
 class SmetaView(ModelViewSet):
     ''' Смета  '''

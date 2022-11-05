@@ -117,20 +117,26 @@ class TZSerializerShort(serializers.ModelSerializer):
         model = TZ
         fields = '__all__'
 
-
 class SNSubrowSerializer(serializers.ModelSerializer):
+    ei = OKEISerializer(many=False, read_only=True)
     class Meta:
         model = SNSubRow
         fields = '__all__'
 
 class SNRowSerializer(serializers.ModelSerializer):
     subrows = SNSubrowSerializer(many=True, read_only=True)
+    ei = OKEISerializer(many=False, read_only=True)
     class Meta:
         model = SNRow
         fields = '__all__'
     
 class SNSectionSerializer(serializers.ModelSerializer):
-    rows = SNRowSerializer(many=True, read_only=True)
+    rows = SNRowSerializer(SNRow.objects.all()[:20], many=True, read_only=True)
+    class Meta:
+        model = SNSection
+        fields = '__all__'
+
+class SNSectionSerializerShort(serializers.ModelSerializer):
     class Meta:
         model = SNSection
         fields = '__all__'
@@ -142,18 +148,21 @@ class SNSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SNSerializerShort(serializers.ModelSerializer):
+    sections = SNSectionSerializerShort(many=True, read_only=True)
     class Meta:
         model = SN
         fields = ['id', 'type_ref']
 
 
 class SmetaSubrowSerializer(serializers.ModelSerializer):
+    ei = OKEISerializer(many=False, read_only=True)
     class Meta:
         model = SNSubRow
         fields = '__all__'
 
 class SmetaRowSerializer(serializers.ModelSerializer):
     subrows = SNSubrowSerializer(many=True, read_only=True)
+    ei = OKEISerializer(many=False, read_only=True)    
     class Meta:
         model = SNRow
         fields = '__all__'
