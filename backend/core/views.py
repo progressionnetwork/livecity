@@ -14,8 +14,8 @@ from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ, SN, SNRo
 from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer,
                                 OKPDSerializer, UserSerializer,
                                 AuthTokenSerializer, TZSerializer, SPGZSerializer, TZRowSerializer, 
-                                SNSerializer, SNRowSerializer,
-                                SmetaSerializer, SmetaRowSerializer)
+                                SNSerializer, SNRowSerializer, SNSerializerShort,
+                                SmetaSerializer, SmetaRowSerializer, SmetaSerializerShort)
 
 
 class RegistrationView(CreateAPIView):
@@ -212,6 +212,11 @@ class SNView(ModelViewSet):
     ]
     queryset = SN.objects.all()
 
+    def list(self, request):
+        queryset = SN.objects.all()
+        serializer = SNSerializerShort(queryset, many=True)
+        return Response(serializer.data)
+
 class SNRowView(ModelViewSet):
     ''' Строки СН / ТСН  '''
     serializer_class = SNRowSerializer
@@ -227,6 +232,11 @@ class SmetaView(ModelViewSet):
         permissions.IsAuthenticated
     ]
     queryset = Smeta.objects.all()
+
+    def list(self, request):
+        queryset = Smeta.objects.all()
+        serializer = SmetaSerializerShort(queryset, many=True)
+        return Response(serializer.data)
 
 class SmetaRowView(ModelViewSet):
     ''' Строки сметы '''

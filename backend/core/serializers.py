@@ -142,6 +142,11 @@ class SNSerializer(serializers.ModelSerializer):
         model = SN
         fields = '__all__'
 
+class SNSerializerShort(serializers.ModelSerializer):
+    class Meta:
+        model = SN
+        fields = ['id', 'type_ref']
+
 
 class SmetaSubrowSerializer(serializers.ModelSerializer):
     class Meta:
@@ -171,3 +176,8 @@ class SmetaSerializer(serializers.ModelSerializer):
     class Meta:
         model = SN
         fields = '__all__'
+
+class SmetaSerializerShort(serializers.ModelSerializer):
+    class Meta:
+        model = Smeta
+        fields = ['id', 'name', 'address']
