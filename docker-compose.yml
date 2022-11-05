@@ -40,6 +40,19 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  worker_smeta:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_smeta
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py smeta"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+
   worker_kpgz:
     image: livecity_backend
     restart: on-failure

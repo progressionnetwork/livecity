@@ -1,7 +1,7 @@
 from django.urls import path, include
 from core.views import (FileUpdateView, KPGZView, OKEIView, OKPD2View, OKPDView, RegistrationView, 
                         LoginView,  SPGZView, TZView, ListUserView, SNView, SNRowView,
-                        LogoutView, SearchView,
+                        LogoutView, SearchView, SmetaView, SmetaRowView,
                         MeView, 
                         HealthCheckView,
                         UpdateDataFromInternet) 
@@ -16,6 +16,8 @@ router.register('spgz', SPGZView, basename='spgz')
 router.register('tz', TZView, basename='tz')
 router.register('sn', SNView, basename='sn')
 router.register('sn_row', SNRowView, basename='sn_row')
+router.register('smeta', SmetaView, basename='smeta')
+router.register('smeta_row', SmetaRowView, basename='smeta_row')
 router.register('update/file', FileUpdateView, basename='update_file')
 
 urlpatterns = [

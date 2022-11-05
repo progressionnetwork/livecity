@@ -10,9 +10,12 @@ from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ, SN, SNRow)
-from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer, OKPDSerializer, UserSerializer,
-                                AuthTokenSerializer, TZSerializer, SPGZSerializer, TZRowSerializer, SNSerializer, SNRowSerializer)
+from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ, SN, SNRow, Smeta, SmetaRow)
+from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer,
+                                OKPDSerializer, UserSerializer,
+                                AuthTokenSerializer, TZSerializer, SPGZSerializer, TZRowSerializer, 
+                                SNSerializer, SNRowSerializer,
+                                SmetaSerializer, SmetaRowSerializer)
 
 
 class RegistrationView(CreateAPIView):
@@ -216,3 +219,19 @@ class SNRowView(ModelViewSet):
         permissions.IsAuthenticated
     ]
     queryset = SNRow.objects.all()
+
+class SmetaView(ModelViewSet):
+    ''' Смета  '''
+    serializer_class = SmetaSerializer
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+    queryset = Smeta.objects.all()
+
+class SmetaRowView(ModelViewSet):
+    ''' Строки сметы '''
+    serializer_class = SmetaRowSerializer
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+    queryset = SmetaRow.objects.all()

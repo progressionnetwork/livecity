@@ -140,7 +140,7 @@ def load_sn(path: str, type_update:str)-> None:
                 "sum": float(section['sum']  if section['sum'] is not None else 0),
                 "sn": o_sn
             },
-            name=str(section['name'] if section['name']!='null' else ''))
+            name=str(section['name'] if section['name']!='null' else ''), sn=o_sn)
         for subsection in subsections:
             rows = subsection.pop('rows')
             o_subsection, created = _get_instanse_with_type_update(model=SNSubsection,
@@ -150,7 +150,7 @@ def load_sn(path: str, type_update:str)-> None:
                     "sum": float(subsection['sum']  if subsection['sum'] is not None else 0),
                     "sn_section": o_section
                 },
-                name=str(subsection['name'] if subsection['name']!='null' else ''))
+                name=str(subsection['name'] if subsection['name']!='null' else ''), sn_section=o_section)
             for row in rows:
                 subrows = row.pop('subrows')
                 ei = row.pop('ei')
@@ -165,7 +165,7 @@ def load_sn(path: str, type_update:str)-> None:
                         "count" : float(row['count'] if row['count'] is not None else 0),
                         "sum" : float(row['sum'] if row['sum'] is not None else 0)
                     }, 
-                    code = str(row['code'] if row['code']!='null' else ''))
+                    code = str(row['code'] if row['code']!='null' else ''), sn_subsection=o_subsection)
                 for subrow in subrows:
                     o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
                     type_update=type_update,
@@ -180,9 +180,81 @@ def load_sn(path: str, type_update:str)-> None:
                         "coef_recalc" : float(subrow.get('coef_recalc') if subrow.get('coef_recalc') is not None else 0),
                         "sum_basic" : float(subrow.get('sum_basic') if subrow.get('sum_basic') is not None else 0),
                         "sum_current" : float(subrow.get('sum_current') if subrow.get('sum_current') is not None else 0)
-                    }, name = str(subrow['name'] if subrow['name']!='null' else ''))
+                    }, name = str(subrow['name'] if subrow['name']!='null' else ''), sn_row=o_row)
     logger.info('SN/TSN file updated.')
 
+def load_smeta(path: str, type_update:str)-> None:
+    from parser.smeta import Parse
+    logger.info(f"Start parsing file: {path}")
+    name = Path(path).stem
+    smeta = Parse(path)[0]
+    sections = smeta.pop('sections')
+    o_smeta, created = _get_instanse_with_type_update(model=Smeta, 
+        type_update=type_update, 
+        data={
+            "name" : name,
+            "address" : str(smeta['address'] if smeta['address']!='null' else ''), 
+            "type_ref" : str(smeta['type_ref'] if smeta['type_ref']!='null' else ''), 
+            "advance" :  str(smeta['advance'] if smeta['advance']!='null' else ''),
+            "coef_ref" : str(smeta['coef_ref'] if smeta['coef_ref']!='null' else ''),
+            "coef_date" : smeta['coef_date'],
+            "sum" : float(smeta['sum'] if smeta['sum'] is not None else 0),
+            "tax" : float(smeta['tax'] if smeta['tax'] is not None else 0),
+            "sum_with_tax" : float(smeta['sum_with_tax']  if smeta['sum_with_tax'] is not None else 0),
+            "sum_with_ko" : float(smeta['sum_with_ko'] if smeta['sum_with_ko'] is not None else 0)}, 
+        name = name, address = str(smeta['address'] if smeta['address']!='null' else ''))
+    for section in sections:
+        subsections = section.pop('subsections')
+        o_section, created = _get_instanse_with_type_update(model=SmetaSection,
+            type_update=type_update,
+            data={
+                "name" :  str(section['name'] if section['name']!='null' else ''),
+                "sum": float(section['sum']  if section['sum'] is not None else 0),
+                "address" : str(section['address'] if section['address']!='null' else ''), 
+                "sn": o_smeta
+            },
+            name=str(section['name'] if section['name']!='null' else ''), smeta=o_smeta)
+        for subsection in subsections:
+            rows = subsection.pop('rows')
+            o_subsection, created = _get_instanse_with_type_update(model=SmetaSubsection,
+                type_update=type_update,
+                data={
+                    "name" :  str(subsection['name'] if subsection['name']!='null' else ''),
+                    "sum": float(subsection['sum']  if subsection['sum'] is not None else 0),
+                    "smeta_section": o_section
+                },
+                name=str(subsection['name'] if subsection['name']!='null' else ''), smeta_section=o_section)
+            for row in rows:
+                subrows = row.pop('subrows')
+                ei = row.pop('ei')
+                o_row, created = _get_instanse_with_type_update(model=SmetaRow, 
+                    type_update=type_update,
+                    data = {
+                        "smeta_subsection" : o_subsection,
+                        "code" : str(row['code'] if row['code']!='null' else ''),
+                        "num" : int(row['num'] if row['num'] is not None else 0),
+                        "name" : str(row['name'] if row['name']!='null' else ''),
+                        "ei" : OKEI.objects.filter(short_name=ei).first(),
+                        "count" : float(row['count'] if row['count'] is not None else 0),
+                        "sum" : float(row['sum'] if row['sum'] is not None else 0)
+                    }, 
+                    code = str(row['code'] if row['code']!='null' else ''), smeta_subsection=o_subsection)
+                for subrow in subrows:
+                    o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
+                    type_update=type_update,
+                    data = {
+                        "sn_row" : o_row,
+                        "name" : str(subrow['name'] if subrow['name']!='null' else ''),
+                        "ei" : OKEI.objects.filter(short_name=ei).first(),
+                        "count" : float(subrow.get('count') if subrow.get('count') is not None else 0),
+                        "amount" : float(subrow.get('amount') if subrow.get('amount') is not None else 0),
+                        "coef_correct" : float(subrow.get('coef_correct') if subrow.get('coef_correct') is not None else 0),
+                        "coef_winter" : float(subrow.get('coef_winter') if subrow.get('coef_winter') is not None else 0),
+                        "coef_recalc" : float(subrow.get('coef_recalc') if subrow.get('coef_recalc') is not None else 0),
+                        "sum_basic" : float(subrow.get('sum_basic') if subrow.get('sum_basic') is not None else 0),
+                        "sum_current" : float(subrow.get('sum_current') if subrow.get('sum_current') is not None else 0)
+                    }, name = str(subrow['name'] if subrow['name']!='null' else ''), smeta_row=o_row)
+    logger.info('Smeta file updated.')
 
 def load_spgz(path: str, type_update:str) -> None:
     from parser.spgz import Parse
@@ -231,6 +303,10 @@ def load_from_file(type_data: str, path: str, type_update: str) -> None:
             threads.append(t)
         case 'tz':
             t = threading.Thread(target=load_tz, args=[path, type_update])
+            t.start()
+            threads.append(t)
+        case 'smeta':
+            t = threading.Thread(target=load_smeta, args=[path, type_update])
             t.start()
             threads.append(t)
     return None
