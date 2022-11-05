@@ -131,7 +131,12 @@ class SNRowSerializer(serializers.ModelSerializer):
         fields = '__all__'
     
 class SNSectionSerializer(serializers.ModelSerializer):
-    rows = SNRowSerializer(SNRow.objects.all()[:20], many=True, read_only=True)
+    # rows = SNRowSerializer(SNRow.objects.all()[:20], many=True, read_only=True)
+    rows = serializers.SerializerMethodField('get_short_rows')
+
+    def get_short_rows(self, obj):
+        return obj.rows.all()[:20]
+
     class Meta:
         model = SNSection
         fields = '__all__'
