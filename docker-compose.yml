@@ -39,6 +39,19 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+  
+  worker_spgz_key:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_spgz_key
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py spgz_key"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
 
   worker_smeta:
     image: livecity_backend

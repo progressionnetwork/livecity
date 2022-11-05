@@ -211,7 +211,7 @@ def load_smeta(path: str, type_update:str)-> None:
                 "name" :  str(section['name'] if section['name']!='null' else ''),
                 "sum": float(section['sum']  if section['sum'] is not None else 0),
                 "address" : str(section['address'] if section['address']!='null' else ''), 
-                "sn": o_smeta
+                "smeta": o_smeta
             },
             name=str(section['name'] if section['name']!='null' else ''), smeta=o_smeta)
         for subsection in subsections:
@@ -240,10 +240,10 @@ def load_smeta(path: str, type_update:str)-> None:
                     }, 
                     code = str(row['code'] if row['code']!='null' else ''), smeta_subsection=o_subsection)
                 for subrow in subrows:
-                    o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
+                    o_subrow, created = _get_instanse_with_type_update(model=SmetaSubRow,
                     type_update=type_update,
                     data = {
-                        "sn_row" : o_row,
+                        "smeta_row" : o_row,
                         "name" : str(subrow['name'] if subrow['name']!='null' else ''),
                         "ei" : OKEI.objects.filter(short_name=ei).first(),
                         "count" : float(subrow.get('count') if subrow.get('count') is not None else 0),
@@ -276,6 +276,15 @@ def load_spgz(path: str, type_update:str) -> None:
         spgz.save()
     logger.info('SPGZ file updated.')
 
+def load_spgz_key(path: str, type_update:str) -> None:
+    from parser.spgz_key import Parse
+    for row in Parse(path):
+        spgz = SPGZ.objects.filter(name=row['spgz'], kpgz=KPGZ.objects.filter(code=row['kpgz_id']).first()).first()
+        if spgz:
+            spgz.key = row['key']
+        spgz.save()
+    logger.info('SPGZ key file updated.')
+
 def load_tz(path: str, type_update:str) -> None:
     from parser.tz import Parse
     for row in Parse(path):
@@ -299,6 +308,10 @@ def load_from_file(type_data: str, path: str, type_update: str) -> None:
             threads.append(t)
         case 'spgz':
             t = threading.Thread(target=load_spgz, args=[path, type_update])
+            t.start()
+            threads.append(t)
+        case 'spgz_key':
+            t = threading.Thread(target=load_spgz_key, args=[path, type_update])
             t.start()
             threads.append(t)
         case 'tz':
