@@ -107,11 +107,75 @@ def load_from_internet(type_data: str, chunk_size: int = 1000) -> None:
     for thread in threads:
         thread.join()
 
-def load_sn(path: str)-> None:
-    from parser.sn import Parse
+def _get_instanse_with_type_update(model: object, type_update:str, data: dict, id: str)->object:
+    if type_update == 'full':
+        instance, created = model.objects.update_or_create(defaults=data, id=data[id])
+    else:
+        instance, created = model.objects.get_or_create(defaults=data, id=data[id])
+    return (instance, created)
+
+def load_sn(path: str, type_update:str)-> None:
+    from parser.smeta import Parse
     logger.info(f"Start parsing file: {path}")
-    l = Parse(path)
-    logger.info(l[:1][:5])
+    sn = Parse(path)[0]
+    sections = sn.pop('sections')
+    o_sn = SN(
+        type_ref = str(sn['type_ref'] if sn['type_ref']!='null' else ''), 
+        advance = str(sn['advance'] if sn['advance']!='null' else ''),
+        coef_ref = str(sn['coef_ref'] if sn['coef_ref']!='null' else ''),
+        coef_date = sn['coef_date'],
+        sum = float(sn['sum'] if sn['sum'] is not None else 0),
+        tax = float(sn['tax'] if sn['tax'] is not None else 0),
+        sum_with_tax = float(sn['sum_with_tax']  if sn['sum_with_tax'] is not None else 0),
+        sum_with_ko =float(sn['sum_with_ko'] if sn['sum_with_ko'] is not None else 0) 
+    )
+    o_sn.save()
+    for section in sections:
+        subsections = section.pop('subsections')
+        o_section = SNSection(
+            name =  str(section['name'] if section['name']!='null' else ''),
+            sum = float(section['sum']  if section['sum'] is not None else 0),
+            sn = o_sn
+        )
+        o_section.save()
+        for subsection in subsections:
+            rows = subsection.pop('rows')
+            subsection['sum'] = float(subsection['sum'] if subsection['sum'] is not None else 0)
+            o_subsection = SNSubsection(
+                name =  str(subsection['name'] if subsection['name']!='null' else ''),
+                sum = float(subsection['sum']  if subsection['sum'] is not None else 0),
+                sn_section = o_section
+            )
+            o_subsection.save()
+            for row in rows:
+                subrows = row.pop('subrows')
+                ei = row.pop('ei')
+                o_row = SNRow(
+                    sn_subsection = o_subsection,
+                    code = str(row['code'] if row['code']!='null' else ''),
+                    num = int(row['num'] if row['num'] is not None else 0),
+                    name = str(row['name'] if row['name']!='null' else ''),
+                    ei = OKEI.objects.filter(short_name=ei).first(),
+                    count = float(row['count'] if row['count'] is not None else 0),
+                    sum = float(row['sum'] if row['sum'] is not None else 0)
+                )
+                o_row.save()
+                for subrow in subrows:
+                    o_subrow = SNSubRow(
+                        sn_row  = o_row,
+                        name = str(subrow['name'] if subrow['name']!='null' else ''),
+                        ei = OKEI.objects.filter(short_name=ei).first(),
+                        count = float(subrow.get('count') if subrow.get('count') is not None else 0),
+                        amount = float(subrow.get('amount') if subrow.get('amount') is not None else 0),
+                        coef_correct = float(subrow.get('coef_correct') if subrow.get('coef_correct') is not None else 0),
+                        coef_winter = float(subrow.get('coef_winter') if subrow.get('coef_winter') is not None else 0),
+                        coef_recalc = float(subrow.get('coef_recalc') if subrow.get('coef_recalc') is not None else 0),
+                        sum_basic = float(subrow.get('sum_basic') if subrow.get('sum_basic') is not None else 0),
+                        sum_current = float(subrow.get('sum_current') if subrow.get('sum_current') is not None else 0)
+                    )
+                    o_subrow.save()
+    logger.info('SN/TSN file updated.')
+
 
 def load_spgz(path: str, type_update:str) -> None:
     from parser.spgz import Parse
@@ -131,7 +195,7 @@ def load_spgz(path: str, type_update:str) -> None:
                 if ei_o:
                     spgz.ei.add(ei_o) 
         spgz.save()
-        logger.info('SPGZ file updated.')
+    logger.info('SPGZ file updated.')
 
 def load_tz(path: str, type_update:str) -> None:
     from parser.tz import Parse
@@ -140,10 +204,11 @@ def load_tz(path: str, type_update:str) -> None:
         if created:
             for kpgz_spgz in row['rows']:
                 kpgz = KPGZ.objects.filter(pk=kpgz_spgz['kpgz_id']).first()
-                spgz = SPGZ.objects.filter(pk=kpgz_spgz['spgz_id']).first()
+                spgz = SPGZ.objects.filter(pk=int(kpgz_spgz['spgz_id'])).first()
                 if kpgz and spgz:
                     tz_row = TZRow(kpgz=kpgz, spgz=spgz, tz=tz)
                     tz_row.save()
+        tz=None
     logger.info('TZ file updated.')
 
 def load_from_file(type_data: str, path: str, type_update: str) -> None:

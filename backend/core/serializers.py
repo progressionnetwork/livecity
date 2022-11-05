@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 
-from core.models import KPGZ, OKEI, OKPD, OKPD2, FileUpdate, SPGZ, TZ, TZRow
+from core.models import SN, SNSection, SNSubsection, SNRow, SNSubRow, KPGZ, OKEI, OKPD, OKPD2, FileUpdate, SPGZ, TZ, TZRow
 
 UserModel = get_user_model()
 
@@ -12,8 +12,11 @@ class UserSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField('get_role')
 
     def get_role(self, instance):
-        groups = instance.groups.all()
-        return min([group.id for group in groups])
+        groups = [group.id for group in instance.groups.all()]
+        if groups:
+            return min(groups)
+        else: 
+            return 0
 
     def create(self, validated_data):
         user = UserModel.objects.create_user(
@@ -102,4 +105,33 @@ class TZSerializer(serializers.ModelSerializer):
     rows = TZRowSerializer(many=True)
     class Meta:
         model = TZ
+        fields = '__all__'
+
+
+class SNSubrowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SNSubRow
+        fields = '__all__'
+
+class SNRowSerializer(serializers.ModelSerializer):
+    subrows = SNSubrowSerializer(many=True, read_only=True)
+    class Meta:
+        model = SNRow
+        fields = '__all__'
+    
+class SNSubsectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SNSubsection
+        fields = '__all__'
+
+class SNSectionSerializer(serializers.ModelSerializer):
+    subsections = SNSubsectionSerializer(many=True, read_only=True)
+    class Meta:
+        model = SNSection
+        fields = '__all__'
+
+class SNSerializer(serializers.ModelSerializer):
+    sections = SNSectionSerializer(many=True, read_only=True)
+    class Meta:
+        model = SN
         fields = '__all__'

@@ -13,6 +13,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     'drf_yasg',
     'corsheaders',
     'rest_framework',
@@ -136,3 +137,5 @@ SWAGGER_SETTINGS = {
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = os.getenv('DJANGO_SSL_REDIRECT')
+
+CSRF_TRUSTED_ORIGINS=['https://*.livecity.goodgenius.ru']

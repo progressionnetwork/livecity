@@ -170,9 +170,9 @@ class OKPD2(models.Model):
 class SN(models.Model):
     ''' Сметные нормативы и территориальные сметные нормативы'''
     type_ref = models.CharField('Тип сбоника', max_length=250)  # 3
-    advance = models.IntegerField("Дополнение", default=0)  # 4
-    coef_ref = models.IntegerField("Номер сборника", default=0)  # 5
-    coef_date = models.DateField("Дата сборника")  # 6
+    advance = models.CharField("Дополнение", max_length=250, null=True, blank=True)  # 4
+    coef_ref = models.CharField("Номер сборника", max_length=250, null=True, blank=True)  # 5
+    coef_date = models.DateField("Дата сборника", null=True, blank=True)  # 6
     sum = models.FloatField('Итого', default=0.0)  # 29
     tax = models.FloatField('НДС', default=0.0)  # 30
     sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31
@@ -260,7 +260,7 @@ class SNSubRow(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}"
-
+            
     class Meta:
         verbose_name = "СН и ТСН: Статья затрат"
         verbose_name_plural = "СН и ТСН: Статьи затрат"
@@ -290,6 +290,13 @@ class TZ(models.Model):
     ''' Шаблон ТЗ '''
     name = models.CharField(max_length=2000)
 
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+    class Meta:
+        verbose_name = "ТЗ"
+        verbose_name_plural = "ТЗ"
+
 
 class TZRow(models.Model):
     ''' Строка шаблона ТЗ '''
@@ -299,3 +306,10 @@ class TZRow(models.Model):
         'KPGZ', on_delete=models.CASCADE, related_name='tz')
     spgz = models.ForeignKey(
         'SPGZ', on_delete=models.CASCADE, related_name='tz')
+
+    def __str__(self) -> str:
+        return f"{self.kpgz.code} {self.kpgz.name} - {self.spgz.id} {self.spgz.name}"
+
+    class Meta:
+        verbose_name = "ТЗ: Строка"
+        verbose_name_plural = "ТЗ: Строки"

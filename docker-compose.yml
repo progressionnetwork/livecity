@@ -53,6 +53,19 @@ services:
       backend:
         condition: service_healthy
 
+  worker_tz:
+    image: livecity_backend
+    restart: on-failure
+    container_name: livecity_worker_tz
+    env_file:
+      - ./backend/.env
+    command: bash -c "python /app/worker/loader.py tz"
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      backend:
+        condition: service_healthy
+
   worker_spgz:
     image: livecity_backend
     restart: on-failure
@@ -142,13 +155,14 @@ services:
 
   nginx:
     container_name: nginx
-    image: nginx:1.15-alpine
+    image: nginx:latest
     restart: unless-stopped
     volumes:
+      - ./deploy/nginx.conf:/etc/nginx.conf
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d
       - ./deploy/certbot/conf:/etc/letsencrypt
       - ./deploy/certbot/www:/var/www/certbot
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"' && sed -e '/^http {/,/^}/{/^}/i\\client_max_body_size 0;' -e '}' /etc/nginx/nginx.conf"
     ports:
       - "80:80"
       - "443:443"
