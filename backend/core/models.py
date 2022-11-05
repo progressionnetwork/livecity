@@ -194,7 +194,6 @@ class SNSection(models.Model):
     sn = models.ForeignKey('SN', on_delete=models.CASCADE,
                            related_name='sections')
     name = models.CharField('Наименование', max_length=250, default='Без имени')  # 7
-    sum = models.FloatField('Итого', default=0.0)  # 28
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -204,27 +203,11 @@ class SNSection(models.Model):
         verbose_name_plural = "СН и ТСН: Разделы"
 
 
-class SNSubsection(models.Model):
-    ''' Подраздел СН и ТСН '''
-
-    sn_section = models.ForeignKey(
-        'SNSection', on_delete=models.CASCADE, related_name='subsections')
-    name = models.CharField('Наименование', max_length=250, default='Без имени')  # 8
-    sum = models.FloatField('Итого', default=0.0)  # 27
-
-    def __str__(self) -> str:
-        return f"{self.name}"
-
-    class Meta:
-        verbose_name = "СН и ТСН: Подраздел"
-        verbose_name_plural = "СН и ТСН: Подразделы"
-
-
 class SNRow(models.Model):
     ''' Строка СН и ТСН '''
 
-    sn_subsection = models.ForeignKey(
-        'SNSubsection', on_delete=models.CASCADE, related_name='rows')
+    sn_section = models.ForeignKey(
+        'SNSection', on_delete=models.CASCADE, related_name='rows')
     code = models.CharField('Шифр', max_length=100)  # 2
     num = models.IntegerField('Номер п/п', default=0)  # 1
     name = models.TextField('Наименование')  # 9
