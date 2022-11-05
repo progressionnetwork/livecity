@@ -117,6 +117,7 @@ def _get_instanse_with_type_update(model: object, type_update:str, data: dict, *
 def load_sn(path: str, type_update:str)-> None:
     from parser.smeta import Parse
     logger.info(f"Start parsing file: {path}")
+    name_section = " ".join(Path(path).stem.split('_')[:-1])
     sn = Parse(path)[0]
     sections = sn.pop('sections')
     o_sn, created = _get_instanse_with_type_update(model=SN, 
@@ -132,61 +133,53 @@ def load_sn(path: str, type_update:str)-> None:
             "sum_with_ko" : float(sn['sum_with_ko'] if sn['sum_with_ko'] is not None else 0)}, 
         type_ref = str(sn['type_ref'] if sn['type_ref']!='null' else ''))
     for section in sections:
-        subsections = section.pop('subsections')
+        rows = section.pop('subsections')[0].pop('rows')
         o_section, created = _get_instanse_with_type_update(model=SNSection,
             type_update=type_update,
             data={
-                "name" :  str(section['name'] if section['name']!='null' else ''),
-                "sum": float(section['sum']  if section['sum'] is not None else 0),
+                "name" :  name_section,
                 "sn": o_sn
             },
             name=str(section['name'] if section['name']!='null' else ''), sn=o_sn)
-        for subsection in subsections:
-            rows = subsection.pop('rows')
-            o_subsection, created = _get_instanse_with_type_update(model=SNSubsection,
+        for row in rows:
+            subrows = row.pop('subrows')
+            ei = row.pop('ei')
+            ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
+            o_row, created = _get_instanse_with_type_update(model=SNRow, 
                 type_update=type_update,
-                data={
-                    "name" :  str(subsection['name'] if subsection['name']!='null' else ''),
-                    "sum": float(subsection['sum']  if subsection['sum'] is not None else 0),
-                    "sn_section": o_section
-                },
-                name=str(subsection['name'] if subsection['name']!='null' else ''), sn_section=o_section)
-            for row in rows:
-                subrows = row.pop('subrows')
-                ei = row.pop('ei')
-                o_row, created = _get_instanse_with_type_update(model=SNRow, 
-                    type_update=type_update,
-                    data = {
-                        "sn_subsection" : o_subsection,
-                        "code" : str(row['code'] if row['code']!='null' else ''),
-                        "num" : int(row['num'] if row['num'] is not None else 0),
-                        "name" : str(row['name'] if row['name']!='null' else ''),
-                        "ei" : OKEI.objects.filter(short_name=ei).first(),
-                        "count" : float(row['count'] if row['count'] is not None else 0),
-                        "sum" : float(row['sum'] if row['sum'] is not None else 0)
-                    }, 
-                    code = str(row['code'] if row['code']!='null' else ''), sn_subsection=o_subsection)
-                for subrow in subrows:
-                    o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
-                    type_update=type_update,
-                    data = {
-                        "sn_row" : o_row,
-                        "name" : str(subrow['name'] if subrow['name']!='null' else ''),
-                        "ei" : OKEI.objects.filter(short_name=ei).first(),
-                        "count" : float(subrow.get('count') if subrow.get('count') is not None else 0),
-                        "amount" : float(subrow.get('amount') if subrow.get('amount') is not None else 0),
-                        "coef_correct" : float(subrow.get('coef_correct') if subrow.get('coef_correct') is not None else 0),
-                        "coef_winter" : float(subrow.get('coef_winter') if subrow.get('coef_winter') is not None else 0),
-                        "coef_recalc" : float(subrow.get('coef_recalc') if subrow.get('coef_recalc') is not None else 0),
-                        "sum_basic" : float(subrow.get('sum_basic') if subrow.get('sum_basic') is not None else 0),
-                        "sum_current" : float(subrow.get('sum_current') if subrow.get('sum_current') is not None else 0)
-                    }, name = str(subrow['name'] if subrow['name']!='null' else ''), sn_row=o_row)
+                data = {
+                    "sn_section" : o_section,
+                    "code" : str(row['code'] if row['code']!='null' else ''),
+                    "num" : int(row['num'] if row['num'] is not None else 0),
+                    "name" : str(row['name'] if row['name']!='null' else ''),
+                    "ei" : ei,
+                    "count" : float(row['count'] if row['count'] is not None else 0),
+                    "sum" : float(row['sum'] if row['sum'] is not None else 0)
+                }, 
+                code = str(row['code'] if row['code']!='null' else ''), sn_section=o_section)
+            for subrow in subrows:
+                ei = subrow.pop('ei')
+                ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
+                o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
+                type_update=type_update,
+                data = {
+                    "sn_row" : o_row,
+                    "name" : str(subrow['name'] if subrow['name']!='null' else ''),
+                    "ei" : ei,
+                    "count" : float(subrow.get('count') if subrow.get('count') is not None else 0),
+                    "amount" : float(subrow.get('amount') if subrow.get('amount') is not None else 0),
+                    "coef_correct" : float(subrow.get('coef_correct') if subrow.get('coef_correct') is not None else 0),
+                    "coef_winter" : float(subrow.get('coef_winter') if subrow.get('coef_winter') is not None else 0),
+                    "coef_recalc" : float(subrow.get('coef_recalc') if subrow.get('coef_recalc') is not None else 0),
+                    "sum_basic" : float(subrow.get('sum_basic') if subrow.get('sum_basic') is not None else 0),
+                    "sum_current" : float(subrow.get('sum_current') if subrow.get('sum_current') is not None else 0)
+                }, name = str(subrow['name'] if subrow['name']!='null' else ''), sn_row=o_row)
     logger.info('SN/TSN file updated.')
 
 def load_smeta(path: str, type_update:str)-> None:
     from parser.smeta import Parse
     logger.info(f"Start parsing file: {path}")
-    name = Path(path).stem
+    name = " ".join(Path(path).stem.split('_')[:-1])
     smeta = Parse(path)[0]
     sections = smeta.pop('sections')
     o_smeta, created = _get_instanse_with_type_update(model=Smeta, 
@@ -227,6 +220,7 @@ def load_smeta(path: str, type_update:str)-> None:
             for row in rows:
                 subrows = row.pop('subrows')
                 ei = row.pop('ei')
+                ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
                 o_row, created = _get_instanse_with_type_update(model=SmetaRow, 
                     type_update=type_update,
                     data = {
@@ -234,18 +228,21 @@ def load_smeta(path: str, type_update:str)-> None:
                         "code" : str(row['code'] if row['code']!='null' else ''),
                         "num" : int(row['num'] if row['num'] is not None else 0),
                         "name" : str(row['name'] if row['name']!='null' else ''),
-                        "ei" : OKEI.objects.filter(short_name=ei).first(),
+                        "ei" : ei,
                         "count" : float(row['count'] if row['count'] is not None else 0),
                         "sum" : float(row['sum'] if row['sum'] is not None else 0)
                     }, 
                     code = str(row['code'] if row['code']!='null' else ''), smeta_subsection=o_subsection)
                 for subrow in subrows:
+                    logger.info(subrow)
+                    ei = subrow.pop('unit')
+                    ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
                     o_subrow, created = _get_instanse_with_type_update(model=SmetaSubRow,
                     type_update=type_update,
                     data = {
                         "smeta_row" : o_row,
                         "name" : str(subrow['name'] if subrow['name']!='null' else ''),
-                        "ei" : OKEI.objects.filter(short_name=ei).first(),
+                        "ei" : ei,
                         "count" : float(subrow.get('count') if subrow.get('count') is not None else 0),
                         "amount" : float(subrow.get('amount') if subrow.get('amount') is not None else 0),
                         "coef_correct" : float(subrow.get('coef_correct') if subrow.get('coef_correct') is not None else 0),
@@ -257,6 +254,7 @@ def load_smeta(path: str, type_update:str)-> None:
     logger.info('Smeta file updated.')
 
 def load_spgz(path: str, type_update:str) -> None:
+    logger.info(f"Start parsing file: {path}")
     from parser.spgz import Parse
     for row in Parse(path):
         row['kpgz'], created = KPGZ.objects.get_or_create(code=row['kpgz'], defaults={"code":row['kpgz'], "name": row['kpgz_name'].capitalize()})
@@ -282,7 +280,7 @@ def load_spgz_key(path: str, type_update:str) -> None:
         spgz = SPGZ.objects.filter(name=row['spgz'], kpgz=KPGZ.objects.filter(code=row['kpgz_id']).first()).first()
         if spgz:
             spgz.key = row['key']
-        spgz.save()
+            spgz.save()
     logger.info('SPGZ key file updated.')
 
 def load_tz(path: str, type_update:str) -> None:

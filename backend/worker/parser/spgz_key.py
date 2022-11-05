@@ -5,7 +5,7 @@ def Parse(path: str)-> dict:
     df =df.dropna()
     for index, row in df.iterrows():
         kpgz_id = row['КПГЗ'].split(' ')[0]
-        spgz = row['СПГЗ'].strip()
+        spgz = row['СПГЗ'].split(',')[0].strip()
         key = row['Ключевые слова']
         yield {
             "kpgz_id": kpgz_id,
