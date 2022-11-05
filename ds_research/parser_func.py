@@ -393,13 +393,13 @@ def Parse(sheet):
             # Определения разделов и подразделов
             cont_razd_any = False
             cont_podr_any = False
-            cont_razd = row.str.lower().str.contains("раздел")
+            cont_razd = row.str.lower().str.contains("раздел[^а-яА-Я]")
             cont_razd_any = cont_razd.any()
             if(cont_razd_any):
-                cont_podr = row.str.lower().str.contains("подраздел")
+                cont_podr = row.str.lower().str.contains("подраздел[^а-яА-Я]")
                 cont_podr_any = cont_podr.any()
-                start_razd_any = row.str.lower().str.startswith("раздел").any()
-                start_podr_any = row.str.lower().str.startswith("подраздел").any()
+                start_razd_any = row.str.lower().str.contains("^раздел[^а-яА-Я]").any()
+                start_podr_any = row.str.lower().str.contains("^подраздел[^а-яА-Я]").any()
             cont_itog = row.str.lower().str.contains("итог")
  
 
@@ -413,13 +413,13 @@ def Parse(sheet):
                 else:
                     # Иногда в одной линии два раза встречается подраздел
                     for cell in row:
-                        if(cell!="nan" and "подраздел" in cell.lower()):
+                        if(cell!="nan" and re.search("раздел[^а-яА-Я]",cell.lower())):
                             current_subsection = cell
                             break
 
                     #print(f"    Начало {current_subsection}")
             elif((cont_razd_any and cont_itog.any()) or start_razd_any):
-                if((cont_razd_any * cont_itog).any()):
+                if((cont_razd * cont_itog).any()):
                     #print(f"Конец {current_section}")
                     price_per_section[current_section][None] = last_float(row)
                     current_section = None
@@ -428,7 +428,7 @@ def Parse(sheet):
                 else:
                     # Иногда в одной линии два раза встречается раздел
                     for cell in row:
-                        if(cell!="nan" and "раздел" in cell.lower()):
+                        if(cell!="nan" and re.search("раздел[^а-яА-Я]",cell.lower())):
                             current_section = cell
                             price_per_section[current_section] = {None:{}}
                             break
@@ -448,7 +448,8 @@ def Parse(sheet):
                 item_indices[current_item] = [index,None,current_section,current_subsection]
 
         if(item_indices[sorted(item_indices.keys())[-1]][1] is None):
-            item_indices[sorted(item_indices.keys())[-1]][1] = item_indices[sorted(item_indices.keys())[-1]][0]+15
+            del item_indices[sorted(item_indices.keys())[-1]]
+            #item_indices[sorted(item_indices.keys())[-1]][1] = item_indices[sorted(item_indices.keys())[-1]][0]+15
 
         for index, row in df[last_matched:][::-1].iterrows():
             if(any([row.str.contains(phr, case=False).any() for phr in ["корр","кооф","пониж","повыш"]])):
@@ -463,8 +464,7 @@ def Parse(sheet):
                     out_dict["tax"] = last_float(row)
             elif(any([row.str.contains(phr, case=False).any() for phr in ["итого",]])):
                 if(not out_dict["sum"]):
-                    out_dict["sum"] = last_float(row)
-            
+                    out_dict["sum"] = last_float(row)    
 
         #0 запись исскуственная
         del item_indices[0]
@@ -518,7 +518,12 @@ def Parse(sheet):
                             first = val 
                 if(first and second and re.search('[a-zA-Zа-яА-Я]', first+second) is None):
                     main_work_dict["sum"] = check_change_type(float,first)
-                    main_work_dict["amount"] = check_change_type(float,second)
+                    if(smeta_type == "SN-2012"):
+                        main_work_dict["amount"] = check_change_type(float,second)
+                    elif(smeta_type == "TSN-2001"):
+                        main_work_dict["sum_basic"] = check_change_type(float,second)
+                        
+
                     break 
 
             main_work_dict["subrows"] = [] 
@@ -562,19 +567,22 @@ def Parse(sheet):
                 if(section["name"] == sect):
                     for sub_ind, sub_section in enumerate(out_dict["sections"][ind]["subsections"]):
                         if(sub_section["name"] == sub_sect):
-                            try:
-                                out_dict["sections"][ind]["subsections"][sub_ind]["rows"].append(main_work_dict)
-                                out_dict["sections"][ind]["sum"] = price_per_section[sect][None]
-                                out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = price_per_section[sect][sub_sect]
-                            except Exception as e:
-                                print(f"{sect=},{sub_sect=}, {price_per_section=}")
-                                exit(0)
-
+                            out_dict["sections"][ind]["subsections"][sub_ind]["rows"].append(main_work_dict)
+                            out_dict["sections"][ind]["sum"] = price_per_section[sect][None]
+                            out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = price_per_section[sect][sub_sect]
+                            if(out_dict["sections"][ind]["sum"] is not None or type(out_dict["sections"][ind]["sum"]) is not float):
+                                #print(out_dict["sections"][ind]["sum"])
+                                out_dict["sections"][ind]["sum"] = None
+                            if(out_dict["sections"][ind]["subsections"][sub_ind]["sum"] is not None or type(out_dict["sections"][ind]["subsections"][sub_ind]["sum"]) is not float):
+                                out_dict["sections"][ind]["subsections"][sub_ind]["sum"] = None
 
             all_items.append(main_work_dict)            
 
         if(out_dict["sum_with_tax"] and out_dict["sum_with_ko"]):
             out_dict["coef_ref"] = out_dict["sum_with_ko"]/out_dict["sum_with_tax"]
+            if(0.3 > out_dict["coef_ref"] or out_dict["coef_ref"] > 1):
+                out_dict["coef_ref"] = None
+                out_dict["sum_with_ko"] = None
         
         
         #Pullenti extracting ners
