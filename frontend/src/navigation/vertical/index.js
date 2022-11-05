@@ -32,6 +32,12 @@ export default [
     navLink: "/okei"
   },
   {
+    id: "spgz",
+    title: "СПГЗ",
+    icon: <Book size={20} />,
+    navLink: "/spgz"
+  },
+  {
     id: "users",
     title: "Пользователи",
     icon: <Mail size={20} />,

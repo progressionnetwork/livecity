@@ -10,21 +10,19 @@ import {
     styled,
     Chip, Stack, TableFooter, TablePagination
 } from "@mui/material";
-import {DeleteOutline, Edit, EditAttributes} from "@mui/icons-material";
+import {request} from "../utility/request";
 
-const rows = [
-    { id: 1, username: 'Snow', role: 1 },
-    { id: 2, username: 'Lannister', role: 1  },
-    { id: 3, username: 'Lannister', role: 1  },
-    { id: 4, username: 'Stark', role: 1 },
-    { id: 5, username: 'Targaryen', role: 1  },
-    { id: 6, username: 'Melisandre', role: 1 },
-    { id: 7, username: 'Clifford', role: 1  },
-    { id: 8, username: 'Frances', role: 1 },
-    { id: 9, username: 'Roxie', role: 1 }
-];
+import {DeleteOutline, Edit, EditAttributes} from "@mui/icons-material";
+import {useEffect, useState} from "react";
 
 const Users = () => {
+    const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        request('get', 'users/').then(data => {
+            setUsers(data.results)
+        })
+    }, [])
 
     const renderRole = (role) => {
         const mapRole = {
@@ -38,11 +36,11 @@ const Users = () => {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Users List 🙌</CardTitle>
+                <CardTitle>Пользователи 👨🏼‍💻</CardTitle>
             </CardHeader>
             <CardBody>
                     <TableContainer>
-                        <Table>
+                        <Table size="small">
                             <TableHead>
                                 <TableRow>
                                     <TableCell>id</TableCell>
@@ -53,7 +51,7 @@ const Users = () => {
                             </TableHead>
 
                             <TableBody>
-                                {rows.map((row) => (
+                                {users.map((row) => (
                                     <TableRow key={row.name}>
                                         <TableCell>
                                             {row.id}
@@ -75,13 +73,13 @@ const Users = () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
-                <TablePagination
-                    component="div"
-                    count={rows.length}
-                    rowsPerPage={25}
-                    page={0}
-                    onPageChange={(e) => console.log(e)}
-                />
+                {/*<TablePagination*/}
+                {/*    component="div"*/}
+                {/*    count={users.length}*/}
+                {/*    rowsPerPage={25}*/}
+                {/*    page={0}*/}
+                {/*    onPageChange={(e) => console.log(e)}*/}
+                {/*/>*/}
             </CardBody>
         </Card>
     )

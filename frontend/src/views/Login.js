@@ -14,10 +14,12 @@ import {
 } from "reactstrap"
 import "@styles/react/pages/page-authentication.scss"
 import axios from "axios";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {setUserData} from "../redux/user";
+import {useEffect} from "react";
 
 const Login = () => {
+    const user = useSelector(state => state.user.data)
     const {skin} = useSkin()
     const dispatch = useDispatch()
     const nav = useNavigate()
@@ -35,12 +37,17 @@ const Login = () => {
             if (response.data) {
                 localStorage.setItem('token', response.data.token)
                 dispatch(setUserData(response.data?.user))
-                nav('/')
             }
         } catch (e) {
             console.log('Bad auth')
         }
     }
+
+    useEffect(() => {
+        if (user) {
+            nav('/')
+        }
+    }, [user])
 
     return (
         <div className="auth-wrapper auth-cover">
@@ -169,7 +176,7 @@ const Login = () => {
                                 </Label>
                             </div>
                             <Button color="primary" block>
-                                Sign in
+                                Войти
                             </Button>
                         </Form>
                     </Col>

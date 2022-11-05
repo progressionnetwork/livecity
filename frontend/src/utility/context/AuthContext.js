@@ -5,18 +5,18 @@ import {useDispatch} from "react-redux";
 import Spinner from "../../@core/components/spinner/Fallback-spinner"
 
 export const AuthProvider = ({children}) => {
-    // const [loading, setLoading] = useState(true);
-    // const dispatch = useDispatch()
-    // useEffect(() => {
-    //     request('get', 'me/').then((e) => {
-    //         dispatch(setUserData(e.user))
-    //         setLoading(false)
-    //     }).catch(() => setLoading(false))
-    // }, [])
-    //
-    // if (loading) {
-    //     return <Spinner/>
-    // }
+    const [loading, setLoading] = useState(true);
+    const dispatch = useDispatch()
+    useEffect(() => {
+        request('get', 'me/').then((e) => {
+            dispatch(setUserData(e.user))
+            setLoading(false)
+        }).catch(() => setLoading(false))
+    }, [])
+
+    if (loading) {
+        return <Spinner/>
+    }
 
     return children;
 }
