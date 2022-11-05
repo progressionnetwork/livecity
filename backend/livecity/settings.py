@@ -138,4 +138,4 @@ SWAGGER_SETTINGS = {
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = os.getenv('DJANGO_SSL_REDIRECT')
 
-CSRF_TRUSTED_ORIGINS=['https://*.livecity.goodgenius.ru']
+CSRF_TRUSTED_ORIGINS=['https://*.livecity.goodgenius.ru', 'http://localhost:8000/']

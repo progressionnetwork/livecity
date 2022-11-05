@@ -5,6 +5,7 @@ import VerticalNavMenuSectionHeader from "./VerticalNavMenuSectionHeader"
 
 // ** Utils
 import { resolveVerticalNavMenuItemComponent as resolveNavItemComponent } from "@layouts/utils"
+import {canViewMenuGroup} from '../../../../layouts/utils';
 
 const VerticalMenuNavItems = (props) => {
   // ** Components Object
@@ -19,9 +20,7 @@ const VerticalMenuNavItems = (props) => {
     const TagName = Components[resolveNavItemComponent(item)]
     if (item.children) {
       return (
-        canViewMenuGroup(item) && (
           <TagName item={item} index={index} key={item.id} {...props} />
-        )
       )
     }
     return <TagName key={item.id || item.header} item={item} {...props} />

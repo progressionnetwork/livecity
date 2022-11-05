@@ -107,11 +107,11 @@ def load_from_internet(type_data: str, chunk_size: int = 1000) -> None:
     for thread in threads:
         thread.join()
 
-def _get_instanse_with_type_update(model: object, type_update:str, data: dict, id: str)->object:
+def _get_instanse_with_type_update(model: object, type_update:str, data: dict, *args, **kwargs)->object:
     if type_update == 'full':
-        instance, created = model.objects.update_or_create(defaults=data, id=data[id])
+        instance, created = model.objects.update_or_create(defaults=data, *args, **kwargs)
     else:
-        instance, created = model.objects.get_or_create(defaults=data, id=data[id])
+        instance, created = model.objects.get_or_create(defaults=data, *args, **kwargs)
     return (instance, created)
 
 def load_sn(path: str, type_update:str)-> None:
@@ -119,61 +119,68 @@ def load_sn(path: str, type_update:str)-> None:
     logger.info(f"Start parsing file: {path}")
     sn = Parse(path)[0]
     sections = sn.pop('sections')
-    o_sn = SN(
-        type_ref = str(sn['type_ref'] if sn['type_ref']!='null' else ''), 
-        advance = str(sn['advance'] if sn['advance']!='null' else ''),
-        coef_ref = str(sn['coef_ref'] if sn['coef_ref']!='null' else ''),
-        coef_date = sn['coef_date'],
-        sum = float(sn['sum'] if sn['sum'] is not None else 0),
-        tax = float(sn['tax'] if sn['tax'] is not None else 0),
-        sum_with_tax = float(sn['sum_with_tax']  if sn['sum_with_tax'] is not None else 0),
-        sum_with_ko =float(sn['sum_with_ko'] if sn['sum_with_ko'] is not None else 0) 
-    )
-    o_sn.save()
+    o_sn, created = _get_instanse_with_type_update(model=SN, 
+        type_update=type_update, 
+        data={
+            "type_ref" : str(sn['type_ref'] if sn['type_ref']!='null' else ''), 
+            "advance" :  str(sn['advance'] if sn['advance']!='null' else ''),
+            "coef_ref" : str(sn['coef_ref'] if sn['coef_ref']!='null' else ''),
+            "coef_date" : sn['coef_date'],
+            "sum" : float(sn['sum'] if sn['sum'] is not None else 0),
+            "tax" : float(sn['tax'] if sn['tax'] is not None else 0),
+            "sum_with_tax" : float(sn['sum_with_tax']  if sn['sum_with_tax'] is not None else 0),
+            "sum_with_ko" : float(sn['sum_with_ko'] if sn['sum_with_ko'] is not None else 0)}, 
+        type_ref = str(sn['type_ref'] if sn['type_ref']!='null' else ''))
     for section in sections:
         subsections = section.pop('subsections')
-        o_section = SNSection(
-            name =  str(section['name'] if section['name']!='null' else ''),
-            sum = float(section['sum']  if section['sum'] is not None else 0),
-            sn = o_sn
-        )
-        o_section.save()
+        o_section, created = _get_instanse_with_type_update(model=SNSection,
+            type_update=type_update,
+            data={
+                "name" :  str(section['name'] if section['name']!='null' else ''),
+                "sum": float(section['sum']  if section['sum'] is not None else 0),
+                "sn": o_sn
+            },
+            name=str(section['name'] if section['name']!='null' else ''))
         for subsection in subsections:
             rows = subsection.pop('rows')
-            subsection['sum'] = float(subsection['sum'] if subsection['sum'] is not None else 0)
-            o_subsection = SNSubsection(
-                name =  str(subsection['name'] if subsection['name']!='null' else ''),
-                sum = float(subsection['sum']  if subsection['sum'] is not None else 0),
-                sn_section = o_section
-            )
-            o_subsection.save()
+            o_subsection, created = _get_instanse_with_type_update(model=SNSubsection,
+                type_update=type_update,
+                data={
+                    "name" :  str(subsection['name'] if subsection['name']!='null' else ''),
+                    "sum": float(subsection['sum']  if subsection['sum'] is not None else 0),
+                    "sn_section": o_section
+                },
+                name=str(subsection['name'] if subsection['name']!='null' else ''))
             for row in rows:
                 subrows = row.pop('subrows')
                 ei = row.pop('ei')
-                o_row = SNRow(
-                    sn_subsection = o_subsection,
-                    code = str(row['code'] if row['code']!='null' else ''),
-                    num = int(row['num'] if row['num'] is not None else 0),
-                    name = str(row['name'] if row['name']!='null' else ''),
-                    ei = OKEI.objects.filter(short_name=ei).first(),
-                    count = float(row['count'] if row['count'] is not None else 0),
-                    sum = float(row['sum'] if row['sum'] is not None else 0)
-                )
-                o_row.save()
+                o_row, created = _get_instanse_with_type_update(model=SNRow, 
+                    type_update=type_update,
+                    data = {
+                        "sn_subsection" : o_subsection,
+                        "code" : str(row['code'] if row['code']!='null' else ''),
+                        "num" : int(row['num'] if row['num'] is not None else 0),
+                        "name" : str(row['name'] if row['name']!='null' else ''),
+                        "ei" : OKEI.objects.filter(short_name=ei).first(),
+                        "count" : float(row['count'] if row['count'] is not None else 0),
+                        "sum" : float(row['sum'] if row['sum'] is not None else 0)
+                    }, 
+                    code = str(row['code'] if row['code']!='null' else ''))
                 for subrow in subrows:
-                    o_subrow = SNSubRow(
-                        sn_row  = o_row,
-                        name = str(subrow['name'] if subrow['name']!='null' else ''),
-                        ei = OKEI.objects.filter(short_name=ei).first(),
-                        count = float(subrow.get('count') if subrow.get('count') is not None else 0),
-                        amount = float(subrow.get('amount') if subrow.get('amount') is not None else 0),
-                        coef_correct = float(subrow.get('coef_correct') if subrow.get('coef_correct') is not None else 0),
-                        coef_winter = float(subrow.get('coef_winter') if subrow.get('coef_winter') is not None else 0),
-                        coef_recalc = float(subrow.get('coef_recalc') if subrow.get('coef_recalc') is not None else 0),
-                        sum_basic = float(subrow.get('sum_basic') if subrow.get('sum_basic') is not None else 0),
-                        sum_current = float(subrow.get('sum_current') if subrow.get('sum_current') is not None else 0)
-                    )
-                    o_subrow.save()
+                    o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
+                    type_update=type_update,
+                    data = {
+                        "sn_row" : o_row,
+                        "name" : str(subrow['name'] if subrow['name']!='null' else ''),
+                        "ei" : OKEI.objects.filter(short_name=ei).first(),
+                        "count" : float(subrow.get('count') if subrow.get('count') is not None else 0),
+                        "amount" : float(subrow.get('amount') if subrow.get('amount') is not None else 0),
+                        "coef_correct" : float(subrow.get('coef_correct') if subrow.get('coef_correct') is not None else 0),
+                        "coef_winter" : float(subrow.get('coef_winter') if subrow.get('coef_winter') is not None else 0),
+                        "coef_recalc" : float(subrow.get('coef_recalc') if subrow.get('coef_recalc') is not None else 0),
+                        "sum_basic" : float(subrow.get('sum_basic') if subrow.get('sum_basic') is not None else 0),
+                        "sum_current" : float(subrow.get('sum_current') if subrow.get('sum_current') is not None else 0)
+                    }, name = str(subrow['name'] if subrow['name']!='null' else ''))
     logger.info('SN/TSN file updated.')
 
 
