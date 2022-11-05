@@ -276,6 +276,15 @@ def load_spgz(path: str, type_update:str) -> None:
         spgz.save()
     logger.info('SPGZ file updated.')
 
+def load_spgz_key(path: str, type_update:str) -> None:
+    from parser.spgz_key import Parse
+    for row in Parse(path):
+        spgz = SPGZ.objects.filter(name=row['spgz'], kpgz=KPGZ.objects.filter(code=row['kpgz_id']).first()).first()
+        if spgz:
+            spgz.key = row['key']
+        spgz.save()
+    logger.info('SPGZ key file updated.')
+
 def load_tz(path: str, type_update:str) -> None:
     from parser.tz import Parse
     for row in Parse(path):
@@ -299,6 +308,10 @@ def load_from_file(type_data: str, path: str, type_update: str) -> None:
             threads.append(t)
         case 'spgz':
             t = threading.Thread(target=load_spgz, args=[path, type_update])
+            t.start()
+            threads.append(t)
+        case 'spgz_key':
+            t = threading.Thread(target=load_spgz_key, args=[path, type_update])
             t.start()
             threads.append(t)
         case 'tz':

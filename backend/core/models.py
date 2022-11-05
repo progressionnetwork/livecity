@@ -61,6 +61,7 @@ class FileUpdate(models.Model):
         ('sn', 'sn'),
         ('smeta', 'smeta'),
         ('spgz', 'spgz'),
+        ('spgz_key', 'spgz_key'),
         ('tz', 'tz'),
     )
 
@@ -277,6 +278,7 @@ class SPGZ(models.Model):
         'OKPD', on_delete=models.SET_NULL, related_name='spgz', null=True, blank=True)
     okpd2 = models.ForeignKey(
         'OKPD2', on_delete=models.SET_NULL, related_name='spgz', null=True, blank=True)
+    key = models.CharField(max_length=1000, blank=True, null=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
