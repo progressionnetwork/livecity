@@ -15,19 +15,19 @@ import {useEffect, useState} from "react";
 import {request} from "../utility/request";
 import {useNavigate} from "react-router-dom";
 
-const ListSn = () => {
-    const nav = useNavigate()
+const ListTz = () => {
+    const nav = useNavigate();
 
     const [maxResults, setMaxResults] = useState(0)
     const [nextPage, setNextPage] = useState('')
-    const [snList, setSnList] = useState(null)
+    const [tzList, setTzList] = useState(null)
 
     const [editItem, setEditItem] = useState();
     const [isModalEdit, setIsModalEdit] = useState(false)
 
     useEffect(() => {
-        request('get', 'sn/').then(data => {
-            setSnList(data)
+        request('get', 'tz/').then(data => {
+            setTzList(data)
         })
     }, [])
 
@@ -50,10 +50,10 @@ const ListSn = () => {
                     </div>
                 </CardHeader>
                 <CardBody>
-                    {snList ? <div className='react-List block'>
-                        {snList.map(e => <Card key={e.code} style={{ marginBottom: 0 }} onClick={() => nav(`/sn/${e.id}`)}>
+                    {tzList ? <div className='react-List block'>
+                        {tzList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>
                             <CardHeader>
-                                <CardTitle>{e.type_ref}</CardTitle>
+                                <CardTitle>{e.name}</CardTitle>
                                 <div>
                                     <Button.Ripple color='flat-primary' onClick={(j) => {
                                         // setIsModalEdit(true)
@@ -95,4 +95,5 @@ const ListSn = () => {
     )
 }
 
-export default ListSn;
+export default ListTz;
+
