@@ -13,7 +13,7 @@ from drf_yasg import openapi
 from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ, SN, SNRow, Smeta, SmetaRow)
 from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer,
                                 OKPDSerializer, UserSerializer,
-                                AuthTokenSerializer, TZSerializer, SPGZSerializer, TZRowSerializer, 
+                                AuthTokenSerializer, TZSerializer, SPGZSerializer, TZSerializerShort, 
                                 SNSerializer, SNRowSerializer, SNSerializerShort,
                                 SmetaSerializer, SmetaRowSerializer, SmetaSerializerShort)
 
@@ -203,6 +203,11 @@ class TZView(ModelViewSet):
         permissions.IsAuthenticated
     ]
     queryset = TZ.objects.all()
+
+    def list(self, request):
+        queryset = TZ.objects.all()
+        serializer = TZSerializerShort(queryset, many=True)
+        return Response(serializer.data)
 
 class SNView(ModelViewSet):
     ''' СН / ТСН  '''

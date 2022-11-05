@@ -117,7 +117,7 @@ def _get_instanse_with_type_update(model: object, type_update:str, data: dict, *
 def load_sn(path: str, type_update:str)-> None:
     from parser.smeta import Parse
     logger.info(f"Start parsing file: {path}")
-    name_section = " ".join(Path(path).stem.split('_')[:-1])
+    name_section = Path(path).stem
     sn = Parse(path)[0]
     sections = sn.pop('sections')
     o_sn, created = _get_instanse_with_type_update(model=SN, 
@@ -158,7 +158,6 @@ def load_sn(path: str, type_update:str)-> None:
                 }, 
                 code = str(row['code'] if row['code']!='null' else ''), sn_section=o_section)
             for subrow in subrows:
-                logger.info(subrow)
                 ei = row.get('ei', None)
                 ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
                 o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
@@ -180,7 +179,7 @@ def load_sn(path: str, type_update:str)-> None:
 def load_smeta(path: str, type_update:str)-> None:
     from parser.smeta import Parse
     logger.info(f"Start parsing file: {path}")
-    name = " ".join(Path(path).stem.split('_')[:-1])
+    name = Path(path).stem
     smeta = Parse(path)[0]
     sections = smeta.pop('sections')
     o_smeta, created = _get_instanse_with_type_update(model=Smeta, 

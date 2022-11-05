@@ -112,6 +112,11 @@ class TZSerializer(serializers.ModelSerializer):
         model = TZ
         fields = '__all__'
 
+class TZSerializerShort(serializers.ModelSerializer):
+    class Meta:
+        model = TZ
+        fields = '__all__'
+
 
 class SNSubrowSerializer(serializers.ModelSerializer):
     class Meta:
