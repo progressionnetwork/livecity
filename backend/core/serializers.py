@@ -142,7 +142,7 @@ class SNSectionSerializerShort(serializers.ModelSerializer):
         fields = '__all__'
 
 class SNSerializer(serializers.ModelSerializer):
-    sections = SNSectionSerializer(many=True, read_only=True)
+    sections = SNSectionSerializerShort(many=True, read_only=True)
     class Meta:
         model = SN
         fields = '__all__'
