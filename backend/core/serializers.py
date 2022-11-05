@@ -156,7 +156,7 @@ class SNSerializerShort(serializers.ModelSerializer):
     sections = SNSectionSerializerShort(many=True, read_only=True)
     class Meta:
         model = SN
-        fields = ['id', 'type_ref']
+        fields = ['id', 'type_ref', 'sections']
 
 
 class SmetaSubrowSerializer(serializers.ModelSerializer):
