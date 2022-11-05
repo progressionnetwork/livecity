@@ -41,6 +41,7 @@ const Spgz = lazy(() => import("../../views/Spgz"))
 const ListSn = lazy(() => import("../../views/ListSn"))
 const Sn = lazy(() => import("../../views/Sn"))
 const ListSmeta = lazy(() => import("../../views/ListSn"))
+const ListTz = lazy(() => import("../../views/ListTz"))
 const Smeta = lazy(() => import("../../views/Smeta"))
 
 // ** Merge Routes
@@ -81,6 +82,10 @@ const Routes = [
   {
     path: '/sn/:id',
     element: <Sn />
+  },
+  {
+    path: '/tz',
+    element: <ListTz />
   },
   {
     path: '/smeta',

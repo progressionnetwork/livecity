@@ -9,15 +9,20 @@ import TreeItem from '@mui/lab/TreeItem';
 import {request} from '../utility/request'
 import {Card, CardBody, CardHeader, CardTitle, Spinner} from "reactstrap";
 
+
+function generateNodeId() {
+    return (Math.random() + 1).toString(36).substring(7);
+}
+
 const Sn = () => {
     const params = useParams();
 
     const [sn, setSn] = useState(null);
+    const [nodes, setNodes] = useState([]);
 
     useEffect(() => {
         if (params.id) {
             request('get', `sn/${params.id}/`).then(data => {
-                console.log(data)
                 setSn(data)
             })
         }
@@ -28,6 +33,7 @@ const Sn = () => {
             {sn ? <Card>
                     <CardHeader>
                         <CardTitle>{sn.type_ref}</CardTitle>
+                    </CardHeader>
                         <CardBody>
                             <TreeView
                                 aria-label="disabled items"
@@ -35,12 +41,20 @@ const Sn = () => {
                                 defaultExpandIcon={<ChevronRightIcon />}
                                 multiSelect
                             >
-                                {/*{*/}
-                                {/*    sn*/}
-                                {/*}*/}
+                                {sn.sections.map((e1, i1) => (
+                                    <TreeItem nodeId={i1.toString()} label={e1.name}>
+                                        <TreeItem nodeId="3" label="dfs">
+                                            <TreeItem nodeId="fdsfhjkahjf" label="vfdhgagr5q34g">
+                                            </TreeItem>
+                                            <TreeItem nodeId="dfhjsdfg" label="feafsd">
+                                            </TreeItem>
+                                            <TreeItem nodeId="dsfr44" label="fweg">
+                                            </TreeItem>
+                                        </TreeItem>
+                                    </TreeItem>
+                                ))}
                             </TreeView>
                         </CardBody>
-                    </CardHeader>
                 </Card> : <Spinner />
             }
 
