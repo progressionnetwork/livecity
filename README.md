@@ -61,10 +61,10 @@ https://api.livecity.goodgenius.ru/docs/
 Для этого необходимо иметь устновленый docker и/или docker-compose выполнить
 следующие команды:
 
-git clone https://github.com/gg-goodgenius/livecity
-cd livecity
-docker compose –f docker-compose.local.yml build —no-cache —pull
-docker compose –f docker-compose.local.yml up –d
+- git clone https://github.com/gg-goodgenius/livecity
+- cd livecity
+- docker compose –f docker-compose.local.yml build —no-cache —pull
+- docker compose –f docker-compose.local.yml up –d
 
 Также для разворачивания только API сервиса можно использовать файл docker-compose.back.yml
 
