@@ -89,7 +89,7 @@ https://api.livecity.goodgenius.ru/docs/
 - Python/Pandas/regex
 - Levenshtein/TfidfVectorizer/NLTK
 - FastText/Pymorphy
-- Sbercloud infrasturucte
+- Sbercloud IaaS/PaaS Infrastructure
 - Docker
 - React js
 - Django/python
