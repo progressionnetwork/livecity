@@ -21,7 +21,7 @@ module.exports = {
   rules: {
     'no-console': 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-
+    'space-infix-ops': 'off',
     // Best Practices
     eqeqeq: 'error',
     'no-invalid-this': 'error',
