@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from core.models import (SN, SNSection, SNRow, SNSubRow, 
                             KPGZ, OKEI, OKPD, OKPD2, 
                             FileUpdate, SPGZ,
-                            TZ, TZRow,
+                            TZ, TZRow, SmetaRowStatWords, SmetaRowStat,
                             Smeta, SmetaSection, SmetaSubsection, SmetaSubRow, SmetaRow)
 
 
@@ -170,14 +170,69 @@ class SmetaSubrowSerializer(serializers.ModelSerializer):
         model = SmetaSubRow
         fields = '__all__'
 
+class SmetaRowStatWordsSerializer(serializers.ModelSerializer):
+    percent = serializers.SerializerMethodField('get_percent')
+    
+    def get_percent(self, instance):
+        return round(instance.percent, 2)
+
+    class Meta:
+        model = SmetaRowStatWords
+        fields = '__all__'
+
+class SmetaRowStatSerializer(serializers.ModelSerializer):
+    stat_words = SmetaRowStatWordsSerializer(many=True, read_only=True)
+    sn = serializers.SerializerMethodField('get_sn')
+    fasttext_spgz = serializers.SerializerMethodField('get_fasttext_spgz')
+    key_phrases_spgz = serializers.SerializerMethodField('get_key_phrases_spgz')
+    fasstext_percent = serializers.SerializerMethodField('get_fasstext_percent')
+    key_phrases_percent = serializers.SerializerMethodField('get_key_phrases_percent')
+    levenst_ratio = serializers.SerializerMethodField('get_levenst_ratio')
+    key_percent = serializers.SerializerMethodField('get_key_percent')
+    
+    def get_sn(self, instance):
+        return instance.sn.type_ref
+
+    def get_fasttext_spgz(self, instance):
+        return instance.fasttext_spgz.name
+    
+    def get_key_phrases_spgz(self, instance):
+        return instance.key_phrases_spgz.name
+    
+    def get_fasstext_percent(self, instance):
+        return round(instance.fasstext_percent, 2)
+    
+    def get_key_phrases_percent(self, instance):
+        return round(instance.key_phrases_percent, 2)
+    
+    def get_levenst_ratio(self, instance):
+        return round(instance.levenst_ratio, 2)
+
+    def get_key_percent(self, instance):
+        return round(instance.key_percent, 2)
+    
+
+    class Meta:
+        model = SmetaRowStat
+        fields = '__all__'
+
 class SmetaRowSerializer(serializers.ModelSerializer):
     ei = OKEISerializer(many=False, read_only=True)    
+    stats = SmetaRowStatSerializer(many=True, read_only=True)
+
     class Meta:
         model = SmetaRow
         fields = '__all__'
     
 class SmetaSubsectionSerializer(serializers.ModelSerializer):
     rows = SmetaRowSerializer(many=True, read_only=True)
+    name = serializers.SerializerMethodField('get_name')
+    
+    def get_name(self, instance):
+        return instance.name if instance.name != "None" else "Подраздел без имени"
+
+    
+
     class Meta:
         model = SmetaSubsection
         fields = '__all__'

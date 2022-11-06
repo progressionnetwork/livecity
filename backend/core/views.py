@@ -6,10 +6,15 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
 from django.contrib.postgres.search import SearchVector
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import io
+import xlsxwriter
+from django.http import HttpResponse, FileResponse
+
 
 from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ, SN, SNSection, Smeta, SmetaRow)
 from core.serializers import (  FileUpdateSerializer, KPGZSerializer, OKEISerializer, OKPD2Serializer,
@@ -243,6 +248,42 @@ class SmetaView(ModelViewSet):
         queryset = Smeta.objects.all()
         serializer = SmetaSerializerShort(queryset, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def short_smeta(self, request, pk=None):
+        ''' Получить статистику по смете и определить ключевые позиции '''
+        smeta = self.get_object()
+        smeta.send_rabbitmq()
+        return Response({'result': True})
+
+    @action(detail=True, methods=['get'])
+    def excel(self, request, pk=None):
+        ''' Экспорт excel файла с обработанной сметой '''
+        smeta = self.get_object()
+        row_num =1
+        buffer = io.BytesIO()
+        workbook = xlsxwriter.Workbook(buffer)
+        worksheet = workbook.add_worksheet()
+        for section in smeta.sections.all():
+            for subsection in section.subsections.all():
+                for row in subsection.rows.filter(is_key=True):
+                    for row_stat in row.stats.all():
+                        spgz = row_stat.fasttext_spgz
+                        col =1
+                        worksheet.write(row_num, col+0, row.num)
+                        worksheet.write(row_num, col+1, spgz.id)
+                        worksheet.write(row_num, col+2, spgz.kpgz.name)
+                        worksheet.write(row_num, col+3, row.code)
+                        worksheet.write(row_num, col+4, row.name)
+                        worksheet.write(row_num, col+5, spgz.name)
+                        worksheet.write(row_num, col+6, row.ei.short_name if row.ei else "-")
+                        worksheet.write(row_num, col+7, row.count)
+                        worksheet.write(row_num, col+8, row.sum)
+                        worksheet.write(row_num, col+9, smeta.address)
+                        row_num += 1
+        workbook.close()
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename='report.xlsx')
 
 class SmetaRowView(ModelViewSet):
     ''' Строки сметы '''

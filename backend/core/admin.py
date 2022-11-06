@@ -1,7 +1,7 @@
 from django.contrib import admin
 from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, SPGZ, 
                             SN, SNSection, SNRow, SNSubRow, 
-                            TZ, TZRow,
+                            TZ, TZRow, SmetaRowStat,
                             Smeta, SmetaSection, SmetaSubsection, SmetaRow, SmetaSubRow)
 
 admin.site.register(KPGZ)
@@ -21,3 +21,4 @@ admin.site.register(SmetaRow)
 admin.site.register(SmetaSubRow)
 admin.site.register(TZ)
 admin.site.register(TZRow)
+admin.site.register(SmetaRowStat)

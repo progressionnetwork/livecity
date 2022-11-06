@@ -1,14 +1,36 @@
 import {useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
-import {Card, CardBody, CardFooter, CardHeader, CardTitle, Spinner} from "reactstrap";
+import {
+    Button,
+    Card,
+    CardBody,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+    Input,
+    Label,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    Spinner
+} from "reactstrap";
 
 import {request} from "../utility/request";
 import TreeView from "@mui/lab/TreeView";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TreeItem from "@mui/lab/TreeItem";
-import {DateRange, DockSharp, DocumentScannerSharp, Edit, LocationCity, LocationOn, Money} from "@mui/icons-material";
-import {rowBlackList, rowMapper} from "../configs/rowTree";
+import {
+    DateRange,
+    DockSharp,
+    DocumentScannerSharp,
+    Edit,
+    LocationCity,
+    LocationOn,
+    Money,
+    NotificationImportantSharp
+} from "@mui/icons-material";
+import {rowBlackList, rowMapper, statMapper, statWordMapper} from "../configs/rowTree";
 import {Stack} from "@mui/material";
 
 function generateNodeId() {
@@ -19,6 +41,29 @@ function generateNodeId() {
 const Smeta = () => {
     const {id} = useParams()
     const [smeta, setSmeta] = useState(null);
+
+    const [editItem, setEditItem] = useState();
+    const [isModalEdit, setIsModalEdit] = useState(false)
+
+    const updateSmeta = async () => {
+        // try {
+        //     await request('put', `okpd/${editItem?.id}/`,
+        //         {
+        //             [editItem?.name]: editItem.value
+        //         }
+        //     );
+        // } catch (e) {
+        //     console.log('update okpd', 'что то пошло не так')
+        // }
+        //
+        // setOkpdList(prev => {
+        //     const list = prev.splice(0);
+        //     const i = list.findIndex(e => e.code === editItem.code);
+        //     list.splice(i, 1, editItem)
+        //     return list;
+        // })
+        setIsModalEdit(false)
+    }
 
     useEffect(() => {
         if (id) {
@@ -39,25 +84,25 @@ const Smeta = () => {
                         <Stack spacing={1} direction="row">
                             <LocationOn />
                             <div>
-                                {smeta.address}
+                                Адрес: {smeta.address}
                             </div>
                         </Stack>
                         <Stack spacing={1}  mt={1}  direction="row">
                             <Money />
                             <div>
-                                {smeta.sum} р.
+                                Сумма без НДС: {smeta.sum} р.
                             </div>
                         </Stack>
                         <Stack spacing={1}  mt={1}  direction="row">
                             <Money />
                             <div>
-                                {smeta.tax} р.
+                                НДС: {smeta.tax} р.
                             </div>
                         </Stack>
                         <Stack spacing={1}  mt={1}  direction="row">
                             <Money />
                             <div>
-                                {smeta.sum_with_tax} р.
+                                Сумма с НДС: {smeta.sum_with_tax} р.
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
@@ -81,35 +126,94 @@ const Smeta = () => {
                         >
                             {smeta.sections.map((section, i) => (
                                 <TreeItem
-                                    icon={<Edit />}
+                                    icon={<Edit onClick={(e) => {
+                                        setIsModalEdit(true)
+                                        setEditItem({
+                                            name: 'name',
+                                            value: section.name,
+                                            id: section.id
+                                        })
+                                        e.stopPropagation();
+                                    }}/>}
                                     key={section.id}
                                     nodeId={section.id.toString()}
                                     label={section.name}
                                 >
                                     {section.subsections.map((subsection) => (
                                         <TreeItem
-                                            icon={<Edit />}
+                                            icon={<Edit
+                                                onClick={(e) => {
+                                                    setIsModalEdit(true)
+                                                    setEditItem({
+                                                        name: 'name',
+                                                        value: subsection.name,
+                                                        id: subsection.id
+                                                    })
+                                                    e.stopPropagation();
+                                                }}
+                                            />}
                                             key={subsection.id}
                                             nodeId={generateNodeId()}
                                             label={subsection.name}
                                         >
                                             {subsection.rows.map((row) => (
                                                 <TreeItem
-                                                    icon={<Edit />}
+                                                    icon={<Edit
+                                                        onClick={(e) => {
+                                                            setIsModalEdit(true)
+                                                            setEditItem({
+                                                                name: 'name',
+                                                                value: row.name,
+                                                                id: row.id
+                                                            })
+                                                            e.stopPropagation();
+                                                        }}
+                                                    />}
                                                     nodeId={generateNodeId()}
                                                     label={row.name}
                                                 >
                                                     {Object.keys(row).filter(name => !rowBlackList.includes(name)).map((name) => (
+                                                        name === 'is_key' ? <TreeItem
+                                                                nodeId={generateNodeId()}
+                                                                label={`${rowMapper[name] ?? name} - ${row[name] ? 'Да' : 'Нет'}`}
+                                                            /> :
                                                         name === 'ei' ?
                                                             <TreeItem
                                                                 nodeId={generateNodeId()}
                                                                 label={`${name} - ${row.ei?.name}`}
-                                                            /> :
-                                                            <TreeItem
-                                                                nodeId={generateNodeId()}
-                                                                label={`${rowMapper[name]} - ${row[name]}`}
-                                                                icon={<Edit />}
-                                                            />
+                                                            /> : name === 'stats' ?
+                                                                <TreeItem nodeId={generateNodeId()} label="Статистика">
+                                                                    {row.stats.map(stat => (
+                                                                        <TreeItem nodeId={generateNodeId()} label={stat.sn}>
+                                                                            {Object.keys(stat).filter(name => !rowBlackList.includes(name)).filter(e => e !== 'sn').map((name) => (
+                                                                                name === 'is_key' ? <TreeItem
+                                                                                        nodeId={generateNodeId()}
+                                                                                        label={`${statMapper[name] ?? name} - ${row[name] ? 'Да' : 'Нет'}`}
+                                                                                    /> :
+                                                                                name === 'stat_words' ?
+                                                                                    <TreeItem nodeId={generateNodeId()} label="Статистика по словам">
+                                                                                        {stat.stat_words.map(stat_word => (
+                                                                                            <TreeItem nodeId={generateNodeId()} label={`${stat_word.name} - ${stat_word.percent}`} />
+                                                                                        ))}
+                                                                                    </TreeItem> :
+                                                                                    <TreeItem nodeId={generateNodeId()} label={`${statMapper[name] ?? name} - ${stat[name]}`} />
+                                                                            ))}
+                                                                        </TreeItem>
+                                                                    ))}
+                                                                </TreeItem>
+                                                            :  <TreeItem
+                                                                    nodeId={generateNodeId()}
+                                                                    label={`${rowMapper[name] ?? name} - ${row[name]}`}
+                                                                    icon={<Edit onClick={(e) => {
+                                                                        setIsModalEdit(true)
+                                                                        setEditItem({
+                                                                            name,
+                                                                            value: row[name],
+                                                                            id: row.id
+                                                                        })
+                                                                        e.stopPropagation();
+                                                                    }} />}
+                                                                />
                                                     ))}
                                                 </TreeItem>
                                             ))}
@@ -121,6 +225,26 @@ const Smeta = () => {
                     </CardFooter>
                 </Card> : <Spinner/>
             }
+
+            <Modal isOpen={isModalEdit} toggle={() => setIsModalEdit(!isModalEdit)} className='modal-dialog-centered'>
+                <ModalBody>
+                    <div>
+                        <Label className='form-label' for='name'>
+                            Название:
+                        </Label>
+                        <Input type='name' id='name' value={editItem?.value} onChange={(e => setEditItem(prev => ({
+                            ...prev,
+                            value: e.target.value
+                        })))} placeholder='Название' />
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color='primary' onClick={updateSmeta}>
+                        Сохрнать
+                    </Button>{' '}
+                </ModalFooter>
+            </Modal>
+
         </div>
     )
 }

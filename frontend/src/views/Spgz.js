@@ -79,7 +79,7 @@ const Okpd2 = () => {
                     {spgzList ? <div className='react-List block'>
                         {spgzList.map(e => <Card key={e.id} style={{ marginBottom: 0 }}>
                             <CardHeader>
-                                <CardTitle>{e.name}</CardTitle>
+                                <CardTitle>{e.id} - {e.name} ({e.key})</CardTitle>
                                 <div>
                                     <Button.Ripple color='flat-primary' onClick={(j) => {
                                         setIsModalEdit(true)

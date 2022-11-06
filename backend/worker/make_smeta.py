@@ -1,34 +1,21 @@
 import pandas as pd
-import string
-import os
-from glob import glob
-import random
-import json
 import regex as re
-from IPython.display import JSON,display,display_json
 from tqdm import tqdm
 import Levenshtein
-from termcolor import colored as clrd
-import random
 import numpy as np
-import pickle as pk
-
-#Ml stuff
-from transformers import AutoTokenizer, AutoModel
-from scipy import spatial
-import torch
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from nltk.corpus import stopwords
+import nltk
 import fasttext.util
 import pymorphy2
-
+from pathlib import Path
+nltk.download("stopwords")
 class Keyphrases():
-    def __init__(self, d_spgz):
+    def __init__(self, d_spgz: dict):
         self.morph = pymorphy2.MorphAnalyzer()
-        self.ft = fasttext.load_model('cc.ru.100.bin')
+        cc_path = str(Path(Path(__file__).parent, 'cc.ru.100.bin'))
+        self.ft = fasttext.load_model(cc_path)
         self.ref_s = {} 
-        # self.df = pd.read_excel(key_phrases_excel)
         self.df = pd.DataFrame(d_spgz)
         self.key_ph = self.df["Ключевые слова"].dropna().apply(lambda s: re.sub("[^а-яА-Я]"," ",s).lower()).str.split()
         self.vectorizers = {}
@@ -36,7 +23,7 @@ class Keyphrases():
     def load_vectorizers(self, spravochn, name):
         corpus = []
         for sect in spravochn["sections"]:
-            for pos in sub_sect["rows"]:
+            for pos in sect["rows"]:
                 corpus.append(self.normalize_sent(pos["name"]))
 
         vectorizer = TfidfVectorizer()
@@ -112,7 +99,7 @@ class Keyphrases():
         return positions
         
     def normalize_sent(self, s):
-        stops = stopwords.words("russian")
+        stops = nltk.corpus.stopwords.words("russian")
         s = re.sub("[^а-я]"," ", s.lower())
         s = " ".join(filter(lambda x: True if(x not in stops and len(x)>3) else False,s.split()))
         return " ".join([self.morph.parse(name)[0].normal_form for name in s.split()])
@@ -138,15 +125,13 @@ class Keyphrases():
     def get_file_for(self, pos, ref_s):
         for key, ref in self.ref_s.items():
             for sect_ind, sect in enumerate(ref["sections"]):
-                for subs_ind, subs in enumerate(sect["subsections"]):
-                    for z_ind, z in enumerate(subs["rows"]):
-                        if(pos["code"].lower() in z["code"].lower()):
-                            return (key,z)
+                for z_ind, z in enumerate(sect["rows"]):
+                    if(pos["code"].lower() in z["code"].lower()):
+                        return (key,z)
 
         for key, ref in self.ref_s.items():
             for sect_ind, sect in enumerate(ref["sections"]):
-                for subs_ind, subs in enumerate(sect["subsections"]):
-                    for z_ind, z in enumerate(subs["rows"]):
-                        if(pos["name"].lower() in z["name"].lower()):
-                            return (key,z)
+                for z_ind, z in enumerate(sect["rows"]):
+                    if(pos["name"].lower() in z["name"].lower()):
+                        return (key,z)
         return None

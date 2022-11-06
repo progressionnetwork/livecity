@@ -139,8 +139,6 @@ def load_sn(path: str, type_update:str)-> None:
     logger.info(f"Start parsing file: {path}")
     name_section = Path(path).stem
     sn = Parse(path)[0]
-    raw_data = sn
-    raw_data['coef_date'] = 0
     sections = sn.pop('sections')
     o_sn, created = _get_instanse_with_type_update(model=SN, 
         type_update=type_update, 
@@ -160,8 +158,7 @@ def load_sn(path: str, type_update:str)-> None:
             type_update=type_update,
             data={
                 "name" :  name_section,
-                "sn": o_sn,
-                "json_data": raw_data
+                "sn": o_sn
             },
             name=str(section['name'] if section['name']!='null' else ''), sn=o_sn)
         for row in rows:
@@ -202,7 +199,6 @@ def load_smeta(path: str, type_update:str)-> None:
     logger.info(f"Start parsing file: {path}")
     name = Path(path).stem
     smeta = Parse(path)[0]
-    raw_data = smeta
     sections = smeta.pop('sections')
     o_smeta, created = _get_instanse_with_type_update(model=Smeta, 
         type_update=type_update, 
@@ -216,8 +212,7 @@ def load_smeta(path: str, type_update:str)-> None:
             "sum" : float(smeta['sum'] if smeta['sum'] is not None else 0),
             "tax" : float(smeta['tax'] if smeta['tax'] is not None else 0),
             "sum_with_tax" : float(smeta['sum_with_tax']  if smeta['sum_with_tax'] is not None else 0),
-            "sum_with_ko" : float(smeta['sum_with_ko'] if smeta['sum_with_ko'] is not None else 0),
-            "json_data": raw_data},
+            "sum_with_ko" : float(smeta['sum_with_ko'] if smeta['sum_with_ko'] is not None else 0)},
         name = name, address = str(smeta['address'] if smeta['address']!='null' else ''))
     for section in sections:
         subsections = section.pop('subsections')
@@ -251,12 +246,12 @@ def load_smeta(path: str, type_update:str)-> None:
                         "num" : int(row['num'] if row['num'] is not None else 0),
                         "name" : str(row['name'] if row['name']!='null' else ''),
                         "ei" : ei,
+                        "is_key": False,
                         "count" : float(row['count'] if row['count'] is not None else 0),
                         "sum" : float(row['sum'] if row['sum'] is not None else 0)
                     }, 
                     code = str(row['code'] if row['code']!='null' else ''), smeta_subsection=o_subsection)
                 for subrow in subrows:
-                    logger.info(subrow)
                     ei = _get_ei(row.get('ei', None))
                     o_subrow, created = _get_instanse_with_type_update(model=SmetaSubRow,
                     type_update=type_update,
@@ -343,14 +338,70 @@ def load_from_file(type_data: str, path: str, type_update: str) -> None:
             threads.append(t)
     return None
 
+def make_smeta(smeta_id: int):
+    from make_smeta import Keyphrases
+    spgz = SPGZ.objects.filter(key__isnull=False)
+    spgz_name = spgz.values_list('name', flat=True)
+    spgz_key = spgz.values_list('key', flat=True)
+    d_spgz = {'СПГЗ':spgz_name, 'Ключевые слова': spgz_key}
+    kp = Keyphrases(d_spgz)
+
+    d_smeta = Smeta.objects.get(pk=smeta_id)
+    if not d_smeta:
+        logger.error("Смета не найдена")
+    else:
+        d_smeta = d_smeta.get_dict()
+
+    for sn in SN.objects.all():
+        d_sn = sn.get_dict()
+        sn_name = d_sn.get('type_ref','Без имени')
+        kp.load_vectorizers(d_sn, sn_name)
+        result = kp.process_smeta(d_smeta)
+        for section in result.values():
+            for subsection in section:
+                row = subsection[1]
+                ft_spgz = SPGZ.objects.filter(name=row['fasttext_spgz'])
+                if ft_spgz:
+                    ft_spgz = ft_spgz.first()
+                kp_spgz = SPGZ.objects.filter(name=row['key_phrases_spgz'])
+                if kp_spgz:
+                    kp_spgz = kp_spgz.first()
+                o_smeta_row = SmetaRow.objects.get(pk=row['id'])
+                o_smeta_row.is_key = row['is_key']
+                o_smeta_row.save()
+                smeta_row_stat, created = SmetaRowStat.objects.get_or_create(defaults={
+                    "sn":sn,
+                    "smeta_row": o_smeta_row,
+                    "fasstext_percent":row['fasttext_percent'],
+                    "fasttext_spgz" : ft_spgz,
+                    "key_phrases_spgz" : kp_spgz,
+                    "key_phrases_percent" : row['match_ratio'],
+                    "levenst_ratio" : row['levenst_ratio'],
+                    "is_key" : row['is_key'],
+                    "key_percent" : row['is_key_coof'],
+                },
+                    sn = sn,
+                    smeta_row = o_smeta_row
+                )
+                for word in row['word_importance']:
+                    stat_word = SmetaRowStatWords(name=word[0], percent=word[1])
+                    stat_word.save()
+                    smeta_row_stat.stat_words.add(stat_word)
+    logger.info('Smeta short is end')
+    
 def callback(ch, method, properties, body):
     message = json.loads(body)
     logger.info(f"Incomming message: {message}")
 
-    type_data = message['type_data']
-    source = message['source']
+    type_data = message.get('type_data')
+    source = message.get('source')
     path = message.get('path', None)
     type_update = message.get('type_update', None)
+    smeta_id =  message.get('id', None)
+
+    if smeta_id:
+        t = threading.Thread(target=make_smeta, args=[smeta_id])
+        t.start()
 
     if source == SOURCE_INTERNET:
         load_from_internet(type_data)
