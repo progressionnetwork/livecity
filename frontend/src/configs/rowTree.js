@@ -9,8 +9,8 @@ export const rowMapper = {
 }
 
 export const statMapper = {
-    key_phrases_percent: "key_phrases_percent",
-    levenst_ratio: "levenst_ratio",
+    key_phrases_percent: "Вероятность ключевой позиции",
+    levenst_ratio: "Схожесть по левенштейну",
     is_key: "Ключевая позиция",
     sn: "СН"
 }
