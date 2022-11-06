@@ -246,6 +246,7 @@ def load_smeta(path: str, type_update:str)-> None:
                         "num" : int(row['num'] if row['num'] is not None else 0),
                         "name" : str(row['name'] if row['name']!='null' else ''),
                         "ei" : ei,
+                        "is_key": False,
                         "count" : float(row['count'] if row['count'] is not None else 0),
                         "sum" : float(row['sum'] if row['sum'] is not None else 0)
                     }, 
@@ -365,17 +366,23 @@ def make_smeta(smeta_id: int):
                 kp_spgz = SPGZ.objects.filter(name=row['key_phrases_spgz'])
                 if kp_spgz:
                     kp_spgz = kp_spgz.first()
-                smeta_row_stat = SmetaRowStat(
+                o_smeta_row = SmetaRow.objects.get(pk=row['id'])
+                o_smeta_row.is_key = row['is_key']
+                o_smeta_row.save()
+                smeta_row_stat, created = SmetaRowStat.objects.get_or_create(defaults={
+                    "sn":sn,
+                    "smeta_row": o_smeta_row,
+                    "fasstext_percent":row['fasttext_percent'],
+                    "fasttext_spgz" : ft_spgz,
+                    "key_phrases_spgz" : kp_spgz,
+                    "key_phrases_percent" : row['match_ratio'],
+                    "levenst_ratio" : row['levenst_ratio'],
+                    "is_key" : row['is_key'],
+                    "key_percent" : row['is_key_coof'],
+                },
                     sn = sn,
-                    smeta_row = SmetaRow.objects.get(pk=row['id']),
-                    fasstext_percent = row['fasttext_percent'],
-                    fasttext_spgz = ft_spgz,
-                    key_phrases_spgz = kp_spgz,
-                    key_phrases_percent = row['match_ratio'],
-                    levenst_ratio = row['levenst_ratio'],
-                    is_key = row['is_key']
+                    smeta_row = o_smeta_row
                 )
-                smeta_row_stat.save()
                 for word in row['word_importance']:
                     stat_word = SmetaRowStatWords(name=word[0], percent=word[1])
                     stat_word.save()
@@ -393,7 +400,8 @@ def callback(ch, method, properties, body):
     smeta_id =  message.get('id', None)
 
     if smeta_id:
-        make_smeta(smeta_id)
+        t = threading.Thread(target=make_smeta, args=[smeta_id])
+        t.start()
 
     if source == SOURCE_INTERNET:
         load_from_internet(type_data)

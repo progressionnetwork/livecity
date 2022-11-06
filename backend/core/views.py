@@ -247,6 +247,7 @@ class SmetaView(ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def short_smeta(self, request, pk=None):
+        ''' Получить статистику по смете и определить ключевые позиции '''
         smeta = self.get_object()
         smeta.send_rabbitmq()
         return Response({'result': True})

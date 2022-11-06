@@ -407,8 +407,11 @@ class SmetaRow(models.Model):
         'OKEI', on_delete=models.SET_NULL, null=True, blank=True)  # 10
     count = models.FloatField('Количество', default=0.0)  # 11
     sum = models.FloatField('Итого', default=0.0)  # 26
+    is_key = models.BooleanField('Ключевая позиция', default=False)
     
-    
+
+    def get_color(self)->str:
+        pass
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -452,13 +455,14 @@ class SmetaRowStat(models.Model):
     key_phrases_percent = models.FloatField(default=0.0)
     levenst_ratio = models.FloatField(default=0.0)
     is_key = models.BooleanField(default=False)
+    key_percent = models.FloatField(default=0.0)
 
     def __str__(self) -> str:
         return f"Статистика: {self.smeta_row}"
     
     class Meta:
         verbose_name = "Смета:Расширенная строка"
-        verbose_name_plural = "Смета: Расчширенные строки"
+        verbose_name_plural = "Смета: Расширенные строки"
 
 class SmetaRowStatWords(models.Model):
     smeta_row_stat = models.ForeignKey(SmetaRowStat, on_delete=models.SET_NULL, null=True, blank=True, related_name='stat_words')
