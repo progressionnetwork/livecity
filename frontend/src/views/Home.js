@@ -6,6 +6,11 @@ import {
   CardText,
   CardLink, Button, Input, Label, CardFooter, Spinner
 } from "reactstrap"
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+
+const MySwal = withReactContent(Swal)
+
 
 import { useSelector } from "react-redux"
 import {useEffect, useState} from "react"
@@ -58,6 +63,19 @@ const Home = () => {
               <Button color="primary" onClick={() => {
                 nav(`/smeta/${e.id}`)
               }}>Подробнее</Button>
+              <Button color="primary" outline style={{ marginLeft: 8 }} onClick={() => {
+                request('get', `smeta/${e.id}/short_smeta`).then(() => {
+                  return MySwal.fire({
+                    title: 'Информация',
+                    text: 'Поставили в очередь на обработку. Это может занять некоторое время',
+                    icon: 'info',
+                    customClass: {
+                      confirmButton: 'btn btn-primary'
+                    },
+                    buttonsStyling: false
+                  })
+                })
+              }}>Обработать</Button>
               <Button color="danger" style={{ marginLeft: 8 }}>Удалить</Button>
             </CardFooter>
           </Card>

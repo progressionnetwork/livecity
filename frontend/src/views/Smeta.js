@@ -7,8 +7,17 @@ import TreeView from "@mui/lab/TreeView";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TreeItem from "@mui/lab/TreeItem";
-import {DateRange, DockSharp, DocumentScannerSharp, Edit, LocationCity, LocationOn, Money} from "@mui/icons-material";
-import {rowBlackList, rowMapper} from "../configs/rowTree";
+import {
+    DateRange,
+    DockSharp,
+    DocumentScannerSharp,
+    Edit,
+    LocationCity,
+    LocationOn,
+    Money,
+    NotificationImportantSharp
+} from "@mui/icons-material";
+import {rowBlackList, rowMapper, statMapper, statWordMapper} from "../configs/rowTree";
 import {Stack} from "@mui/material";
 
 function generateNodeId() {
@@ -100,16 +109,39 @@ const Smeta = () => {
                                                     label={row.name}
                                                 >
                                                     {Object.keys(row).filter(name => !rowBlackList.includes(name)).map((name) => (
+                                                        name === 'is_key' ? <TreeItem
+                                                                nodeId={generateNodeId()}
+                                                                label={`${rowMapper[name] ?? name} - ${row[name] ? 'Да' : 'Нет'}`}
+                                                            /> :
                                                         name === 'ei' ?
                                                             <TreeItem
                                                                 nodeId={generateNodeId()}
                                                                 label={`${name} - ${row.ei?.name}`}
-                                                            /> :
-                                                            <TreeItem
-                                                                nodeId={generateNodeId()}
-                                                                label={`${rowMapper[name]} - ${row[name]}`}
-                                                                icon={<Edit />}
-                                                            />
+                                                            /> : name === 'stats' ?
+                                                                <TreeItem nodeId={generateNodeId()} label="Статистика">
+                                                                    {row.stats.map(stat => (
+                                                                        <TreeItem nodeId={generateNodeId()} label={stat.sn}>
+                                                                            {Object.keys(stat).filter(name => !rowBlackList.includes(name)).filter(e => e !== 'sn').map((name) => (
+                                                                                name === 'is_key' ? <TreeItem
+                                                                                        nodeId={generateNodeId()}
+                                                                                        label={`${statMapper[name] ?? name} - ${row[name] ? 'Да' : 'Нет'}`}
+                                                                                    /> :
+                                                                                name === 'stat_words' ?
+                                                                                    <TreeItem nodeId={generateNodeId()} label="Статистика по словам">
+                                                                                        {stat.stat_words.map(stat_word => (
+                                                                                            <TreeItem nodeId={generateNodeId()} label={`${stat_word.name} - ${stat_word.percent}`} />
+                                                                                        ))}
+                                                                                    </TreeItem> :
+                                                                                    <TreeItem nodeId={generateNodeId()} label={`${statMapper[name] ?? name} - ${stat[name]}`} />
+                                                                            ))}
+                                                                        </TreeItem>
+                                                                    ))}
+                                                                </TreeItem>
+                                                            :  <TreeItem
+                                                                    nodeId={generateNodeId()}
+                                                                    label={`${rowMapper[name] ?? name} - ${row[name]}`}
+                                                                    icon={<Edit />}
+                                                                />
                                                     ))}
                                                 </TreeItem>
                                             ))}
