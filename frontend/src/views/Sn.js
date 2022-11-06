@@ -55,8 +55,10 @@ const Sn = () => {
 
     const updateSn = async () => {
         // try {
-        //     await request('put', `okpd/${editItem?.code}/`,
-        //         editItem
+        //     await request('put', `okpd/${editItem?.id}/`,
+        //         {
+        //             [editItem?.name]: editItem.value
+        //         }
         //     );
         // } catch (e) {
         //     console.log('update okpd', 'что то пошло не так')
@@ -98,7 +100,8 @@ const Sn = () => {
                                             <TreeItem nodeId={row.id} label={row.name} icon={<Edit onClick={(e) => {
                                                 setIsModalEdit(true)
                                                 setEditItem({
-                                                    name: row.name,
+                                                    name: 'name',
+                                                    value: row.name,
                                                     id: row.id
                                                 })
                                                 e.stopPropagation();
@@ -122,9 +125,9 @@ const Sn = () => {
                         <Label className='form-label' for='name'>
                             Название:
                         </Label>
-                        <Input type='name' id='name' value={editItem?.name} onChange={(e => setEditItem(prev => ({
+                        <Input type='name' id='name' value={editItem?.value} onChange={(e => setEditItem(prev => ({
                             ...prev,
-                            name: e.target.value
+                            value: e.target.value
                         })))} placeholder='Название' />
                     </div>
                 </ModalBody>
