@@ -261,6 +261,17 @@ class SmetaView(ModelViewSet):
         ''' Экспорт excel файла с обработанной сметой '''
         smeta = self.get_object()
         row_num =1
+        worksheet.write(row_num, col+0, "Номер")
+        worksheet.write(row_num, col+1, "ИД")
+        worksheet.write(row_num, col+2, "КПГЗ")
+        worksheet.write(row_num, col+3, "Шифр")
+        worksheet.write(row_num, col+4, "Наименование")
+        worksheet.write(row_num, col+5, "СПГЗ")
+        worksheet.write(row_num, col+6, "ед. изм.")
+        worksheet.write(row_num, col+7, "Количество")
+        worksheet.write(row_num, col+8, "Сумма")
+        worksheet.write(row_num, col+9, "Адресс")
+        row_num =+ 1
         buffer = io.BytesIO()
         workbook = xlsxwriter.Workbook(buffer)
         worksheet = workbook.add_worksheet()
