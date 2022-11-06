@@ -1,4 +1,4 @@
-import { Mail, Home, Book } from "react-feather"
+import {Mail, Home, Book, Users} from "react-feather"
 
 export default [
   {
@@ -59,7 +59,7 @@ export default [
   {
     id: "users",
     title: "Пользователи",
-    icon: <Mail size={20} />,
+    icon: <Users size={20} />,
     navLink: "/users"
   }
 ]
