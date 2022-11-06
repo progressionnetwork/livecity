@@ -33,17 +33,6 @@ const Home = () => {
     <div>
       <Card>
         <CardHeader>
-          <CardTitle>Statistics</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <CardText></CardText>
-          <CardText>
-          </CardText>
-        </CardBody>
-      </Card>
-
-      <Card>
-        <CardHeader>
             <CardTitle>Ваши сметы</CardTitle>
             <Button color="primary" onClick={() => nav('/upload')}>Загрузить новую</Button>
         </CardHeader>
@@ -66,7 +55,7 @@ const Home = () => {
               {e.address}
             </CardBody>
             <CardFooter>
-              <Button color="primary" onClick={(e) => {
+              <Button color="primary" onClick={() => {
                 nav(`/smeta/${e.id}`)
               }}>Подробнее</Button>
               <Button color="danger" style={{ marginLeft: 8 }}>Удалить</Button>
