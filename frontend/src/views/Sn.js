@@ -77,7 +77,7 @@ const Sn = () => {
         <div>
             {sn ? <Card>
                     <CardHeader>
-                        <CardTitle>{sn.type_ref}</CardTitle>
+                        <CardTitle>{sn.type_ref} (для демо режима выводится информация не полностью)</CardTitle>
                     </CardHeader>
                         <CardBody>
                             <TreeView

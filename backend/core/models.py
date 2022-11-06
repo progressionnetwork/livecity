@@ -126,7 +126,7 @@ class OKEI(models.Model):
     ''' Общероссийский классификатор единиц измерения '''
     code = models.CharField(max_length=250, primary_key=True)
     name = models.CharField(max_length=2000)
-    short_name = models.CharField(max_length=50)
+    short_name = models.CharField(max_length=200)
     objects = SharedManager()
 
     def __str__(self) -> str:
