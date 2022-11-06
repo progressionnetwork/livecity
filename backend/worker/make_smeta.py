@@ -1,22 +1,8 @@
 import pandas as pd
-import string
-import os
-from glob import glob
-import random
-import json
 import regex as re
-from IPython.display import JSON,display,display_json
 from tqdm import tqdm
 import Levenshtein
-from termcolor import colored as clrd
-import random
 import numpy as np
-import pickle as pk
-
-#Ml stuff
-from transformers import AutoTokenizer, AutoModel
-from scipy import spatial
-import torch
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from nltk.corpus import stopwords

@@ -6,6 +6,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
 from django.contrib.postgres.search import SearchVector
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
@@ -243,6 +244,12 @@ class SmetaView(ModelViewSet):
         queryset = Smeta.objects.all()
         serializer = SmetaSerializerShort(queryset, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def short_smeta(self, request, pk=None):
+        smeta = self.get_object()
+        smeta.send_rabbitmq()
+        return Response({'result': True})
 
 class SmetaRowView(ModelViewSet):
     ''' Строки сметы '''

@@ -362,13 +362,13 @@ def callback(ch, method, properties, body):
     message = json.loads(body)
     logger.info(f"Incomming message: {message}")
 
-    type_data = message['type_data']
-    source = message['source']
+    type_data = message.get('type_data')
+    source = message.get('source')
     path = message.get('path', None)
     type_update = message.get('type_update', None)
-    smeta_id =  message.get('id', 1)
+    smeta_id =  message.get('id', None)
 
-    if type_data == 'short_smeta':
+    if smeta_id:
         make_smeta(smeta_id)
 
     if source == SOURCE_INTERNET:

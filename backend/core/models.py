@@ -337,6 +337,16 @@ class Smeta(models.Model):
             result['sections'].append(d_section)
         return result
 
+    def send_rabbitmq(self):
+        import pika
+        connection = pika.BlockingConnection(
+            parameters=pika.URLParameters(settings.RABBITMQ_URL))
+        channel = connection.channel()
+        channel.queue_declare(queue="short_smeta")
+        channel.basic_publish(exchange='', routing_key="short_smeta", body=json.dumps(
+            {'type_data': "short_smeta", 'id': self.id}))
+        connection.close()
+
     def __str__(self) -> str:
         return f"{self.name} ({self.address})"
 
