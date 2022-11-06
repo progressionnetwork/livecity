@@ -184,7 +184,7 @@ class SmetaSectionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SmetaSerializer(serializers.ModelSerializer):
-    sections = SNSectionSerializer(many=True, read_only=True)
+    sections = SmetaSectionSerializer(many=True, read_only=True)
     class Meta:
         model = SN
         fields = '__all__'
