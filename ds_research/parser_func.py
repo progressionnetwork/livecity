@@ -574,6 +574,8 @@ def Parse(sheet):
 
             if("name" not in main_work_dict.keys()):
                continue
+            if(main_work_dict["sum"] == 0):
+                continue
             if(sect not in [x["name"] for x in out_dict["sections"]]):
                 out_dict["sections"].append({"name":sect,
                                              "sum":None, 
