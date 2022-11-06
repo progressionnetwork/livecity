@@ -1,14 +1,14 @@
 
 data = {
-    "type_ref": "",
-    "advance": "",
+    "type_ref": "0",
+    "advance": "0",
     "coef_ref": "1",
     "type_ref": "1",
     "coef_date": "2",
     "sum": "3000",
     "tax": "12",
-    "sum_with_tax": "",
-    "sum_with_ko": "",
+    "sum_with_tax": "122",
+    "sum_with_ko": "133",
     "sections": [{
             "name": "NAME_1",
             "sum": "3000",
