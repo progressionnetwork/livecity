@@ -186,6 +186,7 @@ def load_smeta(path: str, type_update:str)-> None:
     logger.info(f"Start parsing file: {path}")
     name = Path(path).stem
     smeta = Parse(path)[0]
+    raw_data = smeta
     sections = smeta.pop('sections')
     o_smeta, created = _get_instanse_with_type_update(model=Smeta, 
         type_update=type_update, 
@@ -199,7 +200,8 @@ def load_smeta(path: str, type_update:str)-> None:
             "sum" : float(smeta['sum'] if smeta['sum'] is not None else 0),
             "tax" : float(smeta['tax'] if smeta['tax'] is not None else 0),
             "sum_with_tax" : float(smeta['sum_with_tax']  if smeta['sum_with_tax'] is not None else 0),
-            "sum_with_ko" : float(smeta['sum_with_ko'] if smeta['sum_with_ko'] is not None else 0)}, 
+            "sum_with_ko" : float(smeta['sum_with_ko'] if smeta['sum_with_ko'] is not None else 0),
+            "json_data": raw_data},
         name = name, address = str(smeta['address'] if smeta['address']!='null' else ''))
     for section in sections:
         subsections = section.pop('subsections')
