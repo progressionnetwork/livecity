@@ -85,7 +85,7 @@ const UploadEstimate = () => {
                     }
                 </CardBody>
                 <CardFooter>
-                    <div>
+                    <div style={{ justifyContent: 'center', alignItems: 'center', display: 'flex' }}>
                         {
                             loading ? <Spinner /> :
                             <Button style={{width: '100%'}} color="primary"
