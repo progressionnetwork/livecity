@@ -11,9 +11,9 @@ from django.contrib.postgres.search import SearchVector
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from io import StringIO
+import io
 import xlsxwriter
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 
 
 from core.models import (KPGZ, OKEI, OKPD, OKPD2, FileUpdate, TZ, SPGZ, SN, SNSection, Smeta, SmetaRow)
@@ -260,9 +260,9 @@ class SmetaView(ModelViewSet):
     def excel(self, request, pk=None):
         ''' Экспорт excel файла с обработанной сметой '''
         smeta = self.get_object()
-        row =1
-        output = StringIO.StringIO()
-        workbook = xlsxwriter.Workbook(output)
+        row_num =1
+        buffer = io.BytesIO()
+        workbook = xlsxwriter.Workbook(buffer)
         worksheet = workbook.add_worksheet()
         for section in smeta.sections.all():
             for subsection in section.subsections.all():
@@ -270,23 +270,20 @@ class SmetaView(ModelViewSet):
                     for row_stat in row.stats.all():
                         spgz = row_stat.fasttext_spgz
                         col =1
-                        worksheet.write(row, col+0, row.num)
-                        worksheet.write(row, col+1, spgz.id)
-                        worksheet.write(row, col+2, spgz.kpgz.name)
-                        worksheet.write(row, col+3, row.code)
-                        worksheet.write(row, col+4, row.name)
-                        worksheet.write(row, col+5, spgz.name)
-                        worksheet.write(row, col+6, row.ei.short_name if row.ei else "-")
-                        worksheet.write(row, col+7, row.count)
-                        worksheet.write(row, col+8, row.sum)
-                        worksheet.write(row, col+9, smeta.address)
-                        row += 1
+                        worksheet.write(row_num, col+0, row.num)
+                        worksheet.write(row_num, col+1, spgz.id)
+                        worksheet.write(row_num, col+2, spgz.kpgz.name)
+                        worksheet.write(row_num, col+3, row.code)
+                        worksheet.write(row_num, col+4, row.name)
+                        worksheet.write(row_num, col+5, spgz.name)
+                        worksheet.write(row_num, col+6, row.ei.short_name if row.ei else "-")
+                        worksheet.write(row_num, col+7, row.count)
+                        worksheet.write(row_num, col+8, row.sum)
+                        worksheet.write(row_num, col+9, smeta.address)
+                        row_num += 1
         workbook.close()
-
-        response = HttpResponse(content_type='application/vnd.ms-excel')
-        response['Content-Disposition'] = 'attachment;filename="some_file_name.xlsx"'
-        response.write(output.getvalue())
-        return response
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename='report.xlsx')
 
 class SmetaRowView(ModelViewSet):
     ''' Строки сметы '''
