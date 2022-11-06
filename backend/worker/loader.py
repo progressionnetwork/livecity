@@ -144,6 +144,8 @@ def load_sn(path: str, type_update:str)-> None:
         for row in rows:
             subrows = row.pop('subrows')
             ei = row.get('ei', None)
+            if ei:
+                ei = ei.strip()
             ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
             o_row, created = _get_instanse_with_type_update(model=SNRow, 
                 type_update=type_update,
@@ -159,6 +161,8 @@ def load_sn(path: str, type_update:str)-> None:
                 code = str(row['code'] if row['code']!='null' else ''), sn_section=o_section)
             for subrow in subrows:
                 ei = row.get('ei', None)
+                if ei:
+                    ei = ei.strip()
                 ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
                 o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
                 type_update=type_update,
@@ -220,6 +224,8 @@ def load_smeta(path: str, type_update:str)-> None:
             for row in rows:
                 subrows = row.pop('subrows')
                 ei  = row.get('ei', None)
+                if ei:
+                    ei = ei.strip()
                 ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
                 o_row, created = _get_instanse_with_type_update(model=SmetaRow, 
                     type_update=type_update,
@@ -236,6 +242,8 @@ def load_smeta(path: str, type_update:str)-> None:
                 for subrow in subrows:
                     logger.info(subrow)
                     ei = row.get('ei', None)
+                    if ei:
+                        ei = ei.strip()
                     ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
                     o_subrow, created = _get_instanse_with_type_update(model=SmetaSubRow,
                     type_update=type_update,
