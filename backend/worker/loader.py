@@ -365,15 +365,17 @@ def make_smeta(smeta_id: int):
                 kp_spgz = SPGZ.objects.filter(name=row['key_phrases_spgz'])
                 if kp_spgz:
                     kp_spgz = kp_spgz.first()
-                smeta_row_stat = SmetaRowStat(
-                    sn = sn,
-                    smeta_row = SmetaRow.objects.get(pk=row['id']),
-                    fasstext_percent = row['fasttext_percent'],
-                    fasttext_spgz = ft_spgz,
-                    key_phrases_spgz = kp_spgz,
-                    key_phrases_percent = row['match_ratio'],
-                    levenst_ratio = row['levenst_ratio'],
-                    is_key = row['is_key']
+                smeta_row_stat = SmetaRowStat.objects.get_or_create(default={
+                    "sn":sn
+                    "smeta_row": SmetaRow.objects.get(pk=row['id']),
+                    "fasstext_percent":row['fasttext_percent'],
+                    "fasttext_spgz" : ft_spgz,
+                    "key_phrases_spgz" : kp_spgz,
+                    "key_phrases_percent" : row['match_ratio'],
+                    "levenst_ratio" : row['levenst_ratio'],
+                    "is_key" : row['is_key']
+                }
+                    sn = sn
                 )
                 smeta_row_stat.save()
                 for word in row['word_importance']:
