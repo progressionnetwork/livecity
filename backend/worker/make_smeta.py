@@ -23,21 +23,23 @@ from nltk.corpus import stopwords
 import fasttext.util
 import pymorphy2
 
+key_phrases_excel = "./soure_data/приложение 7 Ключевые фразы по СПГЗ.xlsx"
+
 class Keyphrases():
-    def __init__(self, d_spgz):
+    def __init__(self, spgz_key: dict):
         self.morph = pymorphy2.MorphAnalyzer()
         self.ft = fasttext.load_model('cc.ru.100.bin')
         self.ref_s = {} 
-        # self.df = pd.read_excel(key_phrases_excel)
-        self.df = pd.DataFrame(d_spgz)
+        self.df = pd.read_excel(key_phrases_excel)
         self.key_ph = self.df["Ключевые слова"].dropna().apply(lambda s: re.sub("[^а-яА-Я]"," ",s).lower()).str.split()
         self.vectorizers = {}
          
     def load_vectorizers(self, spravochn, name):
         corpus = []
         for sect in spravochn["sections"]:
-            for pos in sub_sect["rows"]:
-                corpus.append(self.normalize_sent(pos["name"]))
+            for sub_sect in sect["subsections"]:
+                for pos in sub_sect["rows"]:
+                    corpus.append(self.normalize_sent(pos["name"]))
 
         vectorizer = TfidfVectorizer()
         vectorizer.fit(corpus)

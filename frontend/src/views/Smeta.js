@@ -39,25 +39,25 @@ const Smeta = () => {
                         <Stack spacing={1} direction="row">
                             <LocationOn />
                             <div>
-                                {smeta.address}
+                                Адрес: {smeta.address}
                             </div>
                         </Stack>
                         <Stack spacing={1}  mt={1}  direction="row">
                             <Money />
                             <div>
-                                {smeta.sum} р.
+                                Сумма без НДС: {smeta.sum} р.
                             </div>
                         </Stack>
                         <Stack spacing={1}  mt={1}  direction="row">
                             <Money />
                             <div>
-                                {smeta.tax} р.
+                                НДС: {smeta.tax} р.
                             </div>
                         </Stack>
                         <Stack spacing={1}  mt={1}  direction="row">
                             <Money />
                             <div>
-                                {smeta.sum_with_tax} р.
+                                Сумма с НДС: {smeta.sum_with_tax} р.
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">

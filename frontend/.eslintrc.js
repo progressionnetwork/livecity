@@ -29,7 +29,7 @@ module.exports = {
     'no-return-assign': 'off',
     'no-unused-expressions': ['error', { allowTernary: true }],
     'no-useless-concat': 'error',
-    'no-useless-return': 'off',
+    'no-useless-return': 'error',
 
     // Variable
     // 'init-declarations': 'error',

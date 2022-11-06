@@ -4,7 +4,6 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.forms.models import model_to_dict
-from core.serializers import SNSectionSerializerFull
 
 class UserManager(BaseUserManager):
     ''' user manager  '''
@@ -197,7 +196,11 @@ class SNSection(models.Model):
     name = models.CharField('Наименование', max_length=250, default='Без имени')  # 7
 
     def get_dict(self):
-        return SNSectionSerializerFull(self).data
+        result = model_to_dict(self)
+        result['rows'] = list()
+        for row in self.rows.all():
+            result['rows'].append(model_to_dict(row))
+        return result
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -273,6 +276,7 @@ class SPGZ(models.Model):
     class Meta:
         verbose_name = "СПГЗ"
         verbose_name_plural = "СПГЗ"
+        ordering = ['key']
 
 
 class TZ(models.Model):
@@ -318,6 +322,21 @@ class Smeta(models.Model):
     sum_with_ko = models.FloatField(
         'Итого с коэф. фин. обеспеч.', default=0.0)  # 32
     
+    def get_dict(self):
+        result = model_to_dict(self)
+        result['sections'] = list()
+        for section in self.sections.all():
+            d_section = model_to_dict(section)
+            d_section['subsections'] = list()
+            for subsection in section.subsections.all():
+                d_subsection = model_to_dict(subsection)
+                d_subsection['rows'] = list()
+                for row in subsection.rows.all():
+                    d_subsection['rows'].append(model_to_dict(row))
+                d_section['subsections'].append(d_subsection)
+            result['sections'].append(d_section)
+        return result
+
     def __str__(self) -> str:
         return f"{self.name} ({self.address})"
 
