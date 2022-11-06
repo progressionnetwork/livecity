@@ -29,7 +29,7 @@
 
 ## Dashboard:
 Кабинет пользователя.
-![alt text](https://github.com/gg-goodgenius/livecity/blob/main/Screen.png?raw=true)
+![alt text](https://github.com/gg-goodgenius/livecity/blob/main/screen.png?raw=true)
 
 ## Возможности сервиса:
 - Использование микросервисной архитектуры
