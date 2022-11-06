@@ -174,7 +174,7 @@ class SmetaRowStatWordsSerializer(serializers.ModelSerializer):
     percent = serializers.SerializerMethodField('get_percent')
     
     def get_percent(self, instance):
-        round(instance.percent, 2)
+        return round(instance.percent, 2)
 
     class Meta:
         model = SmetaRowStatWords
