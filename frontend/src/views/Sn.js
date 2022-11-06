@@ -8,7 +8,21 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TreeItem from '@mui/lab/TreeItem';
 
 import {request} from '../utility/request'
-import {Card, CardBody, CardHeader, CardTitle, Spinner} from "reactstrap";
+import {
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
+    CardTitle,
+    Input,
+    Label,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    Spinner
+} from "reactstrap";
+import {Edit} from "@mui/icons-material";
+import {IconButton} from "@mui/material";
 
 
 function generateNodeId() {
@@ -36,6 +50,27 @@ const Sn = () => {
         }
     }, [params.id])
 
+    const [editItem, setEditItem] = useState();
+    const [isModalEdit, setIsModalEdit] = useState(false)
+
+    const updateSn = async () => {
+        // try {
+        //     await request('put', `okpd/${editItem?.code}/`,
+        //         editItem
+        //     );
+        // } catch (e) {
+        //     console.log('update okpd', 'что то пошло не так')
+        // }
+        //
+        // setOkpdList(prev => {
+        //     const list = prev.splice(0);
+        //     const i = list.findIndex(e => e.code === editItem.code);
+        //     list.splice(i, 1, editItem)
+        //     return list;
+        // })
+        setIsModalEdit(false)
+    }
+
     return (
         <div>
             {sn ? <Card>
@@ -60,7 +95,18 @@ const Sn = () => {
                                         setExpanded([i.toString()])
                                     }}>
                                         {e.id === info?.id && info.rows.map((row) => (
-                                            <TreeItem nodeId={row.id} label={row.name} />
+                                            <TreeItem nodeId={row.id} label={row.name} icon={<Edit onClick={(e) => {
+                                                setIsModalEdit(true)
+                                                setEditItem({
+                                                    name: row.name,
+                                                    id: row.id
+                                                })
+                                                e.stopPropagation();
+                                            }} />}>
+                                                {Object.keys(row).filter(name => name !== 'name' && name !== 'id').map((name) => (
+                                                    name === 'ei' ? <TreeItem nodeId={generateNodeId()} label={`${name} - ${row.ei.name}`} /> : <TreeItem nodeId={generateNodeId()} label={`${name} - ${row[name]}`} />
+                                                ))}
+                                            </TreeItem>
                                         ))}
                                     </TreeItem>
                                 ))}
@@ -68,6 +114,27 @@ const Sn = () => {
                         </CardBody>
                 </Card> : <Spinner />
             }
+
+
+            <Modal isOpen={isModalEdit} toggle={() => setIsModalEdit(!isModalEdit)} className='modal-dialog-centered'>
+                <ModalBody>
+                    <div>
+                        <Label className='form-label' for='name'>
+                            Название:
+                        </Label>
+                        <Input type='name' id='name' value={editItem?.name} onChange={(e => setEditItem(prev => ({
+                            ...prev,
+                            name: e.target.value
+                        })))} placeholder='Название' />
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color='primary' onClick={updateSn}>
+                        Сохрнать
+                    </Button>{' '}
+                </ModalFooter>
+            </Modal>
+
 
         </div>
     )
