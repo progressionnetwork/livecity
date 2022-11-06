@@ -11,7 +11,7 @@ from django.contrib.postgres.search import SearchVector
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-import StringIO
+from io import StringIO
 import xlsxwriter
 from django.http import HttpResponse
 
