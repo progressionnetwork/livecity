@@ -183,6 +183,13 @@ class SN(models.Model):
     def __str__(self) -> str:
         return f"{self.type_ref}"
 
+    def get_dict(self):
+        result = model_to_dict(self)
+        result['sections'] = list()
+        for section in self.sections.all():
+            result['sections'].append(section.get_dict())
+        return result
+
     class Meta:
         verbose_name = "СН и ТСН"
         verbose_name_plural = "СН и ТСН"
@@ -400,6 +407,8 @@ class SmetaRow(models.Model):
         'OKEI', on_delete=models.SET_NULL, null=True, blank=True)  # 10
     count = models.FloatField('Количество', default=0.0)  # 11
     sum = models.FloatField('Итого', default=0.0)  # 26
+    
+    
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -433,3 +442,25 @@ class SmetaSubRow(models.Model):
     class Meta:
         verbose_name = "Смета: Статья затрат"
         verbose_name_plural = "Смета: Статьи затрат"
+
+class SmetaRowStat(models.Model):
+    sn = models.ForeignKey(SN, on_delete=models.CASCADE, null=True, blank=True, related_name='stats')
+    smeta_row = models.ForeignKey(SmetaRow, on_delete=models.CASCADE, null=True, blank=True, related_name='stats')
+    fasstext_percent = models.FloatField(default=0.0)
+    fasttext_spgz = models.ForeignKey(SPGZ, on_delete=models.CASCADE, null=True, blank=True, related_name='fasttext_stats')
+    key_phrases_spgz = models.ForeignKey(SPGZ, on_delete=models.CASCADE, null=True, blank=True, related_name='key_phrases_stats')
+    key_phrases_percent = models.FloatField(default=0.0)
+    levenst_ratio = models.FloatField(default=0.0)
+    is_key = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return f"Статистика: {self.smeta_row}"
+    
+    class Meta:
+        verbose_name = "Смета:Расширенная строка"
+        verbose_name_plural = "Смета: Расчширенные строки"
+
+class SmetaRowStatWords(models.Model):
+    smeta_row_stat = models.ForeignKey(SmetaRowStat, on_delete=models.SET_NULL, null=True, blank=True, related_name='stat_words')
+    name = models.CharField(max_length=1000)
+    percent = models.FloatField(default=0.0)

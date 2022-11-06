@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from core.models import (SN, SNSection, SNRow, SNSubRow, 
                             KPGZ, OKEI, OKPD, OKPD2, 
                             FileUpdate, SPGZ,
-                            TZ, TZRow,
+                            TZ, TZRow, SmetaRowStatWords, SmetaRowStat,
                             Smeta, SmetaSection, SmetaSubsection, SmetaSubRow, SmetaRow)
 
 
@@ -170,8 +170,21 @@ class SmetaSubrowSerializer(serializers.ModelSerializer):
         model = SmetaSubRow
         fields = '__all__'
 
+class SmetaRowStatWordsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SmetaRowStatWords
+        fields = '__all__'
+
+class SmetaRowStatSerializer(serializers.ModelSerializer):
+    stat_words = SmetaRowStatWordsSerializer(many=True, read_only=True)
+    class Meta:
+        model = SmetaRowStat
+        fields = '__all__'
+
 class SmetaRowSerializer(serializers.ModelSerializer):
     ei = OKEISerializer(many=False, read_only=True)    
+    stats = SmetaRowStatSerializer(many=True, read_only=True)
+
     class Meta:
         model = SmetaRow
         fields = '__all__'
