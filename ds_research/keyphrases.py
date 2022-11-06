@@ -26,28 +26,30 @@ import pymorphy2
 key_phrases_excel = "./soure_data/приложение 7 Ключевые фразы по СПГЗ.xlsx"
 
 class Keyphrases():
-    def __init__(self, ref_s: dict):
+    def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
         self.ft = fasttext.load_model('cc.ru.100.bin')
-        self.ref_s = ref_s
+        self.ref_s = {} 
         self.df = pd.read_excel(key_phrases_excel)
         self.key_ph = self.df["Ключевые слова"].dropna().apply(lambda s: re.sub("[^а-яА-Я]"," ",s).lower()).str.split()
-        self.load_vectorizers()
-        
-    def load_vectorizers(self):
         self.vectorizers = {}
-        for name, smeta in self.ref_s.items():
-            corpus = []
-            for sect in smeta["sections"]:
-                for sub_sect in sect["subsections"]:
-                    for pos in sub_sect["rows"]:
-                        corpus.append(self.normalize_sent(pos["name"]))
+         
+    def load_vectorizers(self, spravochn, name):
+        corpus = []
+        for sect in spravochn["sections"]:
+            for sub_sect in sect["subsections"]:
+                for pos in sub_sect["rows"]:
+                    corpus.append(self.normalize_sent(pos["name"]))
 
-            vectorizer = TfidfVectorizer()
-            vectorizer.fit(corpus)
-            self.vectorizers[name] = vectorizer
+        vectorizer = TfidfVectorizer()
+        vectorizer.fit(corpus)
+        self.vectorizers[name] = vectorizer
+        self.ref_s[name] = spravochn 
             
     def process_smeta(self, smeta: dict):
+        if(not self.vectorizers):
+            print("No available vectorizers, please run load_vectorizers at least once")
+            return None
         len_pos = sum([sum([len(x["rows"]) for x in sect["subsections"]]) for sect in smeta["sections"]])
         bar1 = tqdm(total = len_pos*2)
         for sect_ind, sect in enumerate(smeta["sections"]):
