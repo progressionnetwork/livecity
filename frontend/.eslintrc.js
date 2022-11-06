@@ -24,6 +24,7 @@ module.exports = {
     'space-infix-ops': 'off',
     // Best Practices
     eqeqeq: 'error',
+    'multiline-ternary': 'off',
     'no-invalid-this': 'error',
     'no-return-assign': 'off',
     'no-unused-expressions': ['error', { allowTernary: true }],
@@ -49,7 +50,6 @@ module.exports = {
     'implicit-arrow-linebreak': ['error', 'beside'],
     // indent: ['error', 4],
     'keyword-spacing': 'error',
-    'multiline-ternary': ['error', 'never'],
     // 'no-lonely-if': 'error',
     'no-mixed-operators': 'error',
     'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }],

@@ -80,15 +80,36 @@ const Smeta = () => {
                             defaultExpandIcon={<ChevronRightIcon/>}
                         >
                             {smeta.sections.map((section, i) => (
-                                <TreeItem key={section.id} nodeId={section.id.toString()} label={section.name}>
+                                <TreeItem
+                                    icon={<Edit />}
+                                    key={section.id}
+                                    nodeId={section.id.toString()}
+                                    label={section.name}
+                                >
                                     {section.subsections.map((subsection) => (
-                                        <TreeItem key={subsection.id} nodeId={generateNodeId()} label={subsection.name}>
+                                        <TreeItem
+                                            icon={<Edit />}
+                                            key={subsection.id}
+                                            nodeId={generateNodeId()}
+                                            label={subsection.name}
+                                        >
                                             {subsection.rows.map((row) => (
-                                                <TreeItem nodeId={generateNodeId()} label={row.name}>
+                                                <TreeItem
+                                                    icon={<Edit />}
+                                                    nodeId={generateNodeId()}
+                                                    label={row.name}
+                                                >
                                                     {Object.keys(row).filter(name => !rowBlackList.includes(name)).map((name) => (
-                                                        name === 'ei' ? <TreeItem nodeId={generateNodeId()}
-                                                                                  label={`${name} - ${row.ei?.name}`}/> : <TreeItem nodeId={generateNodeId()}
-                                                                      label={`${rowMapper[name]} - ${row[name]}`}/>
+                                                        name === 'ei' ?
+                                                            <TreeItem
+                                                                nodeId={generateNodeId()}
+                                                                label={`${name} - ${row.ei?.name}`}
+                                                            /> :
+                                                            <TreeItem
+                                                                nodeId={generateNodeId()}
+                                                                label={`${rowMapper[name]} - ${row[name]}`}
+                                                                icon={<Edit />}
+                                                            />
                                                     ))}
                                                 </TreeItem>
                                             ))}
