@@ -146,9 +146,15 @@ class SNSectionSerializerShort(serializers.ModelSerializer):
         fields = '__all__'
 
 class SNSerializer(serializers.ModelSerializer):
-    sections = SNSectionSerializerShort(many=True, read_only=True)
+    sections = SNSectionSerializer(many=True, read_only=True)
     class Meta:
         model = SN
+        fields = '__all__'
+
+class SNSectionSerializerFull(serializers.ModelSerializer):
+    rows = SNRowSerializer(many=True, read_only=True)
+    class Meta:
+        model = SNSection
         fields = '__all__'
 
 class SNSerializerShort(serializers.ModelSerializer):
@@ -161,14 +167,13 @@ class SNSerializerShort(serializers.ModelSerializer):
 class SmetaSubrowSerializer(serializers.ModelSerializer):
     ei = OKEISerializer(many=False, read_only=True)
     class Meta:
-        model = SNSubRow
+        model = SmetaSubRow
         fields = '__all__'
 
 class SmetaRowSerializer(serializers.ModelSerializer):
-    subrows = SmetaSubrowSerializer(many=True, read_only=True)
     ei = OKEISerializer(many=False, read_only=True)    
     class Meta:
-        model = SNRow
+        model = SmetaRow
         fields = '__all__'
     
 class SmetaSubsectionSerializer(serializers.ModelSerializer):
@@ -180,13 +185,13 @@ class SmetaSubsectionSerializer(serializers.ModelSerializer):
 class SmetaSectionSerializer(serializers.ModelSerializer):
     subsections = SmetaSubsectionSerializer(many=True, read_only=True)
     class Meta:
-        model = SNSection
+        model = SmetaSection
         fields = '__all__'
 
 class SmetaSerializer(serializers.ModelSerializer):
     sections = SmetaSectionSerializer(many=True, read_only=True)
     class Meta:
-        model = SN
+        model = Smeta
         fields = '__all__'
 
 class SmetaSerializerShort(serializers.ModelSerializer):

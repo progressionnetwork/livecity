@@ -3,7 +3,8 @@ import json
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-
+from django.forms.models import model_to_dict
+from core.serializers import SNSectionSerializerFull
 
 class UserManager(BaseUserManager):
     ''' user manager  '''
@@ -179,7 +180,6 @@ class SN(models.Model):
     sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31
     sum_with_ko = models.FloatField(
         'Итого с коэф. фин. обеспеч.', default=0.0)  # 32
-    json_data = models.JSONField(null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.type_ref}"
@@ -195,6 +195,9 @@ class SNSection(models.Model):
     sn = models.ForeignKey('SN', on_delete=models.CASCADE,
                            related_name='sections')
     name = models.CharField('Наименование', max_length=250, default='Без имени')  # 7
+
+    def get_dict(self):
+        return SNSectionSerializerFull(self).data
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -314,7 +317,6 @@ class Smeta(models.Model):
     sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31
     sum_with_ko = models.FloatField(
         'Итого с коэф. фин. обеспеч.', default=0.0)  # 32
-    json_data = models.JSONField(null=True, blank=True)
     
     def __str__(self) -> str:
         return f"{self.name} ({self.address})"

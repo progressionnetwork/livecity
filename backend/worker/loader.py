@@ -117,15 +117,30 @@ def _get_instanse_with_type_update(model: object, type_update:str, data: dict, *
 def _get_ei(ei: str)->OKEI:
     _ei = OKEI.objects.filter(short_name=ei)
     if _ei:
-        return _ei
+        return _ei.first()
     else:
-        return OKEI.object.get(pk="796")
+        _ei = ei.split(' ')[0].strip()
+        if _ei == 'м3':
+            return OKEI.objects.get(pk="113")
+        elif _ei == 'м2':
+            return OKEI.objects.get(pk="055")
+        elif _ei == 'м':
+            return OKEI.objects.get(pk="006")
+        elif _ei == 'км':
+            return OKEI.objects.get(pk="008")
+        elif _ei == 'г':
+            return OKEI.objects.get(pk="163")
+        elif _ei == 'кг':
+            return OKEI.objects.get(pk="166")
+        return OKEI.objects.get(pk="796")
 
 def load_sn(path: str, type_update:str)-> None:
     from parser.smeta import Parse
     logger.info(f"Start parsing file: {path}")
     name_section = Path(path).stem
     sn = Parse(path)[0]
+    raw_data = sn
+    raw_data['coef_date'] = 0
     sections = sn.pop('sections')
     o_sn, created = _get_instanse_with_type_update(model=SN, 
         type_update=type_update, 
@@ -145,7 +160,8 @@ def load_sn(path: str, type_update:str)-> None:
             type_update=type_update,
             data={
                 "name" :  name_section,
-                "sn": o_sn
+                "sn": o_sn,
+                "json_data": raw_data
             },
             name=str(section['name'] if section['name']!='null' else ''), sn=o_sn)
         for row in rows:
@@ -164,7 +180,7 @@ def load_sn(path: str, type_update:str)-> None:
                 }, 
                 code = str(row['code'] if row['code']!='null' else ''), sn_section=o_section)
             for subrow in subrows:
-                ei = row.get('ei', None)
+                ei = _get_ei(row.get('ei', None))
                 o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
                 type_update=type_update,
                 data = {
