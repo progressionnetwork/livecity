@@ -165,7 +165,7 @@ class SmetaSubrowSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SmetaRowSerializer(serializers.ModelSerializer):
-    subrows = SNSubrowSerializer(many=True, read_only=True)
+    subrows = SmetaSubrowSerializer(many=True, read_only=True)
     ei = OKEISerializer(many=False, read_only=True)    
     class Meta:
         model = SNRow
@@ -184,7 +184,7 @@ class SmetaSectionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SmetaSerializer(serializers.ModelSerializer):
-    sections = SNSectionSerializer(many=True, read_only=True)
+    sections = SmetaSectionSerializer(many=True, read_only=True)
     class Meta:
         model = SN
         fields = '__all__'

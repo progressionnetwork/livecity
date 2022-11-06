@@ -660,7 +660,7 @@ if __name__ == "__main__":
     sheet = r"C:\Users\ruha\Downloads\Telegram Desktop\Исходные данные\Сметы для конкурса\Сметы для задачи разобранные\2971500536321000026\Устройство и ремонт ДТС в сквере по проезду Черского 02.07.21.xlsx"
     #sheet = "./soure_data/smeth_conc/smety_ishod/2772490542322000001/Копия ( с СП)Выполнение работ по устройству ограждения и габионов.xlsx"
     #sheet = "./soure_data/СН-ТСН/ТСН-2001/3.Строительные.Сборник 40-45.xlsx"
-    # result = Parse(sheet)
-    with open("a.json","w") as f:
-        d = Parse(sheet)
-        print(d)
+    result = Parse(sheet)
+    json_data = json.dumps(result, default=str) 
+    result = json.loads(json_data)
+    print(result)
