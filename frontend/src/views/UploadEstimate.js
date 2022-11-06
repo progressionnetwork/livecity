@@ -39,8 +39,7 @@ const UploadEstimate = () => {
                 Authorization: `Token ${localStorage.getItem('token')}`
             }
         }).then(res => {
-            console.log(res.data)
-            nav(`/smeta/${res.data.id}`)
+            nav(`/home`)
             setLoading(false)
         })
     }
