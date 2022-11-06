@@ -66,7 +66,9 @@ const Home = () => {
               {e.address}
             </CardBody>
             <CardFooter>
-              <Button color="primary">Подробнее</Button>
+              <Button color="primary" onClick={(e) => {
+                nav(`/smeta/${e.id}`)
+              }}>Подробнее</Button>
               <Button color="danger" style={{ marginLeft: 8 }}>Удалить</Button>
             </CardFooter>
           </Card>
