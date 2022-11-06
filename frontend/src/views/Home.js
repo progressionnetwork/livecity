@@ -77,7 +77,7 @@ const Home = () => {
                 })
               }}>Обработать</Button>
               <Button color="success" outline style={{ marginLeft: 8 }} onClick={() => {
-                request(`smeta/${e.id}/exel`).then()
+                request('get', `smeta/${e.id}/exel`).then()
               }}>Выгрузить в exel</Button>
               <Button color="danger" style={{ marginLeft: 8 }}>Удалить</Button>
             </CardFooter>
