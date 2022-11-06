@@ -130,3 +130,5 @@ dmypy.json
 
 # Node
 node_modules/
+backend/worker/parser/cc.ru.100.bin
+backend/worker/cc.ru.100.bin
