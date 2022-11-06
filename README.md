@@ -86,11 +86,13 @@ https://api.livecity.goodgenius.ru/docs/
 - Github: https://github.com/gg-goodgenius/livecity
 
 ## Стек используемых технологий и библиотек:
-- Python/Pandas
-- sbercloud
-- docker
-- react js
-- django/python
-- nginx
-- postgresql
-- rabbitmq
+- Python/Pandas/regex
+- Levenshtein/TfidfVectorizer/NLTK
+- FastText/Pymorphy
+- Sbercloud infrasturucte
+- Docker
+- React js
+- Django/python
+- Nginx
+- Postgresql
+- Rabbitmq
