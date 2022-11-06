@@ -351,13 +351,39 @@ def make_smeta(smeta_id: int):
     else:
         d_smeta = d_smeta.get_dict()
 
-    for sn in SNSection.objects.all():
+    for sn in SN.objects.all():
         d_sn = sn.get_dict()
-        sn_name = d_sn.get('name','Без имени')
+        sn_name = d_sn.get('type_ref','Без имени')
         kp.load_vectorizers(d_sn, sn_name)
         result = kp.process_smeta(d_smeta)
-        logger.info(f"Результат для {sn_name}: {result}")
-
+        for section in result.values():
+            for subsection in section:
+                row = subsection[1]
+                ft_spgz = SPGZ.objects.filter(name=row['fasttext_spgz'])
+                if ft_spgz:
+                    ft_spgz = ft_spgz.first()
+                kp_spgz = SPGZ.objects.filter(name=row['key_phrases_spgz'])
+                if kp_spgz:
+                    kp_spgz = kp_spgz.first()
+                smeta_row_stat = SmetaRowStat.objects.get_or_create(default={
+                    "sn":sn
+                    "smeta_row": SmetaRow.objects.get(pk=row['id']),
+                    "fasstext_percent":row['fasttext_percent'],
+                    "fasttext_spgz" : ft_spgz,
+                    "key_phrases_spgz" : kp_spgz,
+                    "key_phrases_percent" : row['match_ratio'],
+                    "levenst_ratio" : row['levenst_ratio'],
+                    "is_key" : row['is_key']
+                }
+                    sn = sn
+                )
+                smeta_row_stat.save()
+                for word in row['word_importance']:
+                    stat_word = SmetaRowStatWords(name=word[0], percent=word[1])
+                    stat_word.save()
+                    smeta_row_stat.stat_words.add(stat_word)
+    logger.info('Smeta short is end')
+    
 def callback(ch, method, properties, body):
     message = json.loads(body)
     logger.info(f"Incomming message: {message}")
