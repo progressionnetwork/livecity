@@ -1,5 +1,6 @@
+
 import {useLocation, useParams} from "react-router-dom";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 
 import TreeView from '@mui/lab/TreeView';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -17,8 +18,15 @@ function generateNodeId() {
 const Sn = () => {
     const params = useParams();
 
+    const [expanded, setExpanded] = React.useState([]);
+
+    const handleToggle = (event, nodeIds)  => {
+        setExpanded(nodeIds);
+    };
+
     const [sn, setSn] = useState(null);
-    const [nodes, setNodes] = useState([]);
+    const [info, setInfo] = useState(null)
+
 
     useEffect(() => {
         if (params.id) {
@@ -39,18 +47,21 @@ const Sn = () => {
                                 aria-label="disabled items"
                                 defaultCollapseIcon={<ExpandMoreIcon />}
                                 defaultExpandIcon={<ChevronRightIcon />}
-                                multiSelect
+                                onNodeToggle={handleToggle}
+                                expanded={expanded}
                             >
-                                {sn.sections.map((e1, i1) => (
-                                    <TreeItem nodeId={i1.toString()} label={e1.name}>
-                                        <TreeItem nodeId="3" label="dfs">
-                                            <TreeItem nodeId="fdsfhjkahjf" label="vfdhgagr5q34g">
-                                            </TreeItem>
-                                            <TreeItem nodeId="dfhjsdfg" label="feafsd">
-                                            </TreeItem>
-                                            <TreeItem nodeId="dsfr44" label="fweg">
-                                            </TreeItem>
-                                        </TreeItem>
+                                {sn.sections.map((e, i) => (
+                                    <TreeItem nodeId={i.toString()} label={e.name} onClick={async () => {
+                                        if (info?.id === e.id) {
+                                            return;
+                                        }
+                                        const data = await request('get', `sn_section/${e.id}`);
+                                        setInfo(data)
+                                        setExpanded([i.toString()])
+                                    }}>
+                                        {e.id === info?.id && info.rows.map((row) => (
+                                            <TreeItem nodeId={row.id} label={row.name} />
+                                        ))}
                                     </TreeItem>
                                 ))}
                             </TreeView>
