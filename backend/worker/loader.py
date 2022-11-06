@@ -114,6 +114,13 @@ def _get_instanse_with_type_update(model: object, type_update:str, data: dict, *
         instance, created = model.objects.get_or_create(defaults=data, *args, **kwargs)
     return (instance, created)
 
+def _get_ei(ei: str)->OKEI:
+    _ei = OKEI.objects.filter(short_name=ei)
+    if _ei:
+        return _ei
+    else:
+        return OKEI.object.get(pk="796")
+
 def load_sn(path: str, type_update:str)-> None:
     from parser.smeta import Parse
     logger.info(f"Start parsing file: {path}")
@@ -143,10 +150,7 @@ def load_sn(path: str, type_update:str)-> None:
             name=str(section['name'] if section['name']!='null' else ''), sn=o_sn)
         for row in rows:
             subrows = row.pop('subrows')
-            ei = row.get('ei', None)
-            if ei:
-                ei = ei.strip()
-            ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
+            ei = _get_ei(row.get('ei', None))
             o_row, created = _get_instanse_with_type_update(model=SNRow, 
                 type_update=type_update,
                 data = {
@@ -161,9 +165,6 @@ def load_sn(path: str, type_update:str)-> None:
                 code = str(row['code'] if row['code']!='null' else ''), sn_section=o_section)
             for subrow in subrows:
                 ei = row.get('ei', None)
-                if ei:
-                    ei = ei.strip()
-                ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
                 o_subrow, created = _get_instanse_with_type_update(model=SNSubRow,
                 type_update=type_update,
                 data = {
@@ -223,10 +224,7 @@ def load_smeta(path: str, type_update:str)-> None:
                 name=str(subsection['name'] if subsection['name']!='null' else ''), smeta_section=o_section)
             for row in rows:
                 subrows = row.pop('subrows')
-                ei  = row.get('ei', None)
-                if ei:
-                    ei = ei.strip()
-                ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
+                ei = _get_ei(row.get('ei', None))
                 o_row, created = _get_instanse_with_type_update(model=SmetaRow, 
                     type_update=type_update,
                     data = {
@@ -241,10 +239,7 @@ def load_smeta(path: str, type_update:str)-> None:
                     code = str(row['code'] if row['code']!='null' else ''), smeta_subsection=o_subsection)
                 for subrow in subrows:
                     logger.info(subrow)
-                    ei = row.get('ei', None)
-                    if ei:
-                        ei = ei.strip()
-                    ei, created = OKEI.objects.get_or_create(short_name=ei, defaults={"name": ei, "code": ei, "short_name":ei})
+                    ei = _get_ei(row.get('ei', None))
                     o_subrow, created = _get_instanse_with_type_update(model=SmetaSubRow,
                     type_update=type_update,
                     data = {

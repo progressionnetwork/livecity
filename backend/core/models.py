@@ -179,6 +179,7 @@ class SN(models.Model):
     sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31
     sum_with_ko = models.FloatField(
         'Итого с коэф. фин. обеспеч.', default=0.0)  # 32
+    json_data = models.JSONField(null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.type_ref}"
@@ -313,6 +314,7 @@ class Smeta(models.Model):
     sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31
     sum_with_ko = models.FloatField(
         'Итого с коэф. фин. обеспеч.', default=0.0)  # 32
+    json_data = models.JSONField(null=True, blank=True)
     
     def __str__(self) -> str:
         return f"{self.name} ({self.address})"

@@ -5,7 +5,6 @@ import Levenshtein
 import numpy as np
 
 #Ml stuff
-from transformers import AutoTokenizer, AutoModel
 from scipy import spatial
 import torch
 from sklearn.feature_extraction.text import TfidfVectorizer
