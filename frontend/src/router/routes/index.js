@@ -88,10 +88,6 @@ const Routes = [
     element: <ListTz />
   },
   {
-    path: '/smeta',
-    element: <ListSmeta />
-  },
-  {
     path: '/smeta/:id',
     element: <Smeta />
   },
