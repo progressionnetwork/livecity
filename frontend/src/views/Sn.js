@@ -1,5 +1,6 @@
+
 import {useLocation, useParams} from "react-router-dom";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 
 import TreeView from '@mui/lab/TreeView';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -7,7 +8,21 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TreeItem from '@mui/lab/TreeItem';
 
 import {request} from '../utility/request'
-import {Card, CardBody, CardHeader, CardTitle, Spinner} from "reactstrap";
+import {
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
+    CardTitle,
+    Input,
+    Label,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    Spinner
+} from "reactstrap";
+import {Edit} from "@mui/icons-material";
+import {IconButton} from "@mui/material";
 
 
 function generateNodeId() {
@@ -17,8 +32,15 @@ function generateNodeId() {
 const Sn = () => {
     const params = useParams();
 
+    const [expanded, setExpanded] = React.useState([]);
+
+    const handleToggle = (event, nodeIds)  => {
+        setExpanded(nodeIds);
+    };
+
     const [sn, setSn] = useState(null);
-    const [nodes, setNodes] = useState([]);
+    const [info, setInfo] = useState(null)
+
 
     useEffect(() => {
         if (params.id) {
@@ -27,6 +49,29 @@ const Sn = () => {
             })
         }
     }, [params.id])
+
+    const [editItem, setEditItem] = useState();
+    const [isModalEdit, setIsModalEdit] = useState(false)
+
+    const updateSn = async () => {
+        // try {
+        //     await request('put', `okpd/${editItem?.id}/`,
+        //         {
+        //             [editItem?.name]: editItem.value
+        //         }
+        //     );
+        // } catch (e) {
+        //     console.log('update okpd', 'что то пошло не так')
+        // }
+        //
+        // setOkpdList(prev => {
+        //     const list = prev.splice(0);
+        //     const i = list.findIndex(e => e.code === editItem.code);
+        //     list.splice(i, 1, editItem)
+        //     return list;
+        // })
+        setIsModalEdit(false)
+    }
 
     return (
         <div>
@@ -39,24 +84,60 @@ const Sn = () => {
                                 aria-label="disabled items"
                                 defaultCollapseIcon={<ExpandMoreIcon />}
                                 defaultExpandIcon={<ChevronRightIcon />}
-                                multiSelect
+                                onNodeToggle={handleToggle}
+                                expanded={expanded}
                             >
-                                {sn.sections.map((e1, i1) => (
-                                    <TreeItem nodeId={i1.toString()} label={e1.name}>
-                                        <TreeItem nodeId="3" label="dfs">
-                                            <TreeItem nodeId="fdsfhjkahjf" label="vfdhgagr5q34g">
+                                {sn.sections.map((e, i) => (
+                                    <TreeItem nodeId={i.toString()} label={e.name} onClick={async () => {
+                                        if (info?.id === e.id) {
+                                            return;
+                                        }
+                                        const data = await request('get', `sn_section/${e.id}`);
+                                        setInfo(data)
+                                        setExpanded([i.toString()])
+                                    }}>
+                                        {e.id === info?.id && info.rows.map((row) => (
+                                            <TreeItem nodeId={row.id} label={row.name} icon={<Edit onClick={(e) => {
+                                                setIsModalEdit(true)
+                                                setEditItem({
+                                                    name: 'name',
+                                                    value: row.name,
+                                                    id: row.id
+                                                })
+                                                e.stopPropagation();
+                                            }} />}>
+                                                {Object.keys(row).filter(name => name !== 'name' && name !== 'id').map((name) => (
+                                                    name === 'ei' ? <TreeItem nodeId={generateNodeId()} label={`${name} - ${row.ei.name}`} /> : <TreeItem nodeId={generateNodeId()} label={`${name} - ${row[name]}`} />
+                                                ))}
                                             </TreeItem>
-                                            <TreeItem nodeId="dfhjsdfg" label="feafsd">
-                                            </TreeItem>
-                                            <TreeItem nodeId="dsfr44" label="fweg">
-                                            </TreeItem>
-                                        </TreeItem>
+                                        ))}
                                     </TreeItem>
                                 ))}
                             </TreeView>
                         </CardBody>
                 </Card> : <Spinner />
             }
+
+
+            <Modal isOpen={isModalEdit} toggle={() => setIsModalEdit(!isModalEdit)} className='modal-dialog-centered'>
+                <ModalBody>
+                    <div>
+                        <Label className='form-label' for='name'>
+                            Название:
+                        </Label>
+                        <Input type='name' id='name' value={editItem?.value} onChange={(e => setEditItem(prev => ({
+                            ...prev,
+                            value: e.target.value
+                        })))} placeholder='Название' />
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color='primary' onClick={updateSn}>
+                        Сохрнать
+                    </Button>{' '}
+                </ModalFooter>
+            </Modal>
+
 
         </div>
     )
