@@ -45,6 +45,12 @@ const Smeta = () => {
     const [editItem, setEditItem] = useState();
     const [isModalEdit, setIsModalEdit] = useState(false)
 
+    const [expanded, setExpanded] = React.useState([]);
+
+    const handleToggle = (event, nodeIds) => {
+        setExpanded(nodeIds);
+    };
+
     const updateSmeta = async () => {
         // try {
         //     await request('put', `okpd/${editItem?.id}/`,
@@ -73,6 +79,20 @@ const Smeta = () => {
         }
     }, [id])
 
+    useEffect(() => {
+        if (smeta) {
+            const listNodes = [];
+            for (const section of smeta.sections) {
+                listNodes.push(section.id.toString());
+                for (const subsection of section.subsections) {
+                    listNodes.push(`${section.id}_${subsection.id}`);
+                }
+            }
+
+            setExpanded(listNodes)
+        }
+    }, [smeta])
+
     return (
         <div>
             {
@@ -82,37 +102,37 @@ const Smeta = () => {
                     </CardHeader>
                     <CardBody>
                         <Stack spacing={1} direction="row">
-                            <LocationOn />
+                            <LocationOn/>
                             <div>
                                 Адрес: {smeta.address}
                             </div>
                         </Stack>
-                        <Stack spacing={1}  mt={1}  direction="row">
-                            <Money />
+                        <Stack spacing={1} mt={1} direction="row">
+                            <Money/>
                             <div>
                                 Сумма без НДС: {smeta.sum} р.
                             </div>
                         </Stack>
-                        <Stack spacing={1}  mt={1}  direction="row">
-                            <Money />
+                        <Stack spacing={1} mt={1} direction="row">
+                            <Money/>
                             <div>
                                 НДС: {smeta.tax} р.
                             </div>
                         </Stack>
-                        <Stack spacing={1}  mt={1}  direction="row">
-                            <Money />
+                        <Stack spacing={1} mt={1} direction="row">
+                            <Money/>
                             <div>
                                 Сумма с НДС: {smeta.sum_with_tax} р.
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
-                            <DateRange />
+                            <DateRange/>
                             <div>
                                 {smeta.coef_date}
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
-                            <DocumentScannerSharp />
+                            <DocumentScannerSharp/>
                             <div>
                                 {smeta.type_ref}
                             </div>
@@ -123,6 +143,8 @@ const Smeta = () => {
                             aria-label="disabled items"
                             defaultCollapseIcon={<ExpandMoreIcon/>}
                             defaultExpandIcon={<ChevronRightIcon/>}
+                            onNodeToggle={handleToggle}
+                            expanded={expanded}
                         >
                             {smeta.sections.map((section, i) => (
                                 <TreeItem
@@ -136,7 +158,7 @@ const Smeta = () => {
                                         e.stopPropagation();
                                     }}/>}
                                     key={section.id}
-                                    nodeId={section.id.toString()}
+                                    nodeId={`${section.id}`}
                                     label={section.name}
                                 >
                                     {section.subsections.map((subsection) => (
@@ -153,7 +175,7 @@ const Smeta = () => {
                                                 }}
                                             />}
                                             key={subsection.id}
-                                            nodeId={generateNodeId()}
+                                            nodeId={`${section.id}_${subsection.id}`}
                                             label={subsection.name}
                                         >
                                             {subsection.rows.map((row) => (
@@ -169,51 +191,65 @@ const Smeta = () => {
                                                             e.stopPropagation();
                                                         }}
                                                     />}
-                                                    nodeId={generateNodeId()}
+                                                    nodeId={`${section.id}_${subsection.id}_${row.id}`}
                                                     label={row.name}
+                                                    style={{backgroundColor: row.color, color: 'white'}}
                                                 >
                                                     {Object.keys(row).filter(name => !rowBlackList.includes(name)).map((name) => (
                                                         name === 'is_key' ? <TreeItem
-                                                                nodeId={generateNodeId()}
+                                                                nodeId={`${section.id}_${subsection.id}_${row.id}_${name}`}
                                                                 label={`${rowMapper[name] ?? name} - ${row[name] ? 'Да' : 'Нет'}`}
                                                             /> :
-                                                        name === 'ei' ?
-                                                            <TreeItem
-                                                                nodeId={generateNodeId()}
-                                                                label={`${name} - ${row.ei?.name}`}
-                                                            /> : name === 'stats' ?
-                                                                <TreeItem nodeId={generateNodeId()} label="Статистика">
-                                                                    {row.stats.map(stat => (
-                                                                        <TreeItem nodeId={generateNodeId()} label={stat.sn}>
-                                                                            {Object.keys(stat).filter(name => !rowBlackList.includes(name)).filter(e => e !== 'sn').map((name) => (
-                                                                                name === 'is_key' ? <TreeItem
-                                                                                        nodeId={generateNodeId()}
-                                                                                        label={`${statMapper[name] ?? name} - ${row[name] ? 'Да' : 'Нет'}`}
-                                                                                    /> :
-                                                                                name === 'stat_words' ?
-                                                                                    <TreeItem nodeId={generateNodeId()} label="Статистика по словам">
-                                                                                        {stat.stat_words.map(stat_word => (
-                                                                                            <TreeItem nodeId={generateNodeId()} label={`${stat_word.name} - ${stat_word.percent}`} />
-                                                                                        ))}
-                                                                                    </TreeItem> :
-                                                                                    <TreeItem nodeId={generateNodeId()} label={`${statMapper[name] ?? name} - ${stat[name]}`} />
-                                                                            ))}
-                                                                        </TreeItem>
-                                                                    ))}
-                                                                </TreeItem>
-                                                            :  <TreeItem
-                                                                    nodeId={generateNodeId()}
-                                                                    label={`${rowMapper[name] ?? name} - ${row[name]}`}
-                                                                    icon={<Edit onClick={(e) => {
-                                                                        setIsModalEdit(true)
-                                                                        setEditItem({
-                                                                            name,
-                                                                            value: row[name],
-                                                                            id: row.id
-                                                                        })
-                                                                        e.stopPropagation();
-                                                                    }} />}
-                                                                />
+                                                            name === 'ei' ?
+                                                                <TreeItem
+                                                                    nodeId={`${section.id}_${subsection.id}_${row.id}_${name}`}
+                                                                    label={`${name} - ${row.ei?.name}`}
+                                                                /> : name === 'stats' ?
+                                                                    <TreeItem
+                                                                        nodeId={`${section.id}_${subsection.id}_${row.id}_${name}`}
+                                                                        label="Статистика"
+                                                                    >
+                                                                        {row.stats.map(stat => (
+                                                                            <TreeItem
+                                                                                nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}`}
+                                                                                label={stat.sn}
+                                                                            >
+                                                                                {Object.keys(stat).filter(name2 => !rowBlackList.includes(name2)).filter(e => e !== 'sn').map((name2) => (
+                                                                                    name2 === 'is_key' ? <TreeItem
+                                                                                            nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}_${name2}`}
+                                                                                            label={`${statMapper[name2] ?? name2} - ${row[name2] ? 'Да' : 'Нет'}`}
+                                                                                        /> :
+                                                                                        name2 === 'stat_words' ?
+                                                                                            <TreeItem
+                                                                                                nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}_${name2}`}
+                                                                                                label="Статистика по словам">
+                                                                                                {stat.stat_words.map(stat_word => (
+                                                                                                    <TreeItem
+                                                                                                        nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}_${name2}_${stat_word.id}`}
+                                                                                                        label={`${stat_word.name} - ${stat_word.percent}`}
+                                                                                                    />
+                                                                                                ))}
+                                                                                            </TreeItem> :
+                                                                                            <TreeItem
+                                                                                                nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}_${name2}`}
+                                                                                                label={`${statMapper[name2] ?? name2} - ${stat[name2]}`}/>
+                                                                                ))}
+                                                                            </TreeItem>
+                                                                        ))}
+                                                                    </TreeItem>
+                                                                    : <TreeItem
+                                                                        nodeId={`${section.id}_${subsection.id}_${row.id}_${name}`}
+                                                                        label={`${rowMapper[name] ?? name} - ${row[name]}`}
+                                                                        icon={<Edit onClick={(e) => {
+                                                                            setIsModalEdit(true)
+                                                                            setEditItem({
+                                                                                name,
+                                                                                value: row[name],
+                                                                                id: row.id
+                                                                            })
+                                                                            e.stopPropagation();
+                                                                        }}/>}
+                                                                    />
                                                     ))}
                                                 </TreeItem>
                                             ))}
@@ -235,7 +271,7 @@ const Smeta = () => {
                         <Input type='name' id='name' value={editItem?.value} onChange={(e => setEditItem(prev => ({
                             ...prev,
                             value: e.target.value
-                        })))} placeholder='Название' />
+                        })))} placeholder='Название'/>
                     </div>
                 </ModalBody>
                 <ModalFooter>

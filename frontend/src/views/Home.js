@@ -32,6 +32,13 @@ const Home = () => {
       setListSmeta(data)
     })
 
+    const interval = setInterval(() => {
+      request('get', 'smeta/').then(data => {
+        setListSmeta(data)
+      })
+    }, 5 * 1000)
+
+    return () => clearInterval(interval)
   }, [])
 
   return (
@@ -77,9 +84,40 @@ const Home = () => {
                 })
               }}>Обработать</Button>
               <Button color="success" outline style={{ marginLeft: 8 }} onClick={() => {
-                request('get', `smeta/${e.id}/exel`).then()
-              }}>Выгрузить в exel</Button>
-              <Button color="danger" style={{ marginLeft: 8 }}>Удалить</Button>
+
+                fetch(`https://api.livecity.goodgenius.ru/smeta/${e.id}/excel/`, {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    Authorization: `Token ${localStorage.getItem('token')}`
+                  }
+                })
+                    .then((response) => response.blob())
+                    .then((blob) => {
+                      const url = window.URL.createObjectURL(
+                          new Blob([blob])
+                      );
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.setAttribute(
+                          'download',
+                          `table.xlsx`
+                      );
+
+                      // Append to html link element page
+                      document.body.appendChild(link);
+
+                      // Start download
+                      link.click();
+
+                      // Clean up and remove the link
+                      link.parentNode.removeChild(link);
+                    });
+              }}>Выгрузить</Button>
+              <Button color="danger" style={{ marginLeft: 8 }} onClick={() => {
+                request('delete', `smeta/${e.id}/`).then()
+                setListSmeta(prev => prev.filter((el) => el.id !== e.id))
+              }}>Удалить</Button>
             </CardFooter>
           </Card>
       ))}
