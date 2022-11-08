@@ -196,77 +196,72 @@ def load_sn(path: str, type_update:str)-> None:
 
 def load_smeta(path: str, type_update:str)-> None:
     from parser.smeta import Parse
+    tz = None
+    if len(type_update) > 0:
+        tz = TZ.objects.get(pk=int(type_update))
     logger.info(f"Start parsing file: {path}")
     name = Path(path).stem
+    o_smeta = Smeta(name=name, status_file=0)
+    o_smeta.save()
     smeta = Parse(path)[0]
     sections = smeta.pop('sections')
-    o_smeta, created = _get_instanse_with_type_update(model=Smeta, 
-        type_update=type_update, 
-        data={
-            "name" : name,
-            "address" : str(smeta['address'] if smeta['address']!='null' else ''), 
-            "type_ref" : str(smeta['type_ref'] if smeta['type_ref']!='null' else ''), 
-            "advance" :  str(smeta['advance'] if smeta['advance']!='null' else ''),
-            "coef_ref" : str(smeta['coef_ref'] if smeta['coef_ref']!='null' else ''),
-            "coef_date" : smeta['coef_date'],
-            "sum" : float(smeta['sum'] if smeta['sum'] is not None else 0),
-            "tax" : float(smeta['tax'] if smeta['tax'] is not None else 0),
-            "sum_with_tax" : float(smeta['sum_with_tax']  if smeta['sum_with_tax'] is not None else 0),
-            "sum_with_ko" : float(smeta['sum_with_ko'] if smeta['sum_with_ko'] is not None else 0)},
-        name = name, address = str(smeta['address'] if smeta['address']!='null' else ''))
+    o_smeta.address = str(smeta['address'] if smeta['address']!='null' else '')
+    o_smeta.type_ref = str(smeta['type_ref'] if smeta['type_ref']!='null' else '')
+    o_smeta.advance = str(smeta['advance'] if smeta['advance']!='null' else ''),
+    o_smeta.coef_ref = str(smeta['coef_ref'] if smeta['coef_ref']!='null' else '')
+    o_smeta.coef_date = smeta['coef_date']
+    o_smeta.sum = float(smeta['sum'] if smeta['sum'] is not None else 0)
+    o_smeta.tax = float(smeta['tax'] if smeta['tax'] is not None or smeta['tax'] != '' else 0)
+    o_smeta.sum_with_tax = float(smeta['sum_with_tax']  if smeta['sum_with_tax'] is not None else 0)
+    o_smeta.sum_with_tax = float(smeta['sum_with_tax']  if smeta['sum_with_tax'] is not None else 0)
+    o_smeta.status_file = 1
+    o_smeta.sum_with_ko = float(smeta['sum_with_ko'] if smeta['sum_with_ko'] is not None else 0)
+    o_smeta.tz = tz
+    o_smeta.save()
     for section in sections:
         subsections = section.pop('subsections')
-        o_section, created = _get_instanse_with_type_update(model=SmetaSection,
-            type_update=type_update,
-            data={
-                "name" :  str(section['name'] if section['name']!='null' else ''),
-                "sum": float(section['sum']  if section['sum'] is not None else 0),
-                "address" : str(section['address'] if section['address']!='null' else ''), 
-                "smeta": o_smeta
-            },
-            name=str(section['name'] if section['name']!='null' else ''), smeta=o_smeta)
+        o_section = SmetaSection(name = str(section['name'] if section['name']!='null' else ''),
+                sum = float(section['sum']  if section['sum'] is not None else 0),
+                address = str(section['address'] if section['address']!='null' else ''), 
+                smeta = o_smeta)
+        o_section.save()
         for subsection in subsections:
             rows = subsection.pop('rows')
-            o_subsection, created = _get_instanse_with_type_update(model=SmetaSubsection,
-                type_update=type_update,
-                data={
-                    "name" :  str(subsection['name'] if subsection['name']!='null' else ''),
-                    "sum": float(subsection['sum']  if subsection['sum'] is not None else 0),
-                    "smeta_section": o_section
-                },
-                name=str(subsection['name'] if subsection['name']!='null' else ''), smeta_section=o_section)
+            o_subsection=SmetaSubsection(
+                    name=str(subsection['name'] if subsection['name']!='null' else ''),
+                    sum=float(subsection['sum']  if subsection['sum'] is not None else 0),
+                    smeta_section=o_section)
+            o_subsection.save()
             for row in rows:
                 subrows = row.pop('subrows')
                 ei = _get_ei(row.get('ei', None))
-                o_row, created = _get_instanse_with_type_update(model=SmetaRow, 
-                    type_update=type_update,
-                    data = {
-                        "smeta_subsection" : o_subsection,
-                        "code" : str(row['code'] if row['code']!='null' else ''),
-                        "num" : int(row['num'] if row['num'] is not None else 0),
-                        "name" : str(row['name'] if row['name']!='null' else ''),
-                        "ei" : ei,
-                        "is_key": False,
-                        "count" : float(row['count'] if row['count'] is not None else 0),
-                        "sum" : float(row['sum'] if row['sum'] is not None else 0)
-                    }, 
-                    code = str(row['code'] if row['code']!='null' else ''), smeta_subsection=o_subsection)
+                o_row=SmetaRow(
+                        smeta_subsection=o_subsection,
+                        code=str(row['code'] if row['code']!='null' else ''),
+                        num=int(row['num'] if row['num'] is not None else 0),
+                        name=str(row['name'] if row['name']!='null' else ''),
+                        ei=ei,
+                        is_key=False,
+                        count=float(row['count'] if row['count'] is not None else 0),
+                        sum=float(row['sum'] if row['sum'] is not None else 0)
+                    )
+                o_row.save()
                 for subrow in subrows:
                     ei = _get_ei(row.get('ei', None))
-                    o_subrow, created = _get_instanse_with_type_update(model=SmetaSubRow,
-                    type_update=type_update,
-                    data = {
-                        "smeta_row" : o_row,
-                        "name" : str(subrow['name'] if subrow['name']!='null' else ''),
-                        "ei" : ei,
-                        "count" : float(subrow.get('count') if subrow.get('count') is not None else 0),
-                        "amount" : float(subrow.get('amount') if subrow.get('amount') is not None else 0),
-                        "coef_correct" : float(subrow.get('coef_correct') if subrow.get('coef_correct') is not None else 0),
-                        "coef_winter" : float(subrow.get('coef_winter') if subrow.get('coef_winter') is not None else 0),
-                        "coef_recalc" : float(subrow.get('coef_recalc') if subrow.get('coef_recalc') is not None else 0),
-                        "sum_basic" : float(subrow.get('sum_basic') if subrow.get('sum_basic') is not None else 0),
-                        "sum_current" : float(subrow.get('sum_current') if subrow.get('sum_current') is not None else 0)
-                    }, name = str(subrow['name'] if subrow['name']!='null' else ''), smeta_row=o_row)
+                    o_subrow=SmetaSubRow(
+                        smeta_row=o_row,
+                        name=str(subrow['name'] if subrow['name']!='null' else ''),
+                        ei=ei,
+                        count=float(subrow.get('count') if subrow.get('count') is not None else 0),
+                        amount=float(subrow.get('amount') if subrow.get('amount') is not None else 0),
+                        coef_correct=float(subrow.get('coef_correct') if subrow.get('coef_correct') is not None else 0),
+                        coef_winter=float(subrow.get('coef_winter') if subrow.get('coef_winter') is not None else 0),
+                        coef_recalc=float(subrow.get('coef_recalc') if subrow.get('coef_recalc') is not None else 0),
+                        sum_basic=float(subrow.get('sum_basic') if subrow.get('sum_basic') is not None else 0),
+                        sum_current=float(subrow.get('sum_current') if subrow.get('sum_current') is not None else 0)
+                    )
+                    o_subrow.save()
+    o_smeta.send_rabbitmq()
     logger.info('Smeta file updated.')
 
 def load_spgz(path: str, type_update:str) -> None:
@@ -341,52 +336,62 @@ def load_from_file(type_data: str, path: str, type_update: str) -> None:
 def make_smeta(smeta_id: int):
     from make_smeta import Keyphrases
     spgz = SPGZ.objects.filter(key__isnull=False)
+    smeta = Smeta.objects.get(pk=smeta_id)
+    if smeta.tz:
+        spgz = spgz.filter(id__in = [row.spgz.id for row in smeta.tz.rows.all()])
     spgz_name = spgz.values_list('name', flat=True)
     spgz_key = spgz.values_list('key', flat=True)
     d_spgz = {'СПГЗ':spgz_name, 'Ключевые слова': spgz_key}
     kp = Keyphrases(d_spgz)
-
-    d_smeta = Smeta.objects.get(pk=smeta_id)
-    if not d_smeta:
+    smeta.status_file = 2
+    smeta.save()
+    sn = SN.objects.filter(type_ref=smeta.type_ref)
+    if not sn:
+        logger.error("Нормативный справочник не найден будет выбран TSN-2001")
+        sn = SN.objects.get(type_ref='TSN-2001')
+    else:
+        sn = sn.first()
+    if not smeta:
         logger.error("Смета не найдена")
     else:
-        d_smeta = d_smeta.get_dict()
-
-    for sn in SN.objects.all():
-        d_sn = sn.get_dict()
-        sn_name = d_sn.get('type_ref','Без имени')
-        kp.load_vectorizers(d_sn, sn_name)
-        result = kp.process_smeta(d_smeta)
-        for section in result.values():
-            for subsection in section:
-                row = subsection[1]
-                ft_spgz = SPGZ.objects.filter(name=row['fasttext_spgz'])
-                if ft_spgz:
-                    ft_spgz = ft_spgz.first()
-                kp_spgz = SPGZ.objects.filter(name=row['key_phrases_spgz'])
-                if kp_spgz:
-                    kp_spgz = kp_spgz.first()
-                o_smeta_row = SmetaRow.objects.get(pk=row['id'])
-                o_smeta_row.is_key = row['is_key']
-                o_smeta_row.save()
-                smeta_row_stat, created = SmetaRowStat.objects.get_or_create(defaults={
-                    "sn":sn,
-                    "smeta_row": o_smeta_row,
-                    "fasstext_percent":row['fasttext_percent'],
-                    "fasttext_spgz" : ft_spgz,
-                    "key_phrases_spgz" : kp_spgz,
-                    "key_phrases_percent" : row['match_ratio'],
-                    "levenst_ratio" : row['levenst_ratio'],
-                    "is_key" : row['is_key'],
-                    "key_percent" : row['is_key_coof'],
-                },
-                    sn = sn,
-                    smeta_row = o_smeta_row
-                )
-                for word in row['word_importance']:
-                    stat_word = SmetaRowStatWords(name=word[0], percent=word[1])
-                    stat_word.save()
-                    smeta_row_stat.stat_words.add(stat_word)
+        d_smeta = smeta.get_dict()
+    d_sn = sn.get_dict()
+    sn_name = d_sn.get('type_ref','Без имени')
+    kp.load_vectorizers(d_sn, sn_name)
+    result = kp.process_smeta(d_smeta)
+    for section in result.values():
+        for subsection in section:
+            row = subsection[1]
+            ft_spgz = SPGZ.objects.filter(name=row['fasttext_spgz'])
+            if ft_spgz:
+                ft_spgz = ft_spgz.first()
+            kp_spgz = SPGZ.objects.filter(name=row['key_phrases_spgz'])
+            if kp_spgz:
+                kp_spgz = kp_spgz.first()
+            o_smeta_row = SmetaRow.objects.get(pk=row['id'])
+            o_smeta_row.is_key = row['is_key']
+            o_smeta_row.save()
+            smeta_row_stat, created = SmetaRowStat.objects.get_or_create(defaults={
+                "sn":sn,
+                "smeta_row": o_smeta_row,
+                "fasstext_percent":row['fasttext_percent'],
+                "fasttext_spgz" : ft_spgz,
+                "key_phrases_spgz" : kp_spgz,
+                "key_phrases_percent" : row['match_ratio'],
+                "levenst_ratio" : row['levenst_ratio'],
+                "is_key" : row['is_key'],
+                "key_percent" : row['is_key_coof'],
+            },
+                sn = sn,
+                smeta_row = o_smeta_row
+            )
+            for word in row['word_importance']:
+                stat_word = SmetaRowStatWords(name=word[0], percent=word[1])
+                stat_word.save()
+                smeta_row_stat.stat_words.add(stat_word)
+    smeta.set_sum_keys()
+    smeta.status_file = 3
+    smeta.save()
     logger.info('Smeta short is end')
     
 def callback(ch, method, properties, body):
