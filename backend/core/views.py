@@ -7,12 +7,11 @@ from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
+from rest_framework import filters
 from django.contrib.postgres.search import SearchVector
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-import io
-import xlsxwriter
 from django.http import HttpResponse, FileResponse
 
 
@@ -154,6 +153,8 @@ class KPGZView(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated
     ]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['code', 'name']
 
 class OKEIView(ModelViewSet):
     ''' Общероссийский классификатор единиц измерения '''
@@ -162,6 +163,8 @@ class OKEIView(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated
     ]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['code', 'name', 'short_name']
 
 class OKPDView(ModelViewSet):
     '''Общероссийский классификатор продукции по видам экономической деятельности'''
@@ -170,6 +173,9 @@ class OKPDView(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated
     ]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['code', 'name']
+
 
 class OKPD2View(ModelViewSet):
     '''Общероссийский классификатор продукции по видам экономической деятельности'''
@@ -178,6 +184,9 @@ class OKPD2View(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated
     ]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['code', 'name']
+
 
 class FileUpdateView(ModelViewSet):
     ''' Файлы для обновления '''
@@ -201,6 +210,9 @@ class SPGZView(ModelViewSet):
         permissions.IsAuthenticated
     ]
     queryset = SPGZ.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['id', 'name']
+
 
 class TZView(ModelViewSet):
     ''' Шаблоны ТЗ  '''
@@ -209,9 +221,11 @@ class TZView(ModelViewSet):
         permissions.IsAuthenticated
     ]
     queryset = TZ.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
     def list(self, request):
-        queryset = TZ.objects.all()
+        queryset = self.filter_queryset(self.get_queryset())
         serializer = TZSerializerShort(queryset, many=True)
         return Response(serializer.data)
 
@@ -222,6 +236,8 @@ class SNView(ModelViewSet):
         permissions.IsAuthenticated
     ]
     queryset = SN.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['type_ref']
 
     def list(self, request):
         queryset = SN.objects.all()
@@ -235,6 +251,8 @@ class SNSectionView(ModelViewSet):
         permissions.IsAuthenticated
     ]
     queryset = SNSection.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
 class SmetaView(ModelViewSet):
     ''' Смета  '''
@@ -243,67 +261,24 @@ class SmetaView(ModelViewSet):
         permissions.IsAuthenticated
     ]
     queryset = Smeta.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'address']
 
     def list(self, request):
-        queryset = Smeta.objects.all()
+        queryset = self.filter_queryset(self.get_queryset())
         serializer = SmetaSerializerShort(queryset, many=True)
         return Response(serializer.data)
     
     @action(detail=True, methods=['get'])
     def short_smeta(self, request, pk=None):
         ''' Получить статистику по смете и определить ключевые позиции '''
-        smeta = self.get_object()
-        smeta.send_rabbitmq()
+        self.get_object().send_rabbitmq()
         return Response({'result': True})
 
     @action(detail=True, methods=['get'])
     def excel(self, request, pk=None):
         ''' Экспорт excel файла с обработанной сметой '''
-        smeta = self.get_object()
-        buffer = io.BytesIO()
-        workbook = xlsxwriter.Workbook(buffer)
-        worksheet = workbook.add_worksheet()
-        row_num = 0
-        worksheet.merge_range('A1:I1', f"Название сметы: {smeta.name}")
-        row_num += 1
-        worksheet.write(row_num, 0, "Номер")
-        worksheet.write(row_num, 1, "ИД")
-        worksheet.write(row_num, 2, "КПГЗ")
-        worksheet.write(row_num, 3, "Шифр")
-        worksheet.write(row_num, 4, "Наименование")
-        worksheet.write(row_num, 5, "СПГЗ")
-        worksheet.write(row_num, 6, "ед. изм.")
-        worksheet.write(row_num, 7, "Количество")
-        worksheet.write(row_num, 8, "Сумма")
-        worksheet.write(row_num, 9, "Адресс")
-        worksheet.write(row_num, 10, "СН/ТСН")
-        row_num += 1
-        for section in smeta.sections.all():
-            for subsection in section.subsections.all():
-                for row in subsection.rows.filter(is_key=True):
-                    for row_stat in row.stats.all():
-                        spgz = row_stat.fasttext_spgz
-                        col = 0
-                        worksheet.write(row_num, col+0, row.num)
-                        worksheet.write(row_num, col+1, spgz.id)
-                        worksheet.write(row_num, col+2, spgz.kpgz.name)
-                        worksheet.write(row_num, col+3, row.code)
-                        worksheet.write(row_num, col+4, row.name)
-                        worksheet.write(row_num, col+5, spgz.name)
-                        worksheet.write(row_num, col+6, row.ei.short_name if row.ei else "-")
-                        worksheet.write(row_num, col+7, row.count)
-                        worksheet.write(row_num, col+8, row.sum)
-                        worksheet.write(row_num, col+9, smeta.address)
-                        worksheet.write(row_num, col+10, row_stat.sn.type_ref)
-                        row_num += 1
-        worksheet.write(row_num, 0, "ИТОГО без НДС:")
-        worksheet.write_formula(row_num, 8, f"=СУММ(I3:I{row_num})")
-        worksheet.write(row_num+1, 0, "НДС:")
-        worksheet.write_formula(row_num+1, 8, f"=I{row_num+1}*0.2")
-        worksheet.write(row_num+2, 0, "ИТОГО без НДС:")
-        worksheet.write_formula(row_num+2, 8, f"=I{row_num+1}+I{row_num}")
-        workbook.close()
-        buffer.seek(0)
+        buffer = self.get_object().get_excel()
         return FileResponse(buffer, as_attachment=True, filename='report.xlsx')
 
 class SmetaRowView(ModelViewSet):

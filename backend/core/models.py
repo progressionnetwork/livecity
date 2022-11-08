@@ -346,6 +346,20 @@ class Smeta(models.Model):
             result['sections'].append(d_section)
         return result
 
+    def check_row_sum(self):
+        sum = 0.0
+        for section in self.sections.all():
+            for subsection in section.subsections.all():
+                for row in subsection.rows.all():
+                    sum = sum + row.sum
+        check = round(sum, 2) == self.sum
+        return {"check": check, "value": round(sum, 2)}
+
+    def check_keys_row_sum(self):
+        sum = self.get_sum_keys()
+        check = round(sum, 2) == self.sum
+        return {"check": check, "value": round(sum, 2)}
+
     def get_sum_keys(self):
         sum = 0.0
         for section in self.sections.all():
@@ -361,22 +375,31 @@ class Smeta(models.Model):
             for subsection in section.subsections.all():
                 if subsection.have_key_rows():
                     current_key_row = None
+                    sum = 0.0
                 for row in subsection.rows.all().order_by('name'):
-                    if row.is_key == False:
+                    row.sum_keys = 0
+                    row.save()
+                    if row.is_key:
+                        # если мы нашли первую ключевую позицию
                         if current_key_row is None:
-                            sum = row.sum + sum
-                            print(f"Не ключевая строка в разделе с ключами: {row}. Сумма: {row.sum}")
-                        else:
-                            current_key_row.sum_keys = row.sum + current_key_row.sum_keys 
-                            current_key_row.save()
-                            print(f"Не ключевая строка в разделе без ключей: {row}")
-                    else:
-                        if current_key_row is None:
-                            row.sum_keys = sum + row.sum
+                            # суммируем все что было до нее в разделе
+                            row.sum_keys = sum
                             row.save()
                             sum = 0.0
                         current_key_row = row
-                        print(f"Ключевая строка в разделе с ключами: {row}. Сумма: {row.sum}")
+                        current_key_row.sum_keys += current_key_row.sum
+                        current_key_row.save()
+                        print(f"Ключевая строка в разделе с ключами: {row}. Сумма: {row.sum}. Ключевая сумма: {current_key_row.sum_keys}")
+                    else:
+                        # если ключевой позиции еще не было
+                        if current_key_row is None:
+                            sum += row.sum
+                            print(f"Не ключевая строка в разделе с ключами: {row}. Сумма: {row.sum}")
+                        # если найдена была складываем туба все
+                        else:
+                            current_key_row.sum_keys += row.sum
+                            current_key_row.save()
+                            print(f"Не ключевая строка в разделе без ключей: {row}. Сумма: {row.sum}. Ключевая сумма: {current_key_row.sum_keys}")
 
     def send_rabbitmq(self):
         import pika
@@ -388,6 +411,98 @@ class Smeta(models.Model):
             {'type_data': "short_smeta", 'id': self.id}))
         connection.close()
 
+    def get_excel(self):
+        import io
+        import xlsxwriter
+        smeta = self
+        buffer = io.BytesIO()
+        workbook = xlsxwriter.Workbook(buffer)
+        worksheet = workbook.add_worksheet()
+        number_format = workbook.add_format({'num_format': '#,##0.00'})
+        # Настройка ширины колонок
+        worksheet.set_column(1,1, 6)
+        worksheet.set_column(2,2, 12)
+        worksheet.set_column(3,3, 12)
+        worksheet.set_column(4,4, 45)
+        worksheet.set_column(5,5, 18)
+        worksheet.set_column(6,6, 40)
+        worksheet.set_column(7,7, 12)
+        worksheet.set_column(8,8, 12)
+        worksheet.set_column(9,9, 15)
+        worksheet.set_column(10,10, 40)
+        # выводим шапку
+        worksheet.merge_range('A1:C1', 'Название сметы: ')
+        worksheet.merge_range('D1:J1', self.name)
+        
+        worksheet.merge_range('A2:C2', 'Адрес:')
+        worksheet.merge_range('D2:J2', self.address)
+        
+        worksheet.merge_range('A3:C3', 'Сумма без НДС:')
+        worksheet.merge_range('D3:J3', self.sum, number_format)
+        
+        worksheet.merge_range('A4:C4', 'НДС:')
+        worksheet.merge_range('D4:J4', self.sum * 0.2, number_format)
+        
+        worksheet.merge_range('A5:C5', 'Сумма с НДС:')
+        worksheet.merge_range('D5:J5', self.sum * 1.2, number_format)
+        
+        worksheet.merge_range('A6:C6', 'Нормативный справочник:')
+        worksheet.merge_range('D6:J6', self.type_ref)
+        
+        worksheet.merge_range('A7:C7', 'Контроль сумм по строкам:')
+        check_sum = self.check_row_sum()
+        worksheet.merge_range('D7:J7', f"Пройдена ({check_sum['value']})" if check_sum['check'] else f"Не пройдена ({check_sum['value']})")
+        
+        worksheet.merge_range('A8:C8', 'Контроль сумм по ключевым строкам:')
+        check_sum = self.check_keys_row_sum()
+        worksheet.merge_range('D8:J8', f"Пройдена ({check_sum['value']})" if check_sum['check'] else f"Не пройдена ({check_sum['value']})")
+             
+        worksheet.merge_range('A9:C9', 'Использованный шаблон:')
+        worksheet.merge_range('D9:J9', self.tz.name)
+        
+        row_num = 0
+        worksheet.merge_range('A1:I1', f"Название сметы: {smeta.name}")
+        row_num += 1
+        worksheet.write(row_num, 0, "Номер")
+        worksheet.write(row_num, 1, "ИД")
+        worksheet.write(row_num, 2, "КПГЗ")
+        worksheet.write(row_num, 3, "Шифр")
+        worksheet.write(row_num, 4, "Наименование")
+        worksheet.write(row_num, 5, "СПГЗ")
+        worksheet.write(row_num, 6, "ед. изм.")
+        worksheet.write(row_num, 7, "Количество")
+        worksheet.write(row_num, 8, "Сумма")
+        worksheet.write(row_num, 9, "Адресс")
+        worksheet.write(row_num, 10, "СН/ТСН")
+        row_num += 1
+        for section in smeta.sections.all():
+            for subsection in section.subsections.all():
+                for row in subsection.rows.filter(is_key=True):
+                    for row_stat in row.stats.all():
+                        spgz = row_stat.fasttext_spgz
+                        col = 0
+                        worksheet.write(row_num, col+0, row.num)
+                        worksheet.write(row_num, col+1, spgz.id)
+                        worksheet.write(row_num, col+2, spgz.kpgz.name)
+                        worksheet.write(row_num, col+3, row.code)
+                        worksheet.write(row_num, col+4, row.name)
+                        worksheet.write(row_num, col+5, spgz.name)
+                        worksheet.write(row_num, col+6, row.ei.short_name if row.ei else "-")
+                        worksheet.write(row_num, col+7, row.count)
+                        worksheet.write(row_num, col+8, row.sum)
+                        worksheet.write(row_num, col+9, smeta.address)
+                        worksheet.write(row_num, col+10, row_stat.sn.type_ref)
+                        row_num += 1
+        worksheet.write(row_num, 0, "ИТОГО без НДС:")
+        worksheet.write_formula(row_num, 8, f"=СУММ(I3:I{row_num})")
+        worksheet.write(row_num+1, 0, "НДС:")
+        worksheet.write_formula(row_num+1, 8, f"=I{row_num+1}*0.2")
+        worksheet.write(row_num+2, 0, "ИТОГО без НДС:")
+        worksheet.write_formula(row_num+2, 8, f"=I{row_num+1}+I{row_num}")
+        workbook.close()
+        buffer.seek(0)
+        return buffer
+    
     def __str__(self) -> str:
         return f"{self.name} ({self.address})"
 
@@ -518,3 +633,8 @@ class SmetaRowStatWords(models.Model):
     smeta_row_stat = models.ForeignKey(SmetaRowStat, on_delete=models.SET_NULL, null=True, blank=True, related_name='stat_words')
     name = models.CharField(max_length=1000)
     percent = models.FloatField(default=0.0)
+
+    class Meta:
+        verbose_name = "Смета:Расширенная строка (тэги)"
+        verbose_name_plural = "Смета: Расширенные строки (тэги)"
+        ordering = ['-percent']

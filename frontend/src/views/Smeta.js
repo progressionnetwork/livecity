@@ -126,7 +126,7 @@ const Subsection = ({subsection}) => {
                                     <TableRow>
                                         <StyledTableCell sx={{ fontSize: '0.8rem', width: 70 }}>№ п/п</StyledTableCell>
                                         <StyledTableCell sx={{ fontSize: '0.8rem', width: 120 }}>Шифр</StyledTableCell>
-                                        <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={3}>Название</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem' }}>Название</StyledTableCell>
                                         <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Кол-во</StyledTableCell>
                                         <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Ед. изм.</StyledTableCell>
                                         <StyledTableCell sx={{ fontSize: '0.8rem', width: 150 }}>Сумма</StyledTableCell>
@@ -141,51 +141,35 @@ const Subsection = ({subsection}) => {
                                             }}>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.num}</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.code}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={3}>{row.name}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.name}</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.count}</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row?.ei?.short_name}</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{numberWithSpaces(row.sum)}</StyledTableCell>
                                             </TableRow>
 
                                             <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={2}>СПГЗ по Fasttext</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasttext_spgz}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={2}>Вероятность по Fasttext</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasstext_percent}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_percent}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].is_key}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].stat_words.map(e => `${e.name}(${e.percent})`).join(', ')}</StyledTableCell>
                                             </TableRow>
                                             <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasttext_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={2}>СПГЗ по ключевым фразам</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_spgz}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasstext_percent}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={2}>Вероятность по ключевым фразам</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_percent}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].is_key}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].stat_words.map(e => `${e.name}(${e.percent})`).join(', ')}</StyledTableCell>
                                             </TableRow>
                                             <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasttext_spgz}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_spgz}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasstext_percent}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_percent}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].is_key}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={2}>Ключевые слова с вероятностями</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].stat_words.map(e => `${e.name}(${e.percent})`).join(', ')}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={2}>Рассотяние Левенштейна</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
                                             </TableRow>
                                             <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasttext_spgz}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_spgz}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasstext_percent}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_percent}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={2}>Является ключевой позицией</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].is_key}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].stat_words.map(e => `${e.name}(${e.percent})`).join(', ')}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={2}>Вероятность ключевой позиции</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_percent}</StyledTableCell>
                                             </TableRow>
                                         </>
 
