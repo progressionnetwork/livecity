@@ -26,6 +26,8 @@ const Okpd2 = () => {
     const [editItem, setEditItem] = useState();
     const [isModalEdit, setIsModalEdit] = useState(false)
 
+    const [search, setSearch] = useState('');
+
     const updateSpgz = async () => {
         try {
             await request('put', `spgz/${editItem?.code}/`,
@@ -56,19 +58,27 @@ const Okpd2 = () => {
             nav('/login')
         }
 
-        request('get', 'spgz/').then(data => {
+        request('get', `spgz/?search=${search}`).then(data => {
             setNextPage(data.next)
             setSpgzList(data.results)
             setMaxResults(data.count)
         })
     }, [])
 
+    useEffect(() => {
+        request('get', `kpgz/?search=${search}`).then(data => {
+            setNextPage(data.next)
+            setSpgzList(data.results)
+            setMaxResults(data.count)
+        })
+    }, [search])
+
     return (
         <div>
             <Card>
                 <CardBody>
                     <Label>Поиск</Label>
-                    <Input />
+                    <Input value={search} onChange={(e) => setSearch(e.target.value)} />
                 </CardBody>
             </Card>
 
