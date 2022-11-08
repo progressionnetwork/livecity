@@ -121,7 +121,7 @@ const Okpd = () => {
                 </ModalBody>
                 <ModalFooter>
                     <Button color='primary' onClick={updateOkpd}>
-                        Сохрнать
+                        Сохранить
                     </Button>{' '}
                 </ModalFooter>
             </Modal>

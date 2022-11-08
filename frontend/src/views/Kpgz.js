@@ -120,7 +120,7 @@ const Kpgz = () => {
                 </ModalBody>
                 <ModalFooter>
                     <Button color='primary' onClick={updateKpgz}>
-                        Сохрнать
+                        Сохранить
                     </Button>{' '}
                 </ModalFooter>
             </Modal>

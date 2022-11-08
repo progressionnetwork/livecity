@@ -120,7 +120,7 @@ const Okei = () => {
                 </ModalBody>
                 <ModalFooter>
                     <Button color='primary' onClick={updateOkei}>
-                        Сохрнать
+                        Сохранить
                     </Button>{' '}
                 </ModalFooter>
             </Modal>

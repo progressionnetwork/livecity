@@ -141,7 +141,7 @@ const Sn = () => {
                 </ModalBody>
                 <ModalFooter>
                     <Button color='primary' onClick={updateSn}>
-                        Сохрнать
+                        Сохранить
                     </Button>{' '}
                 </ModalFooter>
             </Modal>

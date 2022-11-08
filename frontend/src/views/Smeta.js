@@ -286,7 +286,7 @@ const Smeta = () => {
                 </ModalBody>
                 <ModalFooter>
                     <Button color='primary' onClick={updateSmeta}>
-                        Сохрнать
+                        Сохранить
                     </Button>{' '}
                 </ModalFooter>
             </Modal>

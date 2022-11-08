@@ -27,9 +27,19 @@ import {
 // ** Default Avatar Image
 import defaultAvatar from "@src/assets/images/portrait/small/avatar-s-11.jpg"
 import {useSelector} from "react-redux";
+import {Chip} from "@mui/material";
 
 const UserDropdown = () => {
   const user = useSelector(state => state.user?.data)
+
+  const renderRole = (role) => {
+    const mapRole = {
+      1: "Супер админ",
+      2: "Админ",
+      3: "Пользотватель"
+    }
+    return mapRole[role]
+  }
 
   return (
     <UncontrolledDropdown tag="li" className="dropdown-user nav-item">
@@ -39,9 +49,9 @@ const UserDropdown = () => {
         className="nav-link dropdown-user-link"
         onClick={(e) => e.preventDefault()}
       >
-        <div className="user-nav d-sm-flex d-none">
+        <div className="user-nav d-sm-flex  d-none">
           <span className="user-name fw-bold">{user?.username}</span>
-          <span className="user-status">Admin</span>
+          <span className="user-status">{renderRole(user?.role)}</span>
         </div>
         <Avatar
           img={defaultAvatar}
@@ -56,7 +66,7 @@ const UserDropdown = () => {
           window.location.reload()
         }}>
           <Power size={14} className="me-75" />
-          <span className="align-middle">Logout</span>
+          <span className="align-middle">Выйти</span>
         </DropdownItem>
       </DropdownMenu>
     </UncontrolledDropdown>

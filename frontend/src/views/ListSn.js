@@ -92,7 +92,7 @@ const ListSn = () => {
                 </ModalBody>
                 <ModalFooter>
                     <Button color='primary'>
-                        Сохрнать
+                        Сохранить
                     </Button>{' '}
                 </ModalFooter>
             </Modal>
