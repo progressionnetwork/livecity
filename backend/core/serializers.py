@@ -219,7 +219,10 @@ class SmetaRowStatSerializer(serializers.ModelSerializer):
 class SmetaRowSerializer(serializers.ModelSerializer):
     ei = OKEISerializer(many=False, read_only=True)    
     stats = SmetaRowStatSerializer(many=True, read_only=True)
-
+    color = serializers.SerializerMethodField('get_color')
+    
+    def get_color(self, instance):
+        return instance.get_color()
     class Meta:
         model = SmetaRow
         fields = '__all__'
@@ -231,25 +234,36 @@ class SmetaSubsectionSerializer(serializers.ModelSerializer):
     def get_name(self, instance):
         return instance.name if instance.name != "None" else "Подраздел без имени"
 
-    
-
     class Meta:
         model = SmetaSubsection
         fields = '__all__'
 
 class SmetaSectionSerializer(serializers.ModelSerializer):
     subsections = SmetaSubsectionSerializer(many=True, read_only=True)
+    name = serializers.SerializerMethodField('get_name')
+    
+    def get_name(self, instance):
+        return instance.name if instance.name != "None" else "Раздел без имени"
+
     class Meta:
         model = SmetaSection
         fields = '__all__'
 
 class SmetaSerializer(serializers.ModelSerializer):
     sections = SmetaSectionSerializer(many=True, read_only=True)
+    address = serializers.SerializerMethodField('get_address')
+    
+    def get_address(self, instance):
+        return instance.address if instance.address != 'None' else "Адрес отсутствует или не найден"
     class Meta:
         model = Smeta
         fields = '__all__'
 
 class SmetaSerializerShort(serializers.ModelSerializer):
+    address = serializers.SerializerMethodField('get_address')
+    
+    def get_address(self, instance):
+        return instance.address if instance.address != 'None' else "Адрес отсутствует или не найден"
     class Meta:
         model = Smeta
-        fields = ['id', 'name', 'address']
+        fields = ['id', 'name', 'address', 'status_file']

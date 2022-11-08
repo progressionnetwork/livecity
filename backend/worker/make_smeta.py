@@ -71,24 +71,37 @@ class Keyphrases():
             dyn_thrsh[sect["name"]] = []
             for subs_ind, subs in enumerate(sect["subsections"]):
                 for pos_ind, pos in enumerate(subs["rows"]):
-                    sim = self.match_best_fasttext( pos["name"], [self.df.iloc[poss_match["phrase_ind"]].СПГЗ for poss_match in pos["poss_matches"]])
-                    poss_match = pos["poss_matches"][sim[0][2]]
-                    pos["fasttext_percent"] = sim[0][0][0]
-                    pos["fasttext_spgz"] = sim[0][1]
-                    if(self.get_file_for(pos, self.ref_s)):
-                        pos["word_importance"] = self.get_words_importance(pos['name'], self.vectorizers[self.get_file_for(pos, self.ref_s)[0]])
-                    else:
-                        pos["word_importance"] = [("",0)]
-                    pos["key_phrases_spgz"] = self.df.iloc[poss_match["phrase_ind"]].СПГЗ
-                    pos["match_ratio"] = pos["poss_matches"][sim[0][2]]["match_ratio"]
-                    pos["levenst_ratio"] = pos["poss_matches"][sim[0][2]]["levenst_ratio"]
-                    pos["is_key_coof"] = (pos["match_ratio"]+pos["levenst_ratio"]+pos["fasttext_percent"]+max([x[1] for x in pos["word_importance"]]))/4
-                    positions[sect["name"]].append((pos["sum"], pos))
-                    dyn_thrsh[sect["name"]].append(pos["is_key_coof"])
-                    sim = None
-                    bar1.update()
+                    try:
+                        sim = self.match_best_fasttext( pos["name"], [self.df.iloc[poss_match["phrase_ind"]].СПГЗ for poss_match in pos["poss_matches"]])
+                        poss_match = pos["poss_matches"][sim[0][2]]
+                        pos["fasttext_percent"] = sim[0][0][0]
+                        pos["fasttext_spgz"] = sim[0][1]
+                        if(self.get_file_for(pos, self.ref_s)):
+                            pos["word_importance"] = self.get_words_importance(pos['name'], self.vectorizers[self.get_file_for(pos, self.ref_s)[0]])
+                        else:
+                            pos["word_importance"] = [("",0)]
+                        pos["key_phrases_spgz"] = self.df.iloc[poss_match["phrase_ind"]].СПГЗ
+                        pos["match_ratio"] = pos["poss_matches"][sim[0][2]]["match_ratio"]
+                        pos["levenst_ratio"] = pos["poss_matches"][sim[0][2]]["levenst_ratio"]
+                        pos["is_key_coof"] = (pos["match_ratio"]+pos["levenst_ratio"]+pos["fasttext_percent"]+max([x[1] for x in pos["word_importance"]]))/4
+                        positions[sect["name"]].append((pos["sum"], pos))
+                        dyn_thrsh[sect["name"]].append(pos["is_key_coof"])
+                        sim = None
+                        bar1.update()
+                    except:
+                        pos["fasttext_percent"] = 0
+                        pos["fasttext_spgz"] = 0
+                        pos["key_phrases_spgz"] = 0
+                        pos["match_ratio"] = 0
+                        pos["levenst_ratio"] = 0
+                        pos["is_key_coof"] = 0
             positions[sect["name"]] = sorted(positions[sect["name"]], key = lambda x: x[0], reverse=True)
-
+        word_importance_coof = 0.8
+        for sect, position_list in positions.items():
+            max_per_pos = max([__[0] for __ in position_list])
+            for pos_ind, position in enumerate(position_list):
+                positions[sect][pos_ind][1]["is_key_coof"] = position[1]["is_key_coof"]*(word_importance_coof)  + position[0]/max_per_pos*(1-word_importance_coof)
+        
         for sect, position_list in positions.items():
             real_thr = max(thrs, np.mean(dyn_thrsh[sect]))
             #print(sect, real_thr)

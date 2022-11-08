@@ -319,7 +319,7 @@ class Smeta(models.Model):
     ''' Сметные расчеты '''
     name = models.CharField(max_length=1000, default='Без имени')
     address = models.CharField(max_length=1000, default='Без адреса')
-    type_ref = models.CharField('Тип сбоника', max_length=250)  # 3
+    type_ref = models.CharField('Тип сбоника', max_length=250, null=True, blank=True)  # 3
     advance = models.CharField("Дополнение", max_length=250, null=True, blank=True)  # 4
     coef_ref = models.CharField("Номер сборника", max_length=250, null=True, blank=True)  # 5
     coef_date = models.DateField("Дата сборника", null=True, blank=True)  # 6
@@ -328,6 +328,8 @@ class Smeta(models.Model):
     sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31
     sum_with_ko = models.FloatField(
         'Итого с коэф. фин. обеспеч.', default=0.0)  # 32
+    status_file = models.IntegerField('Статус сметы', choices=((0,"Загружен файл"), (1, "Загружен в БД"), (2, "Обрабатывается"), (3, "Готов")), default=0)
+    tz = models.ForeignKey('TZ', on_delete=models.CASCADE, related_name='smetes', null=True, blank=True)
     
     def get_dict(self):
         result = model_to_dict(self)
@@ -343,6 +345,38 @@ class Smeta(models.Model):
                 d_section['subsections'].append(d_subsection)
             result['sections'].append(d_section)
         return result
+
+    def get_sum_keys(self):
+        sum = 0.0
+        for section in self.sections.all():
+            for subsection in section.subsections.all():
+                for row in subsection.rows.filter(is_key=True):
+                    sum = sum + row.sum_keys
+        return sum
+
+    def set_sum_keys(self):
+        sum = 0.0
+        current_key_row = None
+        for section in self.sections.all():
+            for subsection in section.subsections.all():
+                if subsection.have_key_rows():
+                    current_key_row = None
+                for row in subsection.rows.all().order_by('name'):
+                    if row.is_key == False:
+                        if current_key_row is None:
+                            sum = row.sum + sum
+                            print(f"Не ключевая строка в разделе с ключами: {row}. Сумма: {row.sum}")
+                        else:
+                            current_key_row.sum_keys = row.sum + current_key_row.sum_keys 
+                            current_key_row.save()
+                            print(f"Не ключевая строка в разделе без ключей: {row}")
+                    else:
+                        if current_key_row is None:
+                            row.sum_keys = sum + row.sum
+                            row.save()
+                            sum = 0.0
+                        current_key_row = row
+                        print(f"Ключевая строка в разделе с ключами: {row}. Сумма: {row.sum}")
 
     def send_rabbitmq(self):
         import pika
@@ -360,6 +394,7 @@ class Smeta(models.Model):
     class Meta:
         verbose_name = "Смета"
         verbose_name_plural = "Сметы"
+        ordering = ['-id']
 
 
 class SmetaSection(models.Model):
@@ -387,6 +422,9 @@ class SmetaSubsection(models.Model):
     name = models.CharField('Наименование', max_length=250, default='Без имени')  # 8
     sum = models.FloatField('Итого', default=0.0)  # 27
 
+    def have_key_rows(self)->bool:
+        return self.rows.filter(is_key=True).count() > 0
+
     def __str__(self) -> str:
         return f"{self.name}"
 
@@ -408,10 +446,20 @@ class SmetaRow(models.Model):
     count = models.FloatField('Количество', default=0.0)  # 11
     sum = models.FloatField('Итого', default=0.0)  # 26
     is_key = models.BooleanField('Ключевая позиция', default=False)
-    
+    sum_keys = models.FloatField('Ключевая сумма', default=0.0)
 
     def get_color(self)->str:
-        pass
+        stat_rows = self.stats.all()
+        count = stat_rows.count()
+        coef = 1
+        if count > 0:
+            coef = sum([stat_row.key_percent for stat_row in stat_rows])/count
+            #RGB
+            r = int((1-coef)*255)
+            g = int(coef*255)
+            color = f"#{r:x}{g:x}00"
+            return color
+        return "#6e6b7b"
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -419,6 +467,7 @@ class SmetaRow(models.Model):
     class Meta:
         verbose_name = "Смета: Строка"
         verbose_name_plural = "Смета: Строки"
+        ordering = ['num']
 
 
 class SmetaSubRow(models.Model):

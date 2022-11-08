@@ -260,27 +260,30 @@ class SmetaView(ModelViewSet):
     def excel(self, request, pk=None):
         ''' Экспорт excel файла с обработанной сметой '''
         smeta = self.get_object()
-        row_num =1
-        worksheet.write(row_num, col+0, "Номер")
-        worksheet.write(row_num, col+1, "ИД")
-        worksheet.write(row_num, col+2, "КПГЗ")
-        worksheet.write(row_num, col+3, "Шифр")
-        worksheet.write(row_num, col+4, "Наименование")
-        worksheet.write(row_num, col+5, "СПГЗ")
-        worksheet.write(row_num, col+6, "ед. изм.")
-        worksheet.write(row_num, col+7, "Количество")
-        worksheet.write(row_num, col+8, "Сумма")
-        worksheet.write(row_num, col+9, "Адресс")
-        row_num =+ 1
         buffer = io.BytesIO()
         workbook = xlsxwriter.Workbook(buffer)
         worksheet = workbook.add_worksheet()
+        row_num = 0
+        worksheet.merge_range('A1:I1', f"Название сметы: {smeta.name}")
+        row_num += 1
+        worksheet.write(row_num, 0, "Номер")
+        worksheet.write(row_num, 1, "ИД")
+        worksheet.write(row_num, 2, "КПГЗ")
+        worksheet.write(row_num, 3, "Шифр")
+        worksheet.write(row_num, 4, "Наименование")
+        worksheet.write(row_num, 5, "СПГЗ")
+        worksheet.write(row_num, 6, "ед. изм.")
+        worksheet.write(row_num, 7, "Количество")
+        worksheet.write(row_num, 8, "Сумма")
+        worksheet.write(row_num, 9, "Адресс")
+        worksheet.write(row_num, 10, "СН/ТСН")
+        row_num += 1
         for section in smeta.sections.all():
             for subsection in section.subsections.all():
                 for row in subsection.rows.filter(is_key=True):
                     for row_stat in row.stats.all():
                         spgz = row_stat.fasttext_spgz
-                        col =1
+                        col = 0
                         worksheet.write(row_num, col+0, row.num)
                         worksheet.write(row_num, col+1, spgz.id)
                         worksheet.write(row_num, col+2, spgz.kpgz.name)
@@ -291,7 +294,14 @@ class SmetaView(ModelViewSet):
                         worksheet.write(row_num, col+7, row.count)
                         worksheet.write(row_num, col+8, row.sum)
                         worksheet.write(row_num, col+9, smeta.address)
+                        worksheet.write(row_num, col+10, row_stat.sn.type_ref)
                         row_num += 1
+        worksheet.write(row_num, 0, "ИТОГО без НДС:")
+        worksheet.write_formula(row_num, 8, f"=СУММ(I3:I{row_num})")
+        worksheet.write(row_num+1, 0, "НДС:")
+        worksheet.write_formula(row_num+1, 8, f"=I{row_num+1}*0.2")
+        worksheet.write(row_num+2, 0, "ИТОГО без НДС:")
+        worksheet.write_formula(row_num+2, 8, f"=I{row_num+1}+I{row_num}")
         workbook.close()
         buffer.seek(0)
         return FileResponse(buffer, as_attachment=True, filename='report.xlsx')
