@@ -26,6 +26,8 @@ const Okpd2 = () => {
     const [editItem, setEditItem] = useState();
     const [isModalEdit, setIsModalEdit] = useState(false)
 
+    const [search, setSearch] = useState('');
+
     const updateOkpd2 = async () => {
         try {
             await request('put', `opkd2/${editItem?.code}/`,
@@ -61,12 +63,20 @@ const Okpd2 = () => {
         })
     }, [])
 
+    useEffect(() => {
+        request('get', `okpd2/?search=${search}`).then(data => {
+            setNextPage(data.next)
+            setOkpdList(data.results)
+            setMaxResults(data.count)
+        })
+    }, [search])
+
     return (
         <div>
             <Card>
                 <CardBody>
                     <Label>Поиск</Label>
-                    <Input />
+                    <Input value={search} onChange={(e) => setSearch(e.target.value)} />
                 </CardBody>
             </Card>
 

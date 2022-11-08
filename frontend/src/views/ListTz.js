@@ -26,21 +26,31 @@ const ListTz = () => {
     const [editItem, setEditItem] = useState();
     const [isModalEdit, setIsModalEdit] = useState(false)
 
+    const [search, setSearch] = useState('');
+
     useEffect(() => {
         if (!user.data) {
             nav('/login')
         }
-        request('get', 'tz/').then(data => {
+        request('get', `tz?search=${search}`).then(data => {
             setTzList(data)
         })
     }, [])
+
+    useEffect(() => {
+        request('get', `kpgz/?search=${search}`).then(data => {
+            setNextPage(data.next)
+            setTzList(data.results)
+            setMaxResults(data.count)
+        })
+    }, [search])
 
     return (
         <div>
             <Card>
                 <CardBody>
                     <Label>Поиск</Label>
-                    <Input />
+                    <Input value={search} onChange={(e) => setSearch(e.target.value)} />
                 </CardBody>
             </Card>
 

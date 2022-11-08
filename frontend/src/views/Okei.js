@@ -26,6 +26,8 @@ const Okei = () => {
     const [editItem, setEditItem] = useState();
     const [isModalEdit, setIsModalEdit] = useState(false)
 
+    const [search, setSearch] = useState('');
+
     const updateOkei = async () => {
         try {
             await request('put', `okei/${editItem?.code}/`,
@@ -61,12 +63,20 @@ const Okei = () => {
         })
     }, [])
 
+    useEffect(() => {
+        request('get', `okei/?search=${search}`).then(data => {
+            setNextPage(data.next)
+            setOkeiList(data.results)
+            setMaxResults(data.count)
+        })
+    }, [search])
+
     return (
         <div>
             <Card>
                 <CardBody>
                     <Label>Поиск</Label>
-                    <Input />
+                    <Input value={search} onChange={(e) => setSearch(e.target.value)} />
                 </CardBody>
             </Card>
 

@@ -20,6 +20,7 @@ const ListSn = () => {
     const nav = useNavigate()
     const user = useSelector(state => state.user)
 
+    const [search, setSearch] = useState('');
     const [maxResults, setMaxResults] = useState(0)
     const [nextPage, setNextPage] = useState('')
     const [snList, setSnList] = useState(null)
@@ -31,20 +32,19 @@ const ListSn = () => {
         if (!user.data) {
             nav('/login')
         }
-        request('get', 'sn/').then(data => {
+        request('get', `sn/?search=${search}`).then(data => {
             setSnList(data)
         })
     }, [])
 
+    useEffect(() => {
+        request('get', `sn/?search=${search}`).then(data => {
+            setSnList(data)
+        })
+    }, [search])
+
     return (
         <div>
-            <Card>
-                <CardBody>
-                    <Label>Поиск</Label>
-                    <Input />
-                </CardBody>
-            </Card>
-
             <Card>
                 <CardHeader>
                     <CardTitle>
