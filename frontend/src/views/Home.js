@@ -19,11 +19,14 @@ import {useNavigate} from "react-router-dom"
 import {request} from "../utility/request";
 
 export const renderStatus = (status) => {
+  const style = {
+    fontSize: '1.2rem'
+  }
   const mapperStatus = {
-    0:  <Badge pill color='light-primary'>Загружен файл</Badge>,
-    1:  <Badge pill color='light-info'>Загружен в БД</Badge>,
-    2:  <Badge pill color='light-warning'>Обрабатывается</Badge>,
-    3:  <Badge pill color='light-success'>Готов</Badge>
+    0:  <Badge pill color='light-primary' style={style}>Загружен файл</Badge>,
+    1:  <Badge pill color='light-info' style={style}>Загружен в БД</Badge>,
+    2:  <Badge pill color='light-warning' style={style}>Обрабатывается</Badge>,
+    3:  <Badge pill color='light-success' style={style}>Готов</Badge>
   }
   return mapperStatus[status]
 }
@@ -73,13 +76,17 @@ const Home = () => {
           <Card>
             <CardHeader>
               <CardTitle>
-                {e.name} {renderStatus(e.status_file)}
+                {e.name}
               </CardTitle>
+              {renderStatus(e.status_file)}
             </CardHeader>
             <CardBody>
               {e.address}
             </CardBody>
-            <CardFooter>
+            <CardFooter style={{
+              display: 'flex',
+              justifyContent: 'flex-end'
+            }}>
               <Button color="primary" onClick={() => {
                 nav(`/smeta/${e.id}`)
               }}>Подробнее</Button>

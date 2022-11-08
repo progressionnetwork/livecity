@@ -291,7 +291,8 @@ const Smeta = () => {
             {
                 smeta ? <Card>
                     <CardHeader>
-                        <CardTitle>{smeta.name} {renderStatus(smeta.status_file)}</CardTitle>
+                        <CardTitle>{smeta.name}</CardTitle>
+                        {renderStatus(smeta.status_file)}
                     </CardHeader>
                     <CardBody>
                         <Stack spacing={1} direction="row">
