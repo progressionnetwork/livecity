@@ -16,29 +16,242 @@ import {
 } from "reactstrap";
 
 import {request} from "../utility/request";
-import TreeView from "@mui/lab/TreeView";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import TreeItem from "@mui/lab/TreeItem";
 import {
     DateRange,
     DockSharp,
     DocumentScannerSharp,
-    Edit,
+    Edit, KeyboardArrowDown, KeyboardArrowUp,
     LocationCity,
     LocationOn,
     Money,
     NotificationImportantSharp
 } from "@mui/icons-material";
-import {rowBlackList, rowMapper, statMapper, statWordMapper} from "../configs/rowTree";
-import {Stack} from "@mui/material";
+import {
+    Box,
+    IconButton,
+    Stack,
+    Table,
+    Collapse,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Typography, styled
+} from "@mui/material";
 import {useSelector} from "react-redux";
 import {renderStatus} from "./Home";
+import {numberWithSpaces} from "../utility/Utils";
 
-function generateNodeId() {
-    return (Math.random() + 1).toString(36).substring(7);
+// const CustomTableCell = styled(TableCell, {
+//     color: 'var(--bs-body-color)',
+//     fontSize: '1rem',
+//     fontFamily: 'var(--bs-body-font-family)'
+// })
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    color: 'var(--bs-body-color)',
+    fontSize: '1rem',
+    fontFamily: 'var(--bs-body-font-family)'
+}));
+
+const Section = ({section}) => {
+    const [open, setOpen] = React.useState(false);
+
+    return (
+        <React.Fragment>
+            <TableRow sx={{
+                '& > *': {
+                    borderBottom: 'unset'
+                }
+            }}>
+                <TableCell>
+                    <IconButton
+                        aria-label="expand row"
+                        size="small"
+                        onClick={() => setOpen(!open)}
+                    >
+                        {open ? <KeyboardArrowUp/> : <KeyboardArrowDown/>}
+                    </IconButton>
+                </TableCell>
+                <StyledTableCell>
+                    {section.name}
+                </StyledTableCell>
+                <StyledTableCell> {section.address === '' ? 'Адрес отсутствует или не найден' : section.address}</StyledTableCell>
+                <StyledTableCell>{numberWithSpaces(section.sum)}</StyledTableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={4}>
+                    <Collapse in={open} timeout="auto" unmountOnExit>
+                        <Box sx={{margin: 1}}>
+                            <Table size="small">
+                                <TableBody>
+                                    {section.subsections.map((subsection) => (
+                                        <Subsection key={subsection.id} subsection={subsection}/>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </Collapse>
+                </TableCell>
+            </TableRow>
+        </React.Fragment>
+    );
 }
 
+const Subsection = ({subsection}) => {
+    const [open, setOpen] = React.useState(false);
+    const [openStats, setOpenStats] = useState([]);
+
+    return (
+        <React.Fragment>
+            <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
+                <StyledTableCell>
+                    <IconButton
+                        aria-label="expand row"
+                        size="small"
+                        onClick={() => setOpen(!open)}
+                    >
+                        {open ? <KeyboardArrowUp/> : <KeyboardArrowDown/>}
+                    </IconButton>
+                    {subsection.name}
+                </StyledTableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
+                    <Collapse in={open} timeout="auto" unmountOnExit>
+                        <Box sx={{margin: 1}}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 70 }}>№ п/п</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 120 }}>Шифр</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={3}>Название</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Кол-во</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Ед. изм.</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 150 }}>Сумма</StyledTableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {subsection.rows.map((row) => (
+                                        <>
+                                            <TableRow sx={{ cursor: 'pointer' }} key={row.id} onClick={() => {
+                                                if (openStats.includes(row.id)) setOpenStats(openStats.filter(e => e !== row.id))
+                                                else setOpenStats([...openStats, row.id])
+                                            }}>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.num}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.code}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }} colSpan={3}>{row.name}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.count}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row?.ei?.short_name}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{numberWithSpaces(row.sum)}</StyledTableCell>
+                                            </TableRow>
+
+                                            <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasttext_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasstext_percent}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_percent}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].is_key}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].stat_words.map(e => `${e.name}(${e.percent})`).join(', ')}</StyledTableCell>
+                                            </TableRow>
+                                            <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasttext_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasstext_percent}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_percent}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].is_key}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].stat_words.map(e => `${e.name}(${e.percent})`).join(', ')}</StyledTableCell>
+                                            </TableRow>
+                                            <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasttext_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasstext_percent}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_percent}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].is_key}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].stat_words.map(e => `${e.name}(${e.percent})`).join(', ')}</StyledTableCell>
+                                            </TableRow>
+                                            <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasttext_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_spgz}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].fasstext_percent}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].key_phrases_percent}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].levenst_ratio}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].is_key}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.stats[0].stat_words.map(e => `${e.name}(${e.percent})`).join(', ')}</StyledTableCell>
+                                            </TableRow>
+                                        </>
+
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </Collapse>
+                </TableCell>
+            </TableRow>
+        </React.Fragment>
+    );
+}
+
+const Stat = ({ stat }) => {
+    const [open, setOpen] = React.useState(false);
+
+    return (
+        <React.Fragment>
+            <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
+                <StyledTableCell>
+                    <IconButton
+                        aria-label="expand row"
+                        size="small"
+                        onClick={() => setOpen(!open)}
+                    >
+                        {open ? <KeyboardArrowUp/> : <KeyboardArrowDown/>}
+                    </IconButton>
+                    Статистика
+                </StyledTableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
+                    <Collapse in={open} timeout="auto" unmountOnExit>
+                        <Box sx={{margin: 1}}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 70 }}>№ п/п</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 120 }}>Шифр</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem' }}>Название</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Кол-во</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Ед. изм.</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 150 }}>Сумма</StyledTableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {subsection.rows.map((row) => (
+                                        <TableRow key={row.id}>
+                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.num}</StyledTableCell>
+                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.code}</StyledTableCell>
+                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.name}</StyledTableCell>
+                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.count}</StyledTableCell>
+                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row?.ei?.short_name}</StyledTableCell>
+                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{numberWithSpaces(row.sum)}</StyledTableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </Collapse>
+                </TableCell>
+            </TableRow>
+        </React.Fragment>
+    );
+}
 
 const Smeta = () => {
     const nav = useNavigate()
@@ -49,31 +262,10 @@ const Smeta = () => {
     const [editItem, setEditItem] = useState();
     const [isModalEdit, setIsModalEdit] = useState(false)
 
-    const [expanded, setExpanded] = React.useState([]);
-
-    const handleToggle = (event, nodeIds) => {
-        setExpanded(nodeIds);
-    };
-
     const updateSmeta = async () => {
-        // try {
-        //     await request('put', `okpd/${editItem?.id}/`,
-        //         {
-        //             [editItem?.name]: editItem.value
-        //         }
-        //     );
-        // } catch (e) {
-        //     console.log('update okpd', 'что то пошло не так')
-        // }
-        //
-        // setOkpdList(prev => {
-        //     const list = prev.splice(0);
-        //     const i = list.findIndex(e => e.code === editItem.code);
-        //     list.splice(i, 1, editItem)
-        //     return list;
-        // })
         setIsModalEdit(false)
     }
+
 
     useEffect(() => {
         if (id) {
@@ -82,20 +274,6 @@ const Smeta = () => {
             })
         }
     }, [id])
-
-    useEffect(() => {
-        if (smeta) {
-            const listNodes = [];
-            for (const section of smeta.sections) {
-                listNodes.push(section.id.toString());
-                for (const subsection of section.subsections) {
-                    listNodes.push(`${section.id}_${subsection.id}`);
-                }
-            }
-
-            setExpanded(listNodes)
-        }
-    }, [smeta])
 
     useEffect(() => {
         if (!user.data) {
@@ -120,19 +298,19 @@ const Smeta = () => {
                         <Stack spacing={1} mt={1} direction="row">
                             <Money/>
                             <div>
-                                Сумма без НДС: {smeta.sum} р.
+                                Сумма без НДС: {numberWithSpaces(smeta.sum)} р.
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
                             <Money/>
                             <div>
-                                НДС: {smeta.tax} р.
+                                НДС: {numberWithSpaces(smeta.tax)} р.
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
                             <Money/>
                             <div>
-                                Сумма с НДС: {smeta.sum_with_tax} р.
+                                Сумма с НДС: {numberWithSpaces(smeta.sum_with_tax)} р.
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
@@ -149,125 +327,18 @@ const Smeta = () => {
                         </Stack>
                     </CardBody>
                     <CardFooter>
-                        <TreeView
-                            aria-label="disabled items"
-                            defaultCollapseIcon={<ExpandMoreIcon/>}
-                            defaultExpandIcon={<ChevronRightIcon/>}
-                            onNodeToggle={handleToggle}
-                            expanded={expanded}
-                        >
-                            {smeta.sections.map((section, i) => (
-                                <TreeItem
-                                    icon={<Edit onClick={(e) => {
-                                        setIsModalEdit(true)
-                                        setEditItem({
-                                            name: 'name',
-                                            value: section.name,
-                                            id: section.id
-                                        })
-                                        e.stopPropagation();
-                                    }}/>}
-                                    key={section.id}
-                                    nodeId={`${section.id}`}
-                                    label={section.name}
-                                >
-                                    {section.subsections.map((subsection) => (
-                                        <TreeItem
-                                            icon={<Edit
-                                                onClick={(e) => {
-                                                    setIsModalEdit(true)
-                                                    setEditItem({
-                                                        name: 'name',
-                                                        value: subsection.name,
-                                                        id: subsection.id
-                                                    })
-                                                    e.stopPropagation();
-                                                }}
-                                            />}
-                                            key={subsection.id}
-                                            nodeId={`${section.id}_${subsection.id}`}
-                                            label={subsection.name}
-                                        >
-                                            {subsection.rows.map((row) => (
-                                                <TreeItem
-                                                    icon={<Edit
-                                                        onClick={(e) => {
-                                                            setIsModalEdit(true)
-                                                            setEditItem({
-                                                                name: 'name',
-                                                                value: row.name,
-                                                                id: row.id
-                                                            })
-                                                            e.stopPropagation();
-                                                        }}
-                                                    />}
-                                                    nodeId={`${section.id}_${subsection.id}_${row.id}`}
-                                                    label={row.name}
-                                                    style={{backgroundColor: row.color, color: 'white'}}
-                                                >
-                                                    {Object.keys(row).filter(name => !rowBlackList.includes(name)).map((name) => (
-                                                        name === 'is_key' ? <TreeItem
-                                                                nodeId={`${section.id}_${subsection.id}_${row.id}_${name}`}
-                                                                label={`${rowMapper[name] ?? name} - ${row[name] ? 'Да' : 'Нет'}`}
-                                                            /> :
-                                                            name === 'ei' ?
-                                                                <TreeItem
-                                                                    nodeId={`${section.id}_${subsection.id}_${row.id}_${name}`}
-                                                                    label={`${name} - ${row.ei?.name}`}
-                                                                /> : name === 'stats' ?
-                                                                    <TreeItem
-                                                                        nodeId={`${section.id}_${subsection.id}_${row.id}_${name}`}
-                                                                        label="Статистика"
-                                                                    >
-                                                                        {row.stats.map(stat => (
-                                                                            <TreeItem
-                                                                                nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}`}
-                                                                                label={stat.sn}
-                                                                            >
-                                                                                {Object.keys(stat).filter(name2 => !rowBlackList.includes(name2)).filter(e => e !== 'sn').map((name2) => (
-                                                                                    name2 === 'is_key' ? <TreeItem
-                                                                                            nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}_${name2}`}
-                                                                                            label={`${statMapper[name2] ?? name2} - ${row[name2] ? 'Да' : 'Нет'}`}
-                                                                                        /> :
-                                                                                        name2 === 'stat_words' ?
-                                                                                            <TreeItem
-                                                                                                nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}_${name2}`}
-                                                                                                label="Статистика по словам">
-                                                                                                {stat.stat_words.map(stat_word => (
-                                                                                                    <TreeItem
-                                                                                                        nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}_${name2}_${stat_word.id}`}
-                                                                                                        label={`${stat_word.name} - ${stat_word.percent}`}
-                                                                                                    />
-                                                                                                ))}
-                                                                                            </TreeItem> :
-                                                                                            <TreeItem
-                                                                                                nodeId={`${section.id}_${subsection.id}_${row.id}_${name}_${stat.id}_${name2}`}
-                                                                                                label={`${statMapper[name2] ?? name2} - ${stat[name2]}`}/>
-                                                                                ))}
-                                                                            </TreeItem>
-                                                                        ))}
-                                                                    </TreeItem>
-                                                                    : <TreeItem
-                                                                        nodeId={`${section.id}_${subsection.id}_${row.id}_${name}`}
-                                                                        label={`${rowMapper[name] ?? name} - ${row[name]}`}
-                                                                        icon={<Edit onClick={(e) => {
-                                                                            setIsModalEdit(true)
-                                                                            setEditItem({
-                                                                                name,
-                                                                                value: row[name],
-                                                                                id: row.id
-                                                                            })
-                                                                            e.stopPropagation();
-                                                                        }}/>}
-                                                                    />
-                                                    ))}
-                                                </TreeItem>
-                                            ))}
-                                        </TreeItem>
+                        <TableContainer sx={{
+                            color: 'white',
+                            fontSize: '1rem'
+                        }}>
+                            <Table aria-label="collapsible table">
+                                <TableBody>
+                                    {smeta.sections.map((section) => (
+                                        <Section key={section.id} section={section}/>
                                     ))}
-                                </TreeItem>
-                            ))}
-                        </TreeView>
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
                     </CardFooter>
                 </Card> : <Spinner/>
             }

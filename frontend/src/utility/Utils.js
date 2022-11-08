@@ -21,6 +21,12 @@ const isToday = (date) => {
   )
 }
 
+export function numberWithSpaces(x) {
+  const parts = x.toString().split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return parts.join(".");
+}
+
 /**
  ** Format and return date in Humanize format
  ** Intl docs: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/format

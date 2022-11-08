@@ -139,7 +139,6 @@ const Home = () => {
             </CardFooter>
           </Card>
       ))}
-
     </div>
   )
 }
