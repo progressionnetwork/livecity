@@ -1,3 +1,5 @@
+[![build & deploy](https://github.com/gg-goodgenius/livecity/actions/workflows/deploy.yml/badge.svg)](https://github.com/gg-goodgenius/livecity/actions/workflows/deploy.yml)
+
 # Проект «Живой город»
 
 ## ЛИДЕРЫ ЦИФРОВОЙ ТРАНСФОРМАЦИИ 2022
