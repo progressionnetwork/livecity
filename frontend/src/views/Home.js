@@ -119,7 +119,7 @@ const Home = () => {
                       link.href = url;
                       link.setAttribute(
                           'download',
-                          `table.xlsx`
+                          `${e.name}.xlsx`
                       );
 
                       // Append to html link element page

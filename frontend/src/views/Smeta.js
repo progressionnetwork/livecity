@@ -37,7 +37,7 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Typography, styled
+    Typography, styled, Switch
 } from "@mui/material";
 import {useSelector} from "react-redux";
 import {renderStatus} from "./Home";
@@ -99,9 +99,17 @@ const Section = ({section}) => {
     );
 }
 
-const Subsection = ({subsection}) => {
+const Subsection = (props) => {
     const [open, setOpen] = React.useState(false);
     const [openStats, setOpenStats] = useState([]);
+
+    const [subsection, setSubsection] = useState(props.subsection);
+
+    useEffect(() => {
+        if (props.subsection) {
+            setSubsection(subsection)
+        }
+    }, [props.subsection])
 
     return (
         <React.Fragment>
@@ -130,10 +138,11 @@ const Subsection = ({subsection}) => {
                                         <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Кол-во</StyledTableCell>
                                         <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Ед. изм.</StyledTableCell>
                                         <StyledTableCell sx={{ fontSize: '0.8rem', width: 150 }}>Сумма</StyledTableCell>
+                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 150 }}>Является ключевой</StyledTableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {subsection.rows.map((row) => (
+                                    {subsection.rows.map((row, i) => (
                                         <>
                                             <TableRow sx={{ cursor: 'pointer' }} key={row.id} onClick={() => {
                                                 if (openStats.includes(row.id)) setOpenStats(openStats.filter(e => e !== row.id))
@@ -145,30 +154,44 @@ const Subsection = ({subsection}) => {
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.count}</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row?.ei?.short_name}</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{numberWithSpaces(row.sum)}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}><Switch onClick={(e) => {
+                                                    setSubsection(prev => {
+                                                        request('patch', `smeta_row/${row.id}/`, {
+                                                            is_key: !row.is_key
+                                                        }).then()
+                                                        const rows = prev.rows.splice(0)
+                                                        rows[i].is_key = !row.is_key
+                                                        return {
+                                                            ...prev,
+                                                            rows
+                                                        }
+                                                    })
+                                                    e.stopPropagation()
+                                                }} checked={row.is_key}/></StyledTableCell>
                                             </TableRow>
 
                                             <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={2}>СПГЗ по Fasttext</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', fontWeight: 800 }} colSpan={2}>СПГЗ по Fasttext</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem' }}>{row.stats[0].fasttext_spgz}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={2}>Вероятность по Fasttext</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', fontWeight: 800 }} colSpan={2}>Вероятность по Fasttext</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem' }}>{row.stats[0].fasstext_percent}</StyledTableCell>
                                             </TableRow>
                                             <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={2}>СПГЗ по ключевым фразам</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', fontWeight: 800 }} colSpan={2}>СПГЗ по ключевым фразам</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem' }}>{row.stats[0].key_phrases_spgz}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={2}>Вероятность по ключевым фразам</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', fontWeight: 800 }} colSpan={2}>Вероятность по ключевым фразам</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem' }}>{row.stats[0].key_phrases_percent}</StyledTableCell>
                                             </TableRow>
                                             <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={2}>Ключевые слова с вероятностями</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', fontWeight: 800 }} colSpan={2}>Ключевые слова с вероятностями</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem' }}>{row.stats[0].stat_words.map(e => `${e.name}(${e.percent})`).join(', ')}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={2}>Рассотяние Левенштейна</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', fontWeight: 800 }} colSpan={2}>Рассотяние Левенштейна</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem' }}>{row.stats[0].levenst_ratio}</StyledTableCell>
                                             </TableRow>
                                             <TableRow sx={{ display: openStats.includes(row.id) ? undefined : 'none' }}>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={2}>Является ключевой позицией</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem' }}>{row.stats[0].is_key}</StyledTableCell>
-                                                <StyledTableCell sx={{ fontSize: '0.8rem' }} colSpan={2}>Вероятность ключевой позиции</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', fontWeight: 800 }} colSpan={2}>Является ключевой позицией</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem' }}>{row.stats[0].is_key ? 'Да' : 'Нет'}</StyledTableCell>
+                                                <StyledTableCell sx={{ fontSize: '0.8rem', fontWeight: 800 }} colSpan={2}>Вероятность ключевой позиции</StyledTableCell>
                                                 <StyledTableCell sx={{ fontSize: '0.8rem' }}>{row.stats[0].key_percent}</StyledTableCell>
                                             </TableRow>
                                         </>
@@ -255,6 +278,40 @@ const Smeta = () => {
                             <div>
                                 {smeta.type_ref}
                             </div>
+                        </Stack>
+                        <Stack spacing={1} direction="row" mt={1}>
+                            <Button color="primary">Редактировать</Button>
+                            <Button color="success" outline style={{ marginLeft: 8 }} onClick={() => {
+
+                                fetch(`https://api.livecity.goodgenius.ru/smeta/${smeta.id}/excel/`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                        Authorization: `Token ${localStorage.getItem('token')}`
+                                    }
+                                })
+                                    .then((response) => response.blob())
+                                    .then((blob) => {
+                                        const url = window.URL.createObjectURL(
+                                            new Blob([blob])
+                                        );
+                                        const link = document.createElement('a');
+                                        link.href = url;
+                                        link.setAttribute(
+                                            'download',
+                                            `${smeta.name}.xlsx`
+                                        );
+
+                                        // Append to html link element page
+                                        document.body.appendChild(link);
+
+                                        // Start download
+                                        link.click();
+
+                                        // Clean up and remove the link
+                                        link.parentNode.removeChild(link);
+                                    });
+                            }}>Выгрузить</Button>
                         </Stack>
                     </CardBody>
                     <CardFooter>
