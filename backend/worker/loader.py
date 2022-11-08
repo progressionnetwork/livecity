@@ -386,9 +386,15 @@ def make_smeta(smeta_id: int):
                 smeta_row = o_smeta_row
             )
             for word in row['word_importance']:
-                stat_word = SmetaRowStatWords(name=word[0], percent=word[1])
-                stat_word.save()
-                smeta_row_stat.stat_words.add(stat_word)
+                stat_word, created = SmetaRowStatWords.objects.get_or_create(name=word[0], 
+                        smeta_row_stat=smeta_row_stat, 
+                        defaults={
+                            "percent":word[1],
+                            "smeta_row_stat":smeta_row_stat,
+                            "name":word[0]
+                            })
+                if created:
+                    smeta_row_stat.stat_words.add(stat_word)
     smeta.set_sum_keys()
     smeta.status_file = 3
     smeta.save()
