@@ -197,7 +197,7 @@ def load_sn(path: str, type_update:str)-> None:
 def load_smeta(path: str, type_update:str)-> None:
     from parser.smeta import Parse
     tz = None
-    if len(type_update) > 0:
+    if type_update != 'full' and type_update != 'add' and len(type_update)  > 0:
         tz = TZ.objects.get(pk=int(type_update))
     logger.info(f"Start parsing file: {path}")
     name = Path(path).stem
