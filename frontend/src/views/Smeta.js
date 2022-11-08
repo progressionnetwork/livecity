@@ -200,59 +200,6 @@ const Subsection = ({subsection}) => {
     );
 }
 
-const Stat = ({ stat }) => {
-    const [open, setOpen] = React.useState(false);
-
-    return (
-        <React.Fragment>
-            <TableRow sx={{'& > *': {borderBottom: 'unset'}}}>
-                <StyledTableCell>
-                    <IconButton
-                        aria-label="expand row"
-                        size="small"
-                        onClick={() => setOpen(!open)}
-                    >
-                        {open ? <KeyboardArrowUp/> : <KeyboardArrowDown/>}
-                    </IconButton>
-                    Статистика
-                </StyledTableCell>
-            </TableRow>
-            <TableRow>
-                <TableCell style={{paddingBottom: 0, paddingTop: 0}} colSpan={6}>
-                    <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box sx={{margin: 1}}>
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 70 }}>№ п/п</StyledTableCell>
-                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 120 }}>Шифр</StyledTableCell>
-                                        <StyledTableCell sx={{ fontSize: '0.8rem' }}>Название</StyledTableCell>
-                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Кол-во</StyledTableCell>
-                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 100 }}>Ед. изм.</StyledTableCell>
-                                        <StyledTableCell sx={{ fontSize: '0.8rem', width: 150 }}>Сумма</StyledTableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {subsection.rows.map((row) => (
-                                        <TableRow key={row.id}>
-                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.num}</StyledTableCell>
-                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.code}</StyledTableCell>
-                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.name}</StyledTableCell>
-                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row.count}</StyledTableCell>
-                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{row?.ei?.short_name}</StyledTableCell>
-                                            <StyledTableCell sx={{ fontSize: '0.8rem', color: 'white', backgroundColor: row.color }}>{numberWithSpaces(row.sum)}</StyledTableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </Box>
-                    </Collapse>
-                </TableCell>
-            </TableRow>
-        </React.Fragment>
-    );
-}
-
 const Smeta = () => {
     const nav = useNavigate()
     const user = useSelector(state => state.user)
