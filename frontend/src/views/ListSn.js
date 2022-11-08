@@ -14,9 +14,11 @@ import {
 import {useEffect, useState} from "react";
 import {request} from "../utility/request";
 import {useNavigate} from "react-router-dom";
+import {useSelector} from "react-redux";
 
 const ListSn = () => {
     const nav = useNavigate()
+    const user = useSelector(state => state.user)
 
     const [maxResults, setMaxResults] = useState(0)
     const [nextPage, setNextPage] = useState('')
@@ -26,6 +28,9 @@ const ListSn = () => {
     const [isModalEdit, setIsModalEdit] = useState(false)
 
     useEffect(() => {
+        if (!user.data) {
+            nav('/login')
+        }
         request('get', 'sn/').then(data => {
             setSnList(data)
         })
@@ -54,14 +59,15 @@ const ListSn = () => {
                         {snList.map(e => <Card key={e.code} style={{ marginBottom: 0 }} onClick={() => nav(`/sn/${e.id}`)}>
                             <CardHeader>
                                 <CardTitle>{e.type_ref}</CardTitle>
-                                <div>
+                                {user.data?.role < 3 && <div>
                                     <Button.Ripple color='flat-primary' onClick={(j) => {
                                         // setIsModalEdit(true)
                                         // setEditItem(e)
-                                        // j.preventDefault()
+                                        j.preventDefault()
                                     }}>Редактирвать</Button.Ripple>
-                                    <Button.Ripple color='flat-primary' style={{ marginRight: 12 }}>Удалить</Button.Ripple>
-                                </div>
+                                    <Button.Ripple color='flat-primary'
+                                                   style={{marginRight: 12}}>Удалить</Button.Ripple>
+                                </div>}
                             </CardHeader>
                         </Card>)}
                     </div> : <div>

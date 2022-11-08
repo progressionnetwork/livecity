@@ -1,5 +1,5 @@
 
-import {useLocation, useParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 
 import TreeView from '@mui/lab/TreeView';
@@ -23,6 +23,7 @@ import {
 } from "reactstrap";
 import {Edit} from "@mui/icons-material";
 import {IconButton} from "@mui/material";
+import {useSelector} from "react-redux";
 
 
 function generateNodeId() {
@@ -31,7 +32,8 @@ function generateNodeId() {
 
 const Sn = () => {
     const params = useParams();
-
+    const nav = useNavigate()
+    const user = useSelector(state => state.user)
     const [expanded, setExpanded] = React.useState([]);
 
     const handleToggle = (event, nodeIds)  => {
@@ -72,6 +74,12 @@ const Sn = () => {
         // })
         setIsModalEdit(false)
     }
+
+    useEffect(() => {
+        if (!user.data) {
+            nav('/login')
+        }
+    }, [])
 
     return (
         <div>

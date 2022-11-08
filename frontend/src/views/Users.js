@@ -14,11 +14,20 @@ import {request} from "../utility/request";
 
 import {DeleteOutline, Edit, EditAttributes} from "@mui/icons-material";
 import {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {useSelector} from "react-redux";
+import {Forbidden} from "./Forbidden";
 
 const Users = () => {
+    const nav = useNavigate()
+    const user = useSelector(state => state.user)
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
+        if (!user.data) {
+            nav('/login')
+        }
+
         request('get', 'users/').then(data => {
             setUsers(data.results)
         })
@@ -31,6 +40,10 @@ const Users = () => {
             3: <Chip label="Пользотватель" />
         }
         return mapRole[role]
+    }
+
+    if (user.data?.role > 1) {
+        return <Forbidden />
     }
 
     return (

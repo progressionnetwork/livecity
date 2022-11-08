@@ -51,19 +51,10 @@ const UserDropdown = () => {
         />
       </DropdownToggle>
       <DropdownMenu end>
-        <DropdownItem tag={Link} to="/" onClick={(e) => e.preventDefault()}>
-          <User size={14} className="me-75" />
-          <span className="align-middle">Profile</span>
-        </DropdownItem>
-        <DropdownItem
-          tag={Link}
-          to="/pages/"
-          onClick={(e) => e.preventDefault()}
-        >
-          <Settings size={14} className="me-75" />
-          <span className="align-middle">Settings</span>
-        </DropdownItem>
-        <DropdownItem tag={Link} to="/login"  onClick={() => localStorage.setItem('token', '')}>
+        <DropdownItem tag={Link} to="/login"  onClick={() => {
+          localStorage.setItem('token', '')
+          window.location.reload()
+        }}>
           <Power size={14} className="me-75" />
           <span className="align-middle">Logout</span>
         </DropdownItem>

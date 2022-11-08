@@ -26,7 +26,6 @@ const TemplateTitle = "%s - Live City"
 const DefaultRoute = "/home"
 
 const Home = lazy(() => import("../../views/Home"))
-const SecondPage = lazy(() => import("../../views/SecondPage"))
 const Users = lazy(() => import('../../views/Users'))
 const Login = lazy(() => import("../../views/Login"))
 const Register = lazy(() => import("../../views/Register"))
@@ -40,7 +39,6 @@ const Okei = lazy(() => import("../../views/Okei"))
 const Spgz = lazy(() => import("../../views/Spgz"))
 const ListSn = lazy(() => import("../../views/ListSn"))
 const Sn = lazy(() => import("../../views/Sn"))
-const ListSmeta = lazy(() => import("../../views/ListSn"))
 const ListTz = lazy(() => import("../../views/ListTz"))
 const Smeta = lazy(() => import("../../views/Smeta"))
 

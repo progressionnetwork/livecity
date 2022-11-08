@@ -13,8 +13,12 @@ import {
 } from "reactstrap";
 import {useEffect, useState} from "react";
 import {request} from "../utility/request";
+import {useNavigate} from "react-router-dom";
+import {useSelector} from "react-redux";
 
 const Kpgz = () => {
+    const nav = useNavigate()
+    const user = useSelector(state => state.user)
     const [maxResults, setMaxResults] = useState(0)
     const [nextPage, setNextPage] = useState('')
     const [kpgzList, setKpgzList] = useState(null)
@@ -32,9 +36,9 @@ const Kpgz = () => {
         }
 
         setKpgzList(prev => {
-          const list = prev.splice(0);
-          const i = list.findIndex(e => e.code === editItem.code);
-          list.splice(i, 1, editItem)
+            const list = prev.splice(0);
+            const i = list.findIndex(e => e.code === editItem.code);
+            list.splice(i, 1, editItem)
             return list;
         })
         setIsModalEdit(false)
@@ -47,6 +51,10 @@ const Kpgz = () => {
     }
 
     useEffect(() => {
+        if (!user.data) {
+            nav('/login')
+        }
+
         request('get', 'kpgz/').then(data => {
             setNextPage(data.next)
             setKpgzList(data.results)
@@ -59,7 +67,7 @@ const Kpgz = () => {
             <Card>
                 <CardBody>
                     <Label>Поиск</Label>
-                    <Input />
+                    <Input/>
                 </CardBody>
             </Card>
 
@@ -74,17 +82,18 @@ const Kpgz = () => {
                 </CardHeader>
                 <CardBody>
                     {kpgzList ? <div className='react-List block'>
-                        {kpgzList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>
+                        {kpgzList.map(e => <Card key={e.code} style={{marginBottom: 0}}>
                             <CardHeader>
                                 <CardTitle>{e.name}</CardTitle>
-                                <div>
+                                {user.data?.role < 3 && <div>
                                     <Button.Ripple color='flat-primary' onClick={(j) => {
                                         setIsModalEdit(true)
                                         setEditItem(e)
                                         j.preventDefault()
                                     }}>Редактирвать</Button.Ripple>
-                                    <Button.Ripple color='flat-primary' style={{ marginRight: 12 }}>Удалить</Button.Ripple>
-                                </div>
+                                    <Button.Ripple color='flat-primary'
+                                                   style={{marginRight: 12}}>Удалить</Button.Ripple>
+                                </div>}
                             </CardHeader>
                         </Card>)}
                     </div> : <div>
@@ -106,7 +115,7 @@ const Kpgz = () => {
                         <Input type='name' id='name' value={editItem?.name} onChange={(e => setEditItem(prev => ({
                             ...prev,
                             name: e.target.value
-                        })))} placeholder='Название' />
+                        })))} placeholder='Название'/>
                     </div>
                 </ModalBody>
                 <ModalFooter>

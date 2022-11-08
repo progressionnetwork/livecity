@@ -6,14 +6,17 @@ import {Stack} from "@mui/material";
 import {FilePresent} from "@mui/icons-material";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
+import {useSelector} from "react-redux";
 
 const UploadEstimate = () => {
     const nav = useNavigate()
+    const user = useSelector(state => state.user)
     const [tzList, setTzList] = useState(null);
     const inputFileRef = useRef(null);
     const [loading, setLoading] = useState(false)
 
     const [file, setFile] = useState()
+    const [tzId, setTzId] = useState();
 
     useEffect(() => {
         request('get', 'tz/').then(data => {
@@ -32,6 +35,8 @@ const UploadEstimate = () => {
     const handleUploadSmeta = () => {
         const formData = new FormData();
         formData.append('type_file', 'smeta')
+        if (tzId) formData.append('type_update', tzId)
+
         formData.append('file', file)
         setLoading(true)
         axios.post(`${process.env.REACT_APP_BACKEND_URL}/update/file/`, formData, {
@@ -43,6 +48,12 @@ const UploadEstimate = () => {
             setLoading(false)
         })
     }
+
+    useEffect(() => {
+        if (!user.data) {
+            nav('/login')
+        }
+    }, [])
 
     return (
         <div>
@@ -67,8 +78,11 @@ const UploadEstimate = () => {
                         {/*</div>*/}
                         <div>
                             <Label>Шаблон</Label>
-                            <Select options={tzList?.map((e) => ({
-                                label: e.name
+                            <Select onChange={(e) => {
+                                console.log(e)
+                            }} options={tzList?.map((e) => ({
+                                label: e.name,
+                                value: e.id
                             }))}/>
                         </div>
                     </div>

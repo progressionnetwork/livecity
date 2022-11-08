@@ -1,4 +1,4 @@
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import {
     Button,
@@ -32,6 +32,8 @@ import {
 } from "@mui/icons-material";
 import {rowBlackList, rowMapper, statMapper, statWordMapper} from "../configs/rowTree";
 import {Stack} from "@mui/material";
+import {useSelector} from "react-redux";
+import {renderStatus} from "./Home";
 
 function generateNodeId() {
     return (Math.random() + 1).toString(36).substring(7);
@@ -39,6 +41,8 @@ function generateNodeId() {
 
 
 const Smeta = () => {
+    const nav = useNavigate()
+    const user = useSelector(state => state.user)
     const {id} = useParams()
     const [smeta, setSmeta] = useState(null);
 
@@ -93,12 +97,18 @@ const Smeta = () => {
         }
     }, [smeta])
 
+    useEffect(() => {
+        if (!user.data) {
+            nav('/login')
+        }
+    }, [])
+
     return (
         <div>
             {
                 smeta ? <Card>
                     <CardHeader>
-                        <CardTitle>{smeta.name}</CardTitle>
+                        <CardTitle>{smeta.name} {renderStatus(smeta.status_file)}</CardTitle>
                     </CardHeader>
                     <CardBody>
                         <Stack spacing={1} direction="row">

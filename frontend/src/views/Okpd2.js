@@ -13,8 +13,12 @@ import {
 } from "reactstrap";
 import {useEffect, useState} from "react";
 import {request} from "../utility/request";
+import {useNavigate} from "react-router-dom";
+import {useSelector} from "react-redux";
 
 const Okpd2 = () => {
+    const nav = useNavigate()
+    const user = useSelector(state => state.user)
     const [maxResults, setMaxResults] = useState(0)
     const [nextPage, setNextPage] = useState('')
     const [okpdList, setOkpdList] = useState(null)
@@ -41,13 +45,15 @@ const Okpd2 = () => {
     }
 
     const loadMore = async () => {
-        console.log(nextPage)
         const data = await request('get', nextPage.split('.ru/')[1])
         setNextPage(data.next)
         setOkpdList(prev => [...prev, ...data.results])
     }
 
     useEffect(() => {
+        if (!user.data) {
+            nav('/login')
+        }
         request('get', 'okpd2/').then(data => {
             setNextPage(data.next)
             setOkpdList(data.results)

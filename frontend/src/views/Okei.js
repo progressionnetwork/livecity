@@ -13,8 +13,12 @@ import {
 } from "reactstrap";
 import {useEffect, useState} from "react";
 import {request} from "../utility/request";
+import {useNavigate} from "react-router-dom";
+import {useSelector} from "react-redux";
 
 const Okei = () => {
+    const nav = useNavigate()
+    const user = useSelector(state => state.user)
     const [maxResults, setMaxResults] = useState(0)
     const [nextPage, setNextPage] = useState('')
     const [okeiList, setOkeiList] = useState(null)
@@ -47,6 +51,9 @@ const Okei = () => {
     }
 
     useEffect(() => {
+        if (!user.data) {
+            nav('/login')
+        }
         request('get', 'okei/').then(data => {
             setNextPage(data.next)
             setOkeiList(data.results)
@@ -77,14 +84,15 @@ const Okei = () => {
                         {okeiList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>
                             <CardHeader>
                                 <CardTitle>{e.name}</CardTitle>
-                                <div>
+                                {user.data?.role < 3 && <div>
                                     <Button.Ripple color='flat-primary' onClick={(j) => {
                                         setIsModalEdit(true)
                                         setEditItem(e)
                                         j.preventDefault()
                                     }}>Редактирвать</Button.Ripple>
-                                    <Button.Ripple color='flat-primary' style={{ marginRight: 12 }}>Удалить</Button.Ripple>
-                                </div>
+                                    <Button.Ripple color='flat-primary'
+                                                   style={{marginRight: 12}}>Удалить</Button.Ripple>
+                                </div>}
                             </CardHeader>
                         </Card>)}
                     </div> : <div>

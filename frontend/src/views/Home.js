@@ -4,7 +4,7 @@ import {
   CardBody,
   CardTitle,
   CardText,
-  CardLink, Button, Input, Label, CardFooter, Spinner
+  CardLink, Button, Input, Label, CardFooter, Spinner, Badge
 } from "reactstrap"
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
@@ -17,6 +17,16 @@ import {useEffect, useState} from "react"
 import {useNavigate} from "react-router-dom"
 
 import {request} from "../utility/request";
+
+export const renderStatus = (status) => {
+  const mapperStatus = {
+    0:  <Badge pill color='light-primary'>Загружен файл</Badge>,
+    1:  <Badge pill color='light-info'>Загружен в БД</Badge>,
+    2:  <Badge pill color='light-warning'>Обрабатывается</Badge>,
+    3:  <Badge pill color='light-success'>Готов</Badge>
+  }
+  return mapperStatus[status]
+}
 
 const Home = () => {
   const nav = useNavigate()
@@ -38,7 +48,10 @@ const Home = () => {
       })
     }, 5 * 1000)
 
-    return () => clearInterval(interval)
+    return () => {
+      setListSmeta(null)
+      clearInterval(interval)
+    }
   }, [])
 
   return (
@@ -56,11 +69,11 @@ const Home = () => {
 
       {!listSmeta && <Spinner />}
 
-      {listSmeta && listSmeta.map((e) => (
+      {listSmeta && listSmeta.map((e, i) => (
           <Card>
             <CardHeader>
               <CardTitle>
-                {e.name}
+                {e.name} {renderStatus(e.status_file)}
               </CardTitle>
             </CardHeader>
             <CardBody>
@@ -72,6 +85,11 @@ const Home = () => {
               }}>Подробнее</Button>
               <Button color="primary" outline style={{ marginLeft: 8 }} onClick={() => {
                 request('get', `smeta/${e.id}/short_smeta`).then(() => {
+                  setListSmeta(prev => {
+                    const list = prev.splice(0)
+                    list[i].status_file = 2
+                    return list;
+                  })
                   return MySwal.fire({
                     title: 'Информация',
                     text: 'Поставили в очередь на обработку. Это может занять некоторое время',
