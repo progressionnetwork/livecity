@@ -23,6 +23,7 @@ export const renderStatus = (status) => {
     fontSize: '1.2rem'
   }
   const mapperStatus = {
+    '-1':  <Badge pill color='light-danger' style={style}>Ошибка</Badge>,
     0:  <Badge pill color='light-primary' style={style}>Загружен файл</Badge>,
     1:  <Badge pill color='light-info' style={style}>Загружен в БД</Badge>,
     2:  <Badge pill color='light-warning' style={style}>Обрабатывается</Badge>,
