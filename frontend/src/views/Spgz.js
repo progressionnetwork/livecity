@@ -75,7 +75,7 @@ const Spgz = () => {
     }, [])
 
     useEffect(() => {
-        request('get', `kpgz/?search=${search}`).then(data => {
+        request('get', `spgz/?search=${search}`).then(data => {
             setNextPage(data.next)
             setSpgzList(data.results)
             setMaxResults(data.count)
@@ -104,20 +104,6 @@ const Spgz = () => {
                 </CardHeader>
                 <CardBody>
                     {spgzList ? <div className='react-List block'>
-                        {spgzList.map(e => <Card key={e.id} style={{ marginBottom: 0 }}>
-                            <CardHeader>
-                                <CardTitle>{e.id} - {e.name} ({e.key})</CardTitle>
-                                {user.data?.role < 3 && <div>
-                                    <Button.Ripple color='flat-primary' onClick={(j) => {
-                                        setIsModalEdit(true)
-                                        setEditItem(e)
-                                        j.preventDefault()
-                                    }}>Редактирвать</Button.Ripple>
-                                    <Button.Ripple color='flat-primary'
-                                                   style={{marginRight: 12}}>Удалить</Button.Ripple>
-                                </div>}
-                            </CardHeader>
-                        </Card>)}
                         <TableContainer sx={{
                             color: 'white',
                             fontSize: '1rem'
