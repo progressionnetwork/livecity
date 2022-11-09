@@ -283,6 +283,17 @@ const Smeta = () => {
         if (!user.data) {
             nav('/login')
         }
+
+        const interval = setInterval(() => {
+            request('get', `smeta/${id}/`).then(data => {
+                setSmeta(data)
+            })
+        }, 5 * 1000)
+
+        return () => {
+            setSmeta(null)
+            clearInterval(interval)
+        }
     }, [])
 
     return (
