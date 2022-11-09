@@ -204,7 +204,7 @@ def load_smeta(path: str, type_update:str)-> None:
     o_smeta = Smeta(name=name, status_file=0)
     o_smeta.save()
     try:
-        `smeta = Parse(path)[0]
+        smeta = Parse(path)[0]
         sections = smeta.pop('sections')
         o_smeta.address = str(smeta['address'] if smeta['address']!='null' else '')
         o_smeta.type_ref = str(smeta['type_ref'] if smeta['type_ref']!='null' else '')
