@@ -37,6 +37,8 @@ const Home = () => {
   const user = useSelector(state => state.user)
   const [listSmeta, setListSmeta] = useState(null);
 
+  const [search, setSearch] = useState('');
+
   useEffect(() => {
     if (!user.data) {
       nav('/login')
@@ -58,6 +60,12 @@ const Home = () => {
     }
   }, [])
 
+  useEffect(() => {
+    request('get', `smeta/?search=${search}`).then(data => {
+      setListSmeta(data)
+    })
+  }, [search])
+
   return (
     <div>
       <Card>
@@ -67,7 +75,7 @@ const Home = () => {
         </CardHeader>
         <CardBody>
           <Label>Поиск</Label>
-          <Input />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} />
         </CardBody>
       </Card>
 

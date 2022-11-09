@@ -131,7 +131,7 @@ const Spgz = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {kpgzList.map((e, i) => (
+                                    {spgzList.map((e, i) => (
                                         <TableRow>
                                             <StyledTableCell sx={{fontSize: '1rem', width: 70}}>{e.code}</StyledTableCell>
                                             <StyledTableCell sx={{fontSize: '1rem'}}>{e.name}</StyledTableCell>
