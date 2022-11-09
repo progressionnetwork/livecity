@@ -212,7 +212,7 @@ class SmetaRowStatSerializer(serializers.ModelSerializer):
     stat_words = serializers.SerializerMethodField('get_stat_words')
 
     def get_stat_words(self, instance):
-        return SmetaRowStatWordsSerializer(SmetaRowStatWords.objects.all()[:5], many=True).data 
+        return instance.get_stat_words()
 
     def get_sn(self, instance):
         return instance.sn.type_ref

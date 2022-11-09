@@ -328,7 +328,7 @@ class Smeta(models.Model):
     sum_with_tax = models.FloatField('Итого с НДС', default=0.0)  # 31
     sum_with_ko = models.FloatField(
         'Итого с коэф. фин. обеспеч.', default=0.0)  # 32
-    status_file = models.IntegerField('Статус сметы', choices=((0,"Загружен файл"), (1, "Загружен в БД"), (2, "Обрабатывается"), (3, "Готов")), default=0)
+    status_file = models.IntegerField('Статус сметы', choices=((-1,"Ошибка"),(0,"Загружен файл"), (1, "Загружен в БД"), (2, "Обрабатывается"), (3, "Готов")), default=0)
     tz = models.ForeignKey('TZ', on_delete=models.CASCADE, related_name='smetes', null=True, blank=True)
     
     def get_dict(self):
@@ -641,7 +641,14 @@ class SmetaRowStat(models.Model):
     key_percent = models.FloatField(default=0.0)
 
     def get_stat_words(self):
-        pass    
+        uniq_id = []
+        uniq_name = []
+        for stat_word in self.stat_words.objects.all():
+            if stat_word.name not in uniq_name:
+                uniq_id.append(stat_word.id)
+                uniq_name.append(stat_word.name)
+        return self.stat_words.objects.filter(id__in=uniq_id)
+            
 
     def __str__(self) -> str:
         return f"Статистика: {self.smeta_row}"
