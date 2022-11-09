@@ -639,7 +639,9 @@ class SmetaRowStat(models.Model):
     levenst_ratio = models.FloatField(default=0.0)
     is_key = models.BooleanField(default=False)
     key_percent = models.FloatField(default=0.0)
-    
+
+    def get_stat_words(self):
+        pass    
 
     def __str__(self) -> str:
         return f"Статистика: {self.smeta_row}"
