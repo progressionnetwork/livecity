@@ -15,6 +15,26 @@ import {useEffect, useState} from "react";
 import {request} from "../utility/request";
 import {useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
+import {
+    IconButton,
+    styled,
+    Switch,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow
+} from "@mui/material";
+import {numberWithSpaces} from "../utility/Utils";
+import {Edit} from "react-feather";
+import {Delete} from "@mui/icons-material";
+
+const StyledTableCell = styled(TableCell)(({theme}) => ({
+    color: 'var(--bs-body-color)',
+    fontSize: '1rem',
+    fontFamily: 'var(--bs-body-font-family)'
+}));
 
 const Okpd = () => {
     const nav = useNavigate()
@@ -92,21 +112,45 @@ const Okpd = () => {
                     </div>
                 </CardHeader>
                 <CardBody>
-                    {okpdList ? <div className='react-List block'>
-                        {okpdList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>
-                            <CardHeader>
-                                <CardTitle>{e.name}</CardTitle>
-                                {user.data?.role < 3 && <div>
-                                    <Button.Ripple color='flat-primary' onClick={(j) => {
-                                        setIsModalEdit(true)
-                                        setEditItem(e)
-                                        j.preventDefault()
-                                    }}>Редактирвать</Button.Ripple>
-                                    <Button.Ripple color='flat-primary'
-                                                   style={{marginRight: 12}}>Удалить</Button.Ripple>
-                                </div>}
-                            </CardHeader>
-                        </Card>)}
+
+                    {okpdList ? <div className=''>
+                        <TableContainer sx={{
+                            color: 'white',
+                            fontSize: '1rem'
+                        }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <StyledTableCell sx={{fontSize: '1rem', width: 70}}>Код</StyledTableCell>
+                                        <StyledTableCell sx={{fontSize: '1rem'}}>Название</StyledTableCell>
+                                        <StyledTableCell sx={{fontSize: '1rem'}}>Действия</StyledTableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {okpdList.map((e, i) => (
+                                        <TableRow>
+                                            <StyledTableCell sx={{fontSize: '1rem', width: 70}}>{e.code}</StyledTableCell>
+                                            <StyledTableCell sx={{fontSize: '1rem'}}>{e.name}</StyledTableCell>
+                                            {user.data?.role < 3 && <StyledTableCell sx={{fontSize: '1rem'}}>
+                                                <IconButton onClick={(j) => {
+                                                    setIsModalEdit(true)
+                                                    setEditItem(e)
+                                                    j.preventDefault()
+                                                }}>
+                                                    <Edit/>
+                                                </IconButton>
+                                                <IconButton onClick={() => {
+                                                    request('delete', `okpd/${e.code}/`).then()
+                                                    setOkpdList(prev => prev.filter(el => el.code !== e.code))
+                                                }}>
+                                                    <Delete/>
+                                                </IconButton>
+                                            </StyledTableCell>}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
                     </div> : <div>
                         <Spinner/>
                     </div>

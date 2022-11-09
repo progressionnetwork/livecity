@@ -241,7 +241,6 @@ const Subsection = (props) => {
                                                     sx={{fontSize: '0.8rem'}}>{row.stats[0].key_percent}</StyledTableCell>
                                             </TableRow>
                                         </>
-
                                     ))}
                                 </TableBody>
                             </Table>

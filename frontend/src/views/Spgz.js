@@ -15,8 +15,17 @@ import {useEffect, useState} from "react";
 import {request} from "../utility/request";
 import {useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
+import {IconButton, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
+import {Edit} from "react-feather";
+import {Delete} from "@mui/icons-material";
 
-const Okpd2 = () => {
+const StyledTableCell = styled(TableCell)(({theme}) => ({
+    color: 'var(--bs-body-color)',
+    fontSize: '1rem',
+    fontFamily: 'var(--bs-body-font-family)'
+}));
+
+const Spgz = () => {
     const nav = useNavigate()
     const user = useSelector(state => state.user)
     const [maxResults, setMaxResults] = useState(0)
@@ -109,6 +118,43 @@ const Okpd2 = () => {
                                 </div>}
                             </CardHeader>
                         </Card>)}
+                        <TableContainer sx={{
+                            color: 'white',
+                            fontSize: '1rem'
+                        }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <StyledTableCell sx={{fontSize: '1rem', width: 70}}>Код</StyledTableCell>
+                                        <StyledTableCell sx={{fontSize: '1rem'}}>Название</StyledTableCell>
+                                        <StyledTableCell sx={{fontSize: '1rem'}}>Действия</StyledTableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {kpgzList.map((e, i) => (
+                                        <TableRow>
+                                            <StyledTableCell sx={{fontSize: '1rem', width: 70}}>{e.code}</StyledTableCell>
+                                            <StyledTableCell sx={{fontSize: '1rem'}}>{e.name}</StyledTableCell>
+                                            {user.data?.role < 3 && <StyledTableCell sx={{fontSize: '1rem'}}>
+                                                <IconButton onClick={(j) => {
+                                                    setIsModalEdit(true)
+                                                    setEditItem(e)
+                                                    j.preventDefault()
+                                                }}>
+                                                    <Edit/>
+                                                </IconButton>
+                                                <IconButton onClick={() => {
+                                                    request('delete', `spgz/${e.code}/`).then()
+                                                    setSpgzList(prev => prev.filter(el => el.code !== e.code))
+                                                }}>
+                                                    <Delete/>
+                                                </IconButton>
+                                            </StyledTableCell>}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
                     </div> : <div>
                         <Spinner/>
                     </div>
@@ -142,4 +188,4 @@ const Okpd2 = () => {
     )
 }
 
-export default Okpd2;
+export default Spgz;

@@ -15,6 +15,16 @@ import {useEffect, useState} from "react";
 import {request} from "../utility/request";
 import {useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
+import {IconButton, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
+import {Edit} from "react-feather";
+import {Delete} from "@mui/icons-material";
+
+
+const StyledTableCell = styled(TableCell)(({theme}) => ({
+    color: 'var(--bs-body-color)',
+    fontSize: '1rem',
+    fontFamily: 'var(--bs-body-font-family)'
+}));
 
 const Okei = () => {
     const nav = useNavigate()
@@ -91,20 +101,45 @@ const Okei = () => {
                 </CardHeader>
                 <CardBody>
                     {okeiList ? <div className='react-List block'>
-                        {okeiList.map(e => <Card key={e.code} style={{ marginBottom: 0 }}>
-                            <CardHeader>
-                                <CardTitle>{e.name}</CardTitle>
-                                {user.data?.role < 3 && <div>
-                                    <Button.Ripple color='flat-primary' onClick={(j) => {
-                                        setIsModalEdit(true)
-                                        setEditItem(e)
-                                        j.preventDefault()
-                                    }}>Редактирвать</Button.Ripple>
-                                    <Button.Ripple color='flat-primary'
-                                                   style={{marginRight: 12}}>Удалить</Button.Ripple>
-                                </div>}
-                            </CardHeader>
-                        </Card>)}
+                        <TableContainer sx={{
+                            color: 'white',
+                            fontSize: '1rem'
+                        }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <StyledTableCell sx={{fontSize: '1rem', width: 70}}>Код</StyledTableCell>
+                                        <StyledTableCell sx={{fontSize: '1rem'}}>Название</StyledTableCell>
+                                        <StyledTableCell sx={{fontSize: '1rem'}}>Сокращенное название</StyledTableCell>
+                                        <StyledTableCell sx={{fontSize: '1rem'}}>Дейсв</StyledTableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {okeiList.map(e => (
+                                        <TableRow>
+                                            <StyledTableCell sx={{fontSize: '1rem', width: 70}}>{e.code}</StyledTableCell>
+                                            <StyledTableCell sx={{fontSize: '1rem'}}>{e.name}</StyledTableCell>
+                                            <StyledTableCell sx={{fontSize: '1rem'}}>{e.short_name}</StyledTableCell>
+                                            {user.data?.role < 3 && <StyledTableCell sx={{fontSize: '1rem'}}>
+                                                <IconButton onClick={(j) => {
+                                                    setIsModalEdit(true)
+                                                    setEditItem(e)
+                                                    j.preventDefault()
+                                                }}>
+                                                    <Edit/>
+                                                </IconButton>
+                                                <IconButton onClick={() => {
+                                                    request('delete', `okei/${e.code}/`).then()
+                                                    setOkeiList(prev => prev.filter(el => el.code !== e.code))
+                                                }}>
+                                                    <Delete/>
+                                                </IconButton>
+                                            </StyledTableCell>}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
                     </div> : <div>
                         <Spinner/>
                     </div>
@@ -126,6 +161,13 @@ const Okei = () => {
                             ...prev,
                             name: e.target.value
                         })))} placeholder='Название' />
+                        <Label className='form-label' for='name'>
+                            Сокрощенное название:
+                        </Label>
+                        <Input type='name' id='name' value={editItem?.short_name} onChange={(e => setEditItem(prev => ({
+                            ...prev,
+                            short_name: e.target.value
+                        })))} placeholder='Сокрощенное название' />
                     </div>
                 </ModalBody>
                 <ModalFooter>
