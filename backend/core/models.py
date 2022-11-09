@@ -502,7 +502,7 @@ class Smeta(models.Model):
                         worksheet.write(row_num, col+6, row.ei.short_name if row.ei else "-", workbook.add_format({'text_wrap': True, 'border': 1, 'valign': 'vcenter', 'align': 'center'}))
                         worksheet.write(row_num, col+7, row.count, workbook.add_format({'text_wrap': True, 'border': 1, 'valign': 'vcenter', 'align': 'center'}))
                         worksheet.write(row_num, col+8, row.sum, workbook.add_format({'text_wrap': True, 'border': 1, 'valign': 'vcenter', 'align': 'right','num_format': '#,##0.00'}))
-                        worksheet.write(row_num, col+9, smeta.address, workbook.add_format({'text_wrap': True, 'border': 1, 'valign': 'top', 'align': 'left'}))
+                        worksheet.write(row_num, col+9, row.get_address(), workbook.add_format({'text_wrap': True, 'border': 1, 'valign': 'top', 'align': 'left'}))
                         row_num += 1
         worksheet.merge_range(f"A{row_num+1}:H{row_num+1}", "ИТОГО без НДС:", workbook.add_format({'text_wrap': True, 'border': 1, 'valign': 'top', 'align': 'right', 'border': True}))
         worksheet.write(row_num, 8, f"=SUM(I12:I{row_num})", workbook.add_format({'text_wrap': True, 'border': 1, 'valign': 'top', 'align': 'right', 'border': True,'num_format': '#,##0.00'}))
@@ -573,6 +573,14 @@ class SmetaRow(models.Model):
     sum = models.FloatField('Итого', default=0.0)  # 26
     is_key = models.BooleanField('Ключевая позиция', default=False)
     sum_keys = models.FloatField('Ключевая сумма', default=0.0)
+
+    def get_address(self)->str:
+        if self.smeta_subsection.smeta_section.address != 'None':
+            return self.smeta_subsection.smeta_section.address
+        elif self.smeta_subsection.smeta_section.smeta.address != 'None':
+            return self.smeta_subsection.smeta_section.smeta.address
+        else: 
+            return 'Адрес отсутствует или неопределен системой'
 
     def get_color(self)->str:
         stat_rows = self.stats.all()
