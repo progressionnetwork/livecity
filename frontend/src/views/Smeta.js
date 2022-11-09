@@ -322,13 +322,31 @@ const Smeta = () => {
                         <Stack spacing={1} mt={1} direction="row">
                             <DateRange/>
                             <div>
-                                {smeta.coef_date}
+                                Дата сметных нормативов: {smeta.coef_date}
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
                             <DocumentScannerSharp/>
                             <div>
-                                {smeta.type_ref}
+                                Название сметных нормативов: {smeta.type_ref}
+                            </div>
+                        </Stack>
+                        <Stack spacing={1} mt={1} direction="row">
+                            <DocumentScannerSharp/>
+                            <div>
+                                Контроль сумм по строкам: {smeta.check_row_sum.check ? `Пройдено (${smeta.check_row_sum.value})`: `Не пройдено (${smeta.check_row_sum.value})`}
+                            </div>
+                        </Stack>
+                        <Stack spacing={1} mt={1} direction="row">
+                            <DocumentScannerSharp/>
+                            <div>
+                                Контроль сумм по ключевым строкам: {smeta.check_keys_row_sum.check ? `Пройдено (${smeta.chcheck_keys_row_sumeck.value})`: `Не пройдено (${smeta.check_keys_row_sum.value})`}
+                            </div>
+                        </Stack>
+                        <Stack spacing={1} mt={1} direction="row">
+                            <DocumentScannerSharp/>
+                            <div>
+                                Использованный шаблон ТЗ: {smeta.tz}
                             </div>
                         </Stack>
                         <Stack spacing={1} direction="row" mt={1}>
