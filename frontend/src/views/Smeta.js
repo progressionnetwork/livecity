@@ -296,7 +296,7 @@ const Smeta = () => {
         }
     }, [])
 
-    if (smeta.status_file !== 3) {
+    if (smeta?.status_file !== 3) {
         return (
             smeta ?
                 <div>
