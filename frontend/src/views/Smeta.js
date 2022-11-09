@@ -296,6 +296,24 @@ const Smeta = () => {
         }
     }, [])
 
+    if (smeta.status_file !== 3) {
+        return (
+            smeta ?
+                <div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{smeta?.name}</CardTitle>
+                            {renderStatus(smeta?.status_file)}
+                        </CardHeader>
+                        <CardBody>
+                            Смета еще не обработана
+                        </CardBody>
+                    </Card>
+                </div> : <Spinner/>
+
+        )
+    }
+
     return (
         <div>
             {
@@ -344,13 +362,15 @@ const Smeta = () => {
                         <Stack spacing={1} mt={1} direction="row">
                             <DocumentScannerSharp/>
                             <div>
-                                Контроль сумм по строкам: {smeta.check_row_sum.check ? `Пройдено (${smeta.check_row_sum.value})` : `Не пройдено (${smeta.check_row_sum.value})`}
+                                Контроль сумм по
+                                строкам: {smeta.check_row_sum.check ? `Пройдено (${smeta.check_row_sum.value})` : `Не пройдено (${smeta.check_row_sum.value})`}
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
                             <DocumentScannerSharp/>
                             <div>
-                                Контроль сумм по ключевым строкам: {smeta.check_keys_row_sum.check ? `Пройдено (${smeta.chcheck_keys_row_sumeck.value})` : `Не пройдено (${smeta.check_keys_row_sum.value})`}
+                                Контроль сумм по ключевым
+                                строкам: {smeta.check_keys_row_sum.check ? `Пройдено (${smeta.chcheck_keys_row_sumeck.value})` : `Не пройдено (${smeta.check_keys_row_sum.value})`}
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
