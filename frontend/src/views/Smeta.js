@@ -363,14 +363,14 @@ const Smeta = () => {
                             <DocumentScannerSharp/>
                             <div>
                                 Контроль сумм по
-                                строкам: {smeta.check_row_sum.check ? `Пройдено (${smeta.check_row_sum.value})` : `Не пройдено (${smeta.check_row_sum.value})`}
+                                строкам: {smeta.check_row_sum.check ? `Пройдено (${numberWithSpaces(smeta.check_row_sum.value)})` : `Не пройдено (${numberWithSpaces(smeta.check_row_sum.value)})`}
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
                             <DocumentScannerSharp/>
                             <div>
                                 Контроль сумм по ключевым
-                                строкам: {smeta.check_keys_row_sum.check ? `Пройдено (${smeta.chcheck_keys_row_sumeck.value})` : `Не пройдено (${smeta.check_keys_row_sum.value})`}
+                                строкам: {smeta.check_keys_row_sum.check ? `Пройдено (${numberWithSpaces(smeta.chcheck_keys_row_sumeck.value)})` : `Не пройдено (${numberWithSpaces(smeta.check_keys_row_sum.value)})`}
                             </div>
                         </Stack>
                         <Stack spacing={1} mt={1} direction="row">
